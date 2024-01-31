@@ -158,7 +158,7 @@
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2">
                     <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <input type="text" id="searchAdd" class="w-[75%] rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="w-[75%] rounded focus:ring-2 outline-none px-2 py-1">
                         <label for="addFiliere">Filière: </label>
                         <select id="addFiliere" name="addFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @foreach ($sectors as $sector)
@@ -254,7 +254,8 @@
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2">
                     <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <input type="text" id="searchEdit" class="rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchEdit" placeholder="Recherchez ici..." 
+                        class="rounded focus:ring-2 outline-none px-2 py-1">
                         <label for="editFiliere">Filière: </label>
                         <select id="editFiliere" name="editFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @foreach ($sectors as $sector)

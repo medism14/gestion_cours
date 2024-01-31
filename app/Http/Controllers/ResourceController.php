@@ -225,7 +225,6 @@ class ResourceController extends Controller
         $fileType = $addFile->getClientOriginalExtension();
 
         // Stocker le fichier dans le dossier storage/app/public/resources_files
-
         $file = File::Create([
             'filename' => $addFile->getClientOriginalName(),
             'path' => $filePath,
@@ -354,7 +353,6 @@ class ResourceController extends Controller
         $resource = Resource::find($id);
 
         if ($resource) {
-
             $filePath = 'storage/' . $resource->file->path;
 
             $filePath = public_path($filePath);

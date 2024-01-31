@@ -72,7 +72,7 @@
                         <button id="btn-unDisplay" class="text-white hover:text-gray-300" type="button"><i class="fas fa-angle-left"></i></button>
                     </div>
                     <!-- SideBar Title -->
-                    <div class="block p-10 rounded-lg text-white text-xl text-center ">
+                    <div class="block p-5 rounded-lg text-white text-xl text-center ">
                         <a href="{{ route('dashboard') }}" class="border-b-2">Gestion de cours</a>
                     </div>
 
@@ -106,7 +106,7 @@
             <!-- Côté Droit -->
             <section id="rightSection" class="flex-1 md:w-[75%]">
                 <!-- Côté droit navbar -->
-                <nav id="navbar" class="fixed w-full bg-red-600 text-white flex p-4 md:w-[75%]">
+                <nav id="navbar" class="fixed w-full bg-gray-800 text-white flex p-4 md:w-[75%]">
                     <div id="btn-display" class="hidden absolute fixed text-4xl top-0 left-0 mt-4">
                         <button class="text-black hover:text-gray-700" type="button"><i class="fas fa-angle-right"></i></button>
                     </div>
@@ -197,9 +197,7 @@
             </section>
         </header>
 
-        
     <script>
-
     // Create a MediaQueryList object for the media query "(max-width:768px)"
     var mediaQuery = window.matchMedia("(max-width:768px)");
 

@@ -22,17 +22,18 @@ Route::group(['middleware' => 'prevent-back-history'],function(){
 /////////////////////////////////////
 //MIDDLEWARE AUTH
 /////////////////////////////////////
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'firstConn'])->group(function () {
     ########################
     ##Dashboard
     ########################
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    Route::match(['get', 'post'], '/first_connection', [UserController::class, 'first_connection'])->name('first_connection');
 
     ########################
     ##Fonctionnalités
     ########################
     Route::match(['get', 'post'], '/parameters', [AuthController::class, 'parameters'])->name('parameters');
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout')->withoutMiddleware('firstConn');
 
     ########################
     ##Ressources

@@ -29,6 +29,31 @@ class UserController extends Controller
         
     }
 
+    public function first_connection (Request $request) {
+
+        if ($request->isMethod('post')){
+            $id = $request->input('id');
+            $user = User::find($id);
+
+            $user->password = Hash::make($request->input('password'));
+            $user->first_connection = 0;
+            $user->save();
+
+            return redirect()->route('dashboard')->with([
+                'success' => 'Votre mot de passe a bien mit été à jour'
+            ]);
+        }
+
+        if (auth()->user()->first_connection == 1) {
+            return view('authed.first_connection');
+        } else {
+            return redirect()->back()->with([
+                'error' => 'Vous ne pouvez pas accéder à cette partie'
+            ]);
+        }
+
+    }
+
     public function index (Request $request) {
 
         if ($request->input('search')) {
@@ -83,7 +108,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'addFirstName' => 'required|string|max:255',
             'addLastName' => 'string|max:255',
-            'addEmail' => 'required|email|max:255|unique:users,email', // Assure que l'email est unique dans la table 'users'
+            'addEmail' => 'required|email|max:255|unique:users,email',
             'addPhone' => 'required|string|max:20',
             'addRole' => 'required|string|max:255'
         ], [
@@ -112,6 +137,8 @@ class UserController extends Controller
         $email = $request->input('addEmail');
         $phone = $request->input('addPhone');
         $role = $request->input('addRole');
+
+        $password = explode('@', $email)[0];
         
         //Création de l'utilisateur
         $user = User::create([
@@ -122,7 +149,7 @@ class UserController extends Controller
             'role' => (int)$role,
             'first_connection' => 1,
             'notifs' => 0,
-            'password' => Hash::make($first_name . "123")
+            'password' => Hash::make($password. '123') 
         ]);
 
         //Si admin ou prof
@@ -135,7 +162,10 @@ class UserController extends Controller
             }
             //Si ils ont pas ajouté des filières
             if (empty($levels)) {
-                
+                $user->delete();
+                return redirect()->back()->with([
+                    'error' => 'un professeur doit avoir une filière'
+                ]);
             } else {
                 foreach ($levels as $key => $level) {
                     LevelsUser::Create([

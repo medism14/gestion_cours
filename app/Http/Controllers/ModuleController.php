@@ -67,8 +67,8 @@ class ModuleController extends Controller
 
         //Recuperation des variables
         $name = $request->input('addName');
-        $level_id = $request->input('addFiliere');
-        $user_id = $request->input('addProf');
+        $level_id = (int)$request->input('addFiliere');
+        $user_id = (int)$request->input('addProf');
 
         if (!$level_id) {
             return redirect()->back()->with([
@@ -76,11 +76,11 @@ class ModuleController extends Controller
             ]);
         }
 
-        //Création de du module
-        $user = Module::create([
+        //Création du module
+        $module = Module::create([
             'name' => $name,
             'level_id' => $level_id,
-            'user_id' => $user_id,
+            'user_id' => $user_id
         ]);
 
         return redirect()->back()->with([

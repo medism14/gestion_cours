@@ -17,7 +17,7 @@
         
         body {
             font-family: 'figtree', sans-serif;
-            background: url("{{ asset('images/test2.jpg') }}");
+            background: gray;
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -37,12 +37,12 @@
 
     <body class="bg-gray-200">
         <!-- Header -->
-        <header class="bg-red-500 flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
+        <header class="bg-blue-600 flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
             <img class="rounded-full ml-5 mr-7" src="{{ asset('images/logo.png') }}" width="55" height="55">
             <h1 class="text-base md:text-lg font-bold text-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1>
             <nav class="mr-5">
                 <ul class="list-style-none">
-                    <li><a href="{{ route('auth') }}" class="px-4 py-2 sm:px-6 sm:py-3 bg-yellow-200 text-black cursor-pointer rounded-lg transition-all duration-300 ease-in-out hover:bg-yellow-300">Accueil</a></li>
+                    <li><a href="{{ route('auth') }}" class="px-4 py-2 sm:px-6 sm:py-3 bg-gray-100 text-black cursor-pointer rounded-lg transition-all duration-300 ease-in-out hover:bg-blue-100">Accueil</a></li>
                 </ul>
             </nav>
         </header>

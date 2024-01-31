@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Route;
+
+class FirstConnectionMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        if (auth()->user()->role != 0 && auth()->user()->first_connection == 1 && Route::currentRouteName() != 'first_connection') {
+            return redirect()->route('first_connection');
+        } else {
+            return $next($request);
+        }
+    }
+}

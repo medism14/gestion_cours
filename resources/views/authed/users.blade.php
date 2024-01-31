@@ -192,7 +192,7 @@
                     </div>
                     <div class="rowFiliereAdd w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="addFiliere">Filière: </label>
-                        <input type="text" id="searchAdd" class="rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
                         <select id="addFiliere" name="filiereSolo" {{ ($sectors->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @if ($sectors->isEmpty()) 
                                 <option value="" disabled>Aucune valeur</option>
@@ -283,7 +283,7 @@
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0">    
+        <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0" onsubmit="confirmMDP()">    
             @csrf
             <!-- Close -->
             <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -335,7 +335,7 @@
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2">
                     <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <input type="text" id="searchEdit" class="rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchEdit" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
                         <label for="editFiliere">Filière: </label>
                         <select id="editFiliere" name="filiereSolo" {{ ($sectors->isEmpty() ? "disabled" : "") }} name="addFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @if ($sectors->isEmpty()) 
@@ -377,6 +377,14 @@
 document.addEventListener("DOMContentLoaded", function() {
 
         //MODALS MANIPULATIONS
+
+        const confirmMDP = () => {
+            const password = document.getElementById('editPassword');
+            if (password.value.length < 5) {
+                alert('le mot de passe est trop court');
+                return false;
+            }
+        }
 
         //////////////////////////
         //ADD MODALS

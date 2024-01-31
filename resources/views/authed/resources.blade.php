@@ -184,7 +184,7 @@
                 <!-- Row -->
                 <div class="w-full p-2 flex justify-center items-center overflow-hidden">
                     <div class="w-full sm:w-1/2 mx-auto flex justify-center flex-col">
-                        <input type="text" id="searchAdd" class="rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
                         <label for="addModule" class="text-center">Modules: </label>
                         <select id="addModule" name="addModule" {{ ($modules->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @if ($modules->isEmpty()) 
@@ -309,7 +309,7 @@
                 <!-- Row -->
                 <div class="w-full p-2 flex justify-center items-center overflow-hidden">
                     <div class="w-full sm:w-1/2 mx-auto flex justify-center flex-col">
-                        <input type="text" id="searchEdit" class="rounded focus:ring-2 outline-none px-2 py-1">
+                        <input type="text" id="searchEdit" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
                         <label for="editModule" class="text-center">Modules: </label>
                         <select id="editModule" name="editModule" {{ ($modules->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                             @if ($modules->isEmpty()) 
