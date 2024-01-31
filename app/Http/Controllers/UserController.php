@@ -51,7 +51,6 @@ class UserController extends Controller
                 'error' => 'Vous ne pouvez pas accéder à cette partie'
             ]);
         }
-
     }
 
     public function index (Request $request) {
@@ -103,8 +102,7 @@ class UserController extends Controller
 
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'addFirstName' => 'required|string|max:255',
             'addLastName' => 'string|max:255',
@@ -326,7 +324,7 @@ class UserController extends Controller
 
     }
 
-    public function getUserNotifs(Request $request, $id){
+    public function getUserNotifs(Request $request, $id) {
 
         $notifs = Notif::with(['resource.file'])->with(['resource.module'])->where('user_id', $id)->orderBy('created_at', 'desc')->get();
         
