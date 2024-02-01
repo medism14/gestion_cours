@@ -16,7 +16,7 @@ class FirstConnectionMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user()->role != 0 && auth()->user()->first_connection == 1 && Route::currentRouteName() != 'first_connection') {
+        if (auth()->user()->first_connection == 1 && Route::currentRouteName() != 'first_connection') {
             return redirect()->route('first_connection');
         } else {
             return $next($request);

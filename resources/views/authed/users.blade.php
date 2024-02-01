@@ -47,9 +47,9 @@
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
         </div>
-        <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
+        <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.65rem] lg:text-sm">
             <thead>
                 <tr>
                     <th class="hidden" id="informations"><div>Informations</div></th>

@@ -76,7 +76,7 @@ class ForumController extends Controller
             }
         }
 
-        if (!$trouver) {
+        if (auth()->user()->role != 0 && !$trouver) {
             return redirect()->back()->with([
                 'error' => 'Vous ne pouvez pas accéder à cette partie'
             ]);

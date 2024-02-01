@@ -166,7 +166,7 @@ class ResourceController extends Controller
             'addSection' => 'required',
             'addModule' => 'required', 
         ], [
-            'addDescription.required' => 'Le prenom est requis.',
+            'addDescription.required' => 'La description est requise.',
             'addSection.required' => "La section est requise.",
             'addModule.required' => "Le module est requis"
         ]);

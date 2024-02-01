@@ -57,24 +57,30 @@
                     <th class="hidden" id="informations"><div>Informations</div></th>
                     <th id="nomFichier"><div>Nom du fichier</div></th>
                     <th id="section"><div>Section</div></th>
-                    <th id="typeFichier"><div>Type de fichier</div></th>
+                    <th id="module"><div>Module</div></th>
+                    <th id="date"><div>Date</div></th>
                     <th id="actions"><div>Actions</div></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($resources as $resource)
+                    <?php 
+                    
+                    ?>
                     <tr>
                         <td class="informations w-full hidden">
                             <div class="flex justify-center items-start flex-col tdDivs">
                                 <span class="font-bold">Nom: {{ $resource->file->filename }}</span>
                                 <span>Section: {{ $resource->section }}</span>
                                 <span>Prof: {{ $resource->module->user->first_name }} {{ $resource->module->user->last_name }}</span>
-                                <span>Type: {{ $resource->file->filetype }}</span>
+                                <span>Module: {{ $resource->module->name }}</span>
+                                <span>Date: {{ $resource->created_at }}</span>
                             </div>
                         </td>
                         <td class="nomFichier"><div class="flex justify-center items-center tdDivs">{{ $resource->file->filename }}</div></td>
                         <td class="section"><div class="flex justify-center items-center tdDivs">{{ $resource->section }}</div></td>
-                        <td class="typeFichier"><div class="flex justify-center items-center tdDivs">{{ $resource->file->filetype }}</div></td>
+                        <td class="module"><div class="flex justify-center items-center tdDivs">{{ $resource->module->name }}</div></td>
+                        <td class="date"><div class="flex justify-center items-center tdDivs">{{ $resource->created_at }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center tdDivs">
                                 <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0">
@@ -177,6 +183,7 @@
                             <option value="td">TD</option>
                             <option value="tp">TP</option>
                             <option value="cours">COURS</option>
+                            <option value="annales">Annales</option>
                         </select>
                     </div>
                 </div>
@@ -258,7 +265,7 @@
                 <div class="md:flex w-full md:space-x-2">
                     <div class="w-none md:w-1/5"></div>
                     <div class="w-full md:w-3/5 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewDescription">Date de mise en ligne: </label>
+                        <label for="viewDescription">Description: </label>
                         <textarea name="viewDescription" id="viewDescription" cols="30" rows="10" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent"></textarea>
                     </div>
                     <div class="w-none md:w-1/5"></div>
@@ -302,6 +309,7 @@
                             <option value="td" class="sectionLists">TD</option>
                             <option value="tp" class="sectionLists">TP</option>
                             <option value="cours" class="sectionLists">COURS</option>
+                            <option value="annales" class="sectionLists">Annales</option>
                         </select>
                     </div>
                 </div>
@@ -600,13 +608,15 @@
         const informations = document.getElementById('informations');
         const nomFichier = document.getElementById('nomFichier');
         const section = document.getElementById('section');
-        const typeFichier = document.getElementById('typeFichier');
+        const modules = document.getElementById('module');
+        const date = document.getElementById('date');
 
         //Les Class
         const c_informations = Array.from(document.getElementsByClassName('informations'));
         const c_nomFichier =  Array.from(document.getElementsByClassName('nomFichier'));
         const c_section =  Array.from(document.getElementsByClassName('section'));
-        const c_typeFichier =  Array.from(document.getElementsByClassName('typeFichier'));
+        const c_module =  Array.from(document.getElementsByClassName('module'));
+        const c_date =  Array.from(document.getElementsByClassName('date'));
 
         const changeTaille = document.getElementById('changeTaille');
         var height;
@@ -624,7 +634,8 @@
             
             nomFichier.classList.add('hidden');
             section.classList.add('hidden');
-            typeFichier.classList.add('hidden');
+            modules.classList.add('hidden');
+            date.classList.add('hidden');
 
             c_nomFichier.forEach((nomFichier) => {
                 nomFichier.classList.add('hidden');
@@ -634,8 +645,12 @@
                 section.classList.add('hidden');
             });
 
-            c_typeFichier.forEach((typeFichier) => {
-                typeFichier.classList.add('hidden');
+            c_module.forEach((m) => {
+                m.classList.add('hidden');
+            });
+
+            c_date.forEach((date) => {
+                date.classList.add('hidden');
             });
 
             if (changeTaille) {
@@ -654,7 +669,8 @@
 
             nomFichier.classList.remove('hidden');
             section.classList.remove('hidden');
-            typeFichier.classList.remove('hidden');
+            modules.classList.remove('hidden');
+            date.classList.remove('hidden');
 
             c_nomFichier.forEach((nomFichier) => {
                 nomFichier.classList.remove('hidden');
@@ -665,8 +681,12 @@
                 section.classList.remove('hidden');
             });
 
-            c_typeFichier.forEach((typeFichier) => {
-                typeFichier.classList.remove('hidden');
+            c_module.forEach((m) => {
+                m.classList.remove('hidden');
+            });
+
+            c_date.forEach((date) => {
+                date.classList.remove('hidden');
             });
 
             if (changeTaille) {
