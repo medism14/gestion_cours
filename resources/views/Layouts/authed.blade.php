@@ -386,8 +386,6 @@
     const nav = document.getElementById('navbar');   
     const divNavbar = document.getElementById('divNavbar');
 
-    console.log(document.referrer);
-
 
     // Add a click event listener to 'btnUnDisplay'
     btnUnDisplay.addEventListener('click', () => {

@@ -37,7 +37,7 @@
 
     <body class="bg-gray-200">
         <!-- Header -->
-        <header class="bg-blue-600 flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
+        <header class="bg-gray-700 flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
             <img class="rounded-full ml-5 mr-7" src="{{ asset('images/logo.png') }}" width="55" height="55">
             <h1 class="text-base md:text-lg font-bold text-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1>
             <nav class="mr-5">

@@ -3,7 +3,7 @@
 @section('title', 'Authentification')
 
 @section('content')
-    <div class="bg-blue-200 mx-auto p-12 pb-8 w-[80%] md:w-[40%] text-center rounded-lg text-gray-700 overflow-x-hidden">
+    <div class=" bg-gray-700 mx-auto p-12 pb-8 w-[80%] md:w-[40%] text-center rounded-lg text-white overflow-x-hidden">
         <form action="{{ route('login') }}" method="POST">
             @csrf
             <h1 class="font-bold text-lg md:text-2xl underline mb-5">Authentification</h1>

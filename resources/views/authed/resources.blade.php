@@ -48,10 +48,10 @@
     <div id="table-div" class="block w-full">
         @if (auth()->user()->role != 2)  
             <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-base duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         @endif
-        <table id="tableResource" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
+        <table id="tableResource" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-base">
             <thead>
                 <tr>
                     <th class="hidden" id="informations"><div>Informations</div></th>
@@ -64,9 +64,9 @@
             </thead>
             <tbody>
                 @foreach ($resources as $resource)
-                    <?php 
-                    
-                    ?>
+                    @php
+                        $date = explode(' ', $resource->created_at)[0];
+                    @endphp
                     <tr>
                         <td class="informations w-full hidden">
                             <div class="flex justify-center items-start flex-col tdDivs">
@@ -74,13 +74,13 @@
                                 <span>Section: {{ $resource->section }}</span>
                                 <span>Prof: {{ $resource->module->user->first_name }} {{ $resource->module->user->last_name }}</span>
                                 <span>Module: {{ $resource->module->name }}</span>
-                                <span>Date: {{ $resource->created_at }}</span>
+                                <span>Date: {{ $date }}</span>
                             </div>
                         </td>
                         <td class="nomFichier"><div class="flex justify-center items-center tdDivs">{{ $resource->file->filename }}</div></td>
                         <td class="section"><div class="flex justify-center items-center tdDivs">{{ $resource->section }}</div></td>
                         <td class="module"><div class="flex justify-center items-center tdDivs">{{ $resource->module->name }}</div></td>
-                        <td class="date"><div class="flex justify-center items-center tdDivs">{{ $resource->created_at }}</div></td>
+                        <td class="date"><div class="flex justify-center items-center tdDivs">{{ $date }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center tdDivs">
                                 <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0">
