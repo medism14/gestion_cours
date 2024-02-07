@@ -9,12 +9,12 @@
             <h1 class="font-bold text-lg md:text-2xl underline mb-5">Authentification</h1>
                 <!-- Row -->
                 <div class="mb-5 w-full mr-2">
-                    <label class="block text-sm font-bold text-gray-700" for="email">Email: </label>
+                    <label class="block text-sm font-bold text-white" for="email">Email: </label>
                     <input id="email" class="mt-1 w-full px-4 py-1 rounded-md border-gray-300 shadow-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="email" id="email" type="email">
                 </div>
                 <!-- Row -->
                 <div class="w-full">
-                    <label class="block text-sm font-bold text-gray-700" for="password">Password: </label>
+                    <label class="block text-sm font-bold text-white" for="password">Password: </label>
                     <div class="flex w-full mt-1">
                         <input id="password" class="flex-1 block px-4 py-1 rounded-md border-gray-300 shadow-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="password" id="password" type="password">
                         <button type="button" id="eye" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"><i class="fas fa-eye"></i></button>

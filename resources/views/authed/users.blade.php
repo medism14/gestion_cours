@@ -179,7 +179,7 @@
                         <input id="addPhone" name="addPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
                 </div>
-                    
+
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2">
                     <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
@@ -771,6 +771,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     let phone = data.phone;
                     let role = data.role;
 
+                    if (role == 0) {
+                        editRole.parentNode.remove();
+                        editFiliere.parentNode.remove();
+                    }
+
                     let options = Array.from(document.getElementsByClassName('editOptions'));
 
                      editFirstName.value = first_name;
@@ -814,20 +819,30 @@ document.addEventListener("DOMContentLoaded", function() {
                             input.setAttribute('name', 'levelIdEdit' + level_id)
                             input.value = level_id;
 
+                            let div2 = document.createElement('div');
+                            div2.classList.add('flex', 'justify-center', 'bg-red', 'space-x-3', 'flex-1');
+
                             let span = document.createElement('span');
                             span.textContent = value;
-                            span.classList.add('text-end', 'w-2/3', 'mr-3', 'valueSpan');
+                            span.classList.add('text-end', 'mr-3', 'valueSpan', 'flex', 'justify-end');
 
                             let span2 = document.createElement('span');
                             span2.innerHTML = '<i class="fas fa-times removedElementEdit cursor-pointer"></i>';
-                            span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center', 'w-1/3');
+                            span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center');
 
                             let span3 = document.createElement('span');
-                            span3.classList.add('flex-1')
+                            span3.classList.add('w-1/4');
+
+                            let span4 = document.createElement('span');
+                            span4.classList.add('w-1/4');
                             
-                            div.appendChild(input);
-                            div.appendChild(span);
-                            div.appendChild(span2);
+                            div2.appendChild(span);
+                            div2.appendChild(span2);
+                            div2.appendChild(input);
+                            
+                            div.appendChild(span3);
+                            div.appendChild(div2);
+                            div.appendChild(span4);
 
                             editsectorLists.appendChild(div);
                         }
@@ -877,20 +892,30 @@ document.addEventListener("DOMContentLoaded", function() {
                     input.setAttribute('name', 'levelIdEdit' + level_id)
                     input.value = level_id;
 
+                    let div2 = document.createElement('div');
+                    div2.classList.add('flex', 'justify-center', 'bg-red', 'space-x-3', 'flex-1');
+
                     let span = document.createElement('span');
                     span.textContent = value;
-                    span.classList.add('text-end', 'w-2/3', 'mr-3', 'valueSpan');
+                    span.classList.add('text-end', 'mr-3', 'valueSpan', 'flex', 'justify-end');
 
                     let span2 = document.createElement('span');
                     span2.innerHTML = '<i class="fas fa-times removedElementEdit cursor-pointer"></i>';
-                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center', 'w-1/3');
+                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center');
 
                     let span3 = document.createElement('span');
-                    span3.classList.add('flex-1')
+                    span3.classList.add('w-1/4');
+
+                    let span4 = document.createElement('span');
+                    span4.classList.add('w-1/4');
                             
-                    div.appendChild(input);
-                    div.appendChild(span);
-                    div.appendChild(span2);
+                    div2.appendChild(span);
+                    div2.appendChild(span2);
+                    div2.appendChild(input);
+                            
+                    div.appendChild(span3);
+                    div.appendChild(div2);
+                    div.appendChild(span4);
 
                     editsectorLists.appendChild(div);
             } else {

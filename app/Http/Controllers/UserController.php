@@ -211,22 +211,38 @@ class UserController extends Controller
             $password = Hash::make($request->input('editPassword'));
         }
 
-        $validator = Validator::make($request->all(), [
-            'editFirstName' => 'required|string|max:255',
-            'editEmail' => 'required|email|max:255', // Assure que l'email est unique dans la table 'users'
-            'editPhone' => 'required|string|max:20',
-            'editRole' => 'required|string|max:255'
-        ], [
-            'editFirstName.required' => 'Le prenom est requis.',
-            'editEmail.required' => "L adresse email est requise.",
-            'editEmail.email' => "L adresse email doit être valide.",
-            'editEmail.max' => "L adresse email ne doit pas dépasser :max caractères.",
-            'editPhone.required' => 'Le numéro de téléphone est requis.',
-            'editPhone.max' => 'Le numéro de téléphone ne doit pas dépasser :max caractères.',
-            'editRole.required' => 'Le rôle est requis.',
-            'editRole.max' => 'Le rôle ne doit pas dépasser :max caractères.'
-        ]);
+        if (auth()->user()->role != 0) {
+            $validator = Validator::make($request->all(), [
+                'editFirstName' => 'required|string|max:255',
+                'editEmail' => 'required|email|max:255', // Assure que l'email est unique dans la table 'users'
+                'editPhone' => 'required|string|max:20',
+                'editRole' => 'required|string|max:255'
+            ], [
+                'editFirstName.required' => 'Le prenom est requis.',
+                'editEmail.required' => "L adresse email est requise.",
+                'editEmail.email' => "L adresse email doit être valide.",
+                'editEmail.max' => "L adresse email ne doit pas dépasser :max caractères.",
+                'editPhone.required' => 'Le numéro de téléphone est requis.',
+                'editPhone.max' => 'Le numéro de téléphone ne doit pas dépasser :max caractères.',
+                'editRole.required' => 'Le rôle est requis.',
+                'editRole.max' => 'Le rôle ne doit pas dépasser :max caractères.'
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'editFirstName' => 'required|string|max:255',
+                'editEmail' => 'required|email|max:255', // Assure que l'email est unique dans la table 'users'
+                'editPhone' => 'required|string|max:20',
+            ], [
+                'editFirstName.required' => 'Le prenom est requis.',
+                'editEmail.required' => "L adresse email est requise.",
+                'editEmail.email' => "L adresse email doit être valide.",
+                'editEmail.max' => "L adresse email ne doit pas dépasser :max caractères.",
+                'editPhone.required' => 'Le numéro de téléphone est requis.',
+                'editPhone.max' => 'Le numéro de téléphone ne doit pas dépasser :max caractères.',
+            ]);
 
+        }
+        
         if ($validator->fails()) {
             $errors = json_decode($validator->errors(), true);
 
@@ -255,10 +271,16 @@ class UserController extends Controller
 
         $user->save();
 
+        if ($user->role == 0) {
+            return redirect()->back()->with([
+                'success' => 'L utilisateur a bien été modifié'
+            ]);
+        }
+
         LevelsUser::where('user_id', $user->id)->delete();
 
         //Si admin ou prof
-        if ($role == 0 || $role == 1) {
+        if ($role == 1) {
             $levels = array();
             foreach ($request->all() as $key => $value) {
                 if (preg_match("/^(levelIdEdit).*$/", $key)) {
