@@ -12,6 +12,9 @@ use App\Models\Level;
 use App\Models\Notif;
 use App\Models\LevelsUser;
 
+use Illuminate\Support\Facades\Response;
+
+
 class UserController extends Controller
 {
 
@@ -360,6 +363,49 @@ class UserController extends Controller
         $user->save();
 
         return response()->json(200);
+    }
+
+    public function download(Request $request)
+    {
+        // Récupérer tous les utilisateurs depuis la base de données
+        $users = User::all();
+
+        // Définir le nom du fichier CSV téléchargé
+        $fileName = 'users.csv';
+
+        // Créer le contenu du fichier CSV
+        $csvData = "sep=\t\n"; // Spécifier une tabulation comme délimiteur
+        $csvData .= "ID\tPrénom\tNom\tEmail\tTéléphone\tRôle\n"; // Ligne d'en-tête avec des colonnes séparées par des tabulations
+        foreach ($users as $user) {
+            // Convertir le rôle numérique en nom de rôle
+            switch ($user->role) {
+                case 0:
+                    $role = 'Administrateur';
+                    break;
+                case 1:
+                    $role = 'Professeur';
+                    break;
+                case 2:
+                    $role = 'Étudiant';
+                    break;
+                default:
+                    $role = 'Inconnu';
+            }
+            // Ajouter les données de l'utilisateur au contenu du fichier CSV
+            $csvData .= "{$user->id}\t{$user->first_name}\t{$user->last_name}\t{$user->email}\t{$user->phone}\t{$role}\n"; // Colonnes séparées par des tabulations
+        }
+    
+        // Convertir le contenu du fichier CSV en UTF-8
+        $csvData = utf8_decode($csvData);
+    
+        // Ajouter l'en-tête Content-Disposition pour indiquer le téléchargement du fichier
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ];
+    
+        // Retourner la réponse HTTP avec le contenu du fichier CSV
+        return Response::make($csvData, 200, $headers);
     }
 
 }

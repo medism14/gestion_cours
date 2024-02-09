@@ -9,7 +9,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="icon" href="{{ asset('images/roundedLogo.png') }}">
+        <link rel="icon" href="{{ asset('images/roundedLogo.jpg') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
          <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
          <script src="https://cdn.tailwindcss.com"></script>
@@ -66,13 +66,13 @@
         <!-- Header -->
         <header class="flex">
             <!-- SideBar -->
-            <section id="leftSection" class="block md:w-[25%]">
-                <nav id="sidebar" class="fixed w-none md:w-[25%] bg-gray-800 h-screen">
+            <section id="leftSection" class="block md:w-[20%]">
+                <nav id="sidebar" class="fixed w-none md:w-[20%] bg-gray-800 h-screen">
                     <div class="absolute m-1 right-0 flex items-center my-auto h-screen text-4xl">
                         <button id="btn-unDisplay" class="text-white hover:text-gray-300" type="button"><i class="fas fa-angle-left"></i></button>
                     </div>
                     <!-- SideBar Title -->
-                    <div class="block p-5 rounded-lg text-white text-xl text-center ">
+                    <div class="block p-5 rounded-lg text-white text-xl text-center">
                         <a href="{{ route('dashboard') }}" class="border-b-2">Gestion de cours</a>
                     </div>
 
@@ -97,20 +97,23 @@
                     </div>
 
                     <!-- Footer -->
-                    <footer class="fixed w-full md:w-[25%] text-center text-white bottom-0 bg-gray-600">
+                    <footer class="fixed w-full md:w-[20%] text-center text-white bottom-0 bg-gray-600">
                         <p>Tout droits reservés ©</p>
                     </footer>
                 </nav>
                 
             </section>
             <!-- Côté Droit -->
-            <section id="rightSection" class="flex-1 md:w-[75%]">
+            <section id="rightSection" class="flex-1 md:w-[80%]">
                 <!-- Côté droit navbar -->
-                <nav id="navbar" class="fixed w-full bg-gray-800 text-white flex p-4 md:w-[75%]">
+                <nav id="navbar" class="fixed w-full bg-gray-800 text-white flex p-2 md:w-[80%]">
                     <div id="btn-display" class="hidden absolute fixed text-4xl top-0 left-0 mt-4">
                         <button class="text-black hover:text-gray-700" type="button"><i class="fas fa-angle-right"></i></button>
                     </div>
                     <div id="divNavbar" class="flex-1 flex items-center">
+                        <span class="flex w-full justify-start ml-5">
+                            <img src="{{ asset('images/roundedLogo.jpg') }}" alt="Logo" width="50" height="50">
+                        </span>
                         <div class="ml-12 md:ml-24 flex-1 text-center text-base md:text-xl font-bold">
                         </div> 
 
@@ -400,10 +403,10 @@
             leftSection.classList.add('hidden');
 
             //navbar manip
-            nav.classList.remove('w-[75%]');
+            nav.classList.remove('w-[80%]');
             nav.classList.add('min-w-full');
 
-            divNavbar.classList.remove('w-[75%]');
+            divNavbar.classList.remove('w-[80%]');
             divNavbar.classList.add('min-w-full');
 
             // Remove the class 'hidden' from 'btnDisplay'
@@ -411,18 +414,18 @@
         }
 
         // SideBar on display
-        if (side.classList.contains('md:w-[25%]')) {
-            // Remove the class 'md:w-[25%]' from 'side' and add the class 'md:w-none'
-            side.classList.remove('md:w-[25%]');
+        if (side.classList.contains('md:w-[20%]')) {
+            // Remove the class 'md:w-[20%]' from 'side' and add the class 'md:w-none'
+            side.classList.remove('md:w-[20%]');
             side.classList.add('md:w-none');
 
             leftSection.classList.add('hidden');
 
             //navbar manip
-            nav.classList.remove('w-[75%]');
+            nav.classList.remove('w-[80%]');
             nav.classList.add('min-w-full');
 
-            divNavbar.classList.remove('w-[75%]');
+            divNavbar.classList.remove('w-[80%]');
             divNavbar.classList.add('min-w-full');
 
             // Remove the class 'hidden' from 'btnDisplay'
@@ -440,10 +443,10 @@
                 side.classList.add('w-full');
 
                 //navbar manip
-                nav.classList.add('w-[75%]');
+                nav.classList.add('w-[80%]');
                 nav.classList.remove('min-w-full');
 
-                divNavbar.classList.add('w-[75%]');
+                divNavbar.classList.add('w-[80%]');
                 divNavbar.classList.remove('min-w-full');
 
                 // Add the class 'hidden' to 'rightSection'
@@ -457,17 +460,17 @@
 
         // SideBar not on display
         if (side.classList.contains('md:w-none')) {
-            // Remove the class 'md:w-none' from 'side' and add the class 'md:w-[25%]'
+            // Remove the class 'md:w-none' from 'side' and add the class 'md:w-[20%]'
             side.classList.remove('md:w-none');
-            side.classList.add('md:w-[25%]');
+            side.classList.add('md:w-[20%]');
 
             leftSection.classList.remove('hidden');
 
             //navbar manip
-            nav.classList.add('w-[75%]');
+            nav.classList.add('w-[80%]');
             nav.classList.remove('min-w-full');
 
-            divNavbar.classList.add('w-[75%]');
+            divNavbar.classList.add('w-[80%]');
             divNavbar.classList.remove('min-w-full');
 
             // Add the class 'hidden' to 'btnDisplay'
@@ -479,10 +482,10 @@
     if (mediaQuery.matches) {
         side.classList.add('hidden');
 
-        nav.classList.remove('w-[75%]');
+        nav.classList.remove('w-[80%]');
         nav.classList.add('min-w-full');
 
-        divNavbar.classList.remove('w-[75%]');
+        divNavbar.classList.remove('w-[80%]');
         divNavbar.classList.add('min-w-full');
 
         btnDisplay.classList.remove('hidden');

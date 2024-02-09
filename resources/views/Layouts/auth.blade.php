@@ -37,9 +37,9 @@
 
     <body class="bg-gray-200">
         <!-- Header -->
-        <header class="bg-gray-700 flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
-            <img class="rounded-full ml-5 mr-7" src="{{ asset('images/logo.png') }}" width="55" height="55">
-            <h1 class="text-base md:text-lg font-bold text-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1>
+        <header class="bg-[#80B95D] flex justify-between items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[50px] text-xs sm:text-base">
+            <img class="rounded-full ml-5 mr-7" src="{{ asset('images/logo.jpg') }}" width="55" height="55">
+            <h1 class="text-base md:text-lg font-bold text-gray-700 border-gray-700 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1>
             <nav class="mr-5">
                 <ul class="list-style-none">
                     <li><a href="{{ route('auth') }}" class="px-4 py-2 sm:px-6 sm:py-3 bg-gray-100 text-black cursor-pointer rounded-lg transition-all duration-300 ease-in-out hover:bg-blue-100">Accueil</a></li>
@@ -82,7 +82,7 @@
         </section>
 
         <!-- Footer -->
-        <footer class="h-[40px] fixed flex items-center justify-center bottom-0 left-0 text-center bg-gray-700 text-white w-full">
+        <footer class="h-[40px] fixed flex items-center justify-center bottom-0 left-0 text-center bg-[#CF7315] text-white w-full">
             Tout droits reservés ©
         </footer>
 

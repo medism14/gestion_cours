@@ -46,8 +46,16 @@
 
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
-        <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+        <div class="mx-auto w-full max-w-full md:w-[90%] flex space-x-5 justify-end">
+            <div class="flex-1 flex justify-start">
+                <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0">
+                    @csrf
+                    <button id="download" class="border-2 text-orange-600 border-orange-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-orange-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-download"></i></button>
+                </form>
+            </div>
+            <div class="flex-1 flex justify-end">
+                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            </div>
         </div>
         <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.65rem] lg:text-sm">
             <thead>

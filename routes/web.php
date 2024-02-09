@@ -75,6 +75,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('delete');
         Route::post('/suppNotifs', [UserController::class , 'suppNotifs'])->name('suppNotifs');
         Route::get('/getUser/{id}', [UserController::class , 'getUser'])->name('getUser');
+        Route::post('/download', [UserController::class , 'download'])->name('download')->withoutMiddleware('prevent-back-history');
     });
 
     ########################
