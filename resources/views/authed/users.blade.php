@@ -16,6 +16,23 @@
         background-color: rgb(195, 200, 213);
     }
 
+    /* Style de l'infobulle */
+.tooltip {
+    visibility: hidden;
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1;
+}
+
+/* Style de l'infobulle lorsqu'elle est affichée */
+.tooltip.show {
+    visibility: visible;
+}
+
+
     @media screen and (max-width: 768px) {
         th div {
             padding: 3px;
@@ -50,13 +67,13 @@
             <div class="flex-1 flex justify-start space-x-1 md:space-x-3">
                 <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0">
                     @csrf
-                    <button id="download" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Télécharger <i class="fas fa-download"></i></button>
+                    <button id="download" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
                 </form>
 
                 <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data">
                     @csrf
                     <input id="importInput" name="fichier" type="file" class="hidden">
-                    <button id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Uploader <i class="fas fa-upload"></i></button>
+                    <button id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
                 </form>
             </div>
             <div class="flex-1 flex justify-end">
@@ -1117,5 +1134,6 @@ document.addEventListener("DOMContentLoaded", function() {
             div.style.minHeight = height + 'px';
         })
 });
+
     </script>
 @endsection

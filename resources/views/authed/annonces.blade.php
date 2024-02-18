@@ -48,9 +48,11 @@
 
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
-        <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
-        </div>
+        @if (auth()->user()->role != 2)
+            <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
+                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            </div>
+        @endif
         <table id="tableannonce" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
             <thead>
                 <tr>
@@ -68,12 +70,38 @@
                             <div class="flex justify-center items-center">
                                 <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 <button class="id hidden">{{ $annonce->id }}</button>
-                                <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
-                                <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
+                                @if (auth()->user()->role != 2)
+                                    @if (auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id)
+                                        <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    @else 
+                                        <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.deleteRelation', ['id' => $annonce->id]) }}" class="m-0 p-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    @endif
+
+
+                                    @if (auth()->user()->role == 0)
+                                        <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    @endif
+                                @else
+                                <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.deleteRelation', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
                                     <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -126,6 +154,8 @@
     <!-- MODALS -->
     <!-- MODALS -->
 
+
+    @if (auth()->user()->role != 2)
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
@@ -151,7 +181,7 @@
                 <div class="md:flex w-full md:space-x-2 justify-center">
                     <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="addDateExpiration">Date d'expiration: </label>
-                        <input id="addDateExpiration" name="addDateExpiration" type="datetime-local" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                        <input id="addDateExpiration" name="addDateExpiration" type="date" min="<?php echo date('Y-m-d', strtotime('tomorrow')); ?>" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
                 </div>
 
@@ -188,7 +218,7 @@
                 </div>
 
                 <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
+                <div class="md:flex w-full md:space-x-2 justify-center"> <div id="divDisplayListAdd" class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div class="flex-1 w-full p-2 flex justify-center flex-col space-y-3 items-center overflow-hidden">
                             <label for="listFilieres" class="underline">Listes des filières à qui passer l'annonce: </label>
                             <div id="listFilieres" class="w-full flex flex-col items-center space-y-3 border-none">
@@ -202,7 +232,7 @@
                 <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
                             <label for="addContenu">Contenu: </label>
-                            <textarea name="addContenu" id="addContenu" cols="50" rows="20" maxlength="300" class="outline-none rounded focus:ring-2 p-2 border-blue-300"></textarea>
+                            <textarea name="addContenu" id="addContenu" cols="50" rows="20" maxlength="1000" class="outline-none rounded focus:ring-2 p-2 border-blue-300"></textarea>
                         </div>
                     </div>
                 </div>
@@ -215,6 +245,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- VIEW MODALS -->
     <div id="viewModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
@@ -242,15 +273,18 @@
                         <input id="viewAnnonceur" name="viewAnnonceur" readonly type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
 
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
+                    @if (auth()->user()->role != 2)
+                    <div id="divViewDateExpiration" class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="viewDateExpiration">Date Expiration: </label>
                         <input id="viewDateExpiration" name="viewDateExpiration" readonly type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
+                    @endif
                 </div>
 
                 <!-- Row -->
+                @if (auth()->user()->role != 2)
                 <div class="md:flex w-full md:space-x-2 justify-center items-center">
-                    <div  id="viewFiliereParent" class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
+                    <div id="viewFiliereParent" class="hidden flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
                             <label for="viewFiliere">Filières: </label>
                             <select name="viewFiliere" id="viewFiliere" readonly disabled class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
@@ -264,8 +298,8 @@
                         </div>
                     </div>
 
-                    <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
+                    <div class="hidden flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
+                        <div id="viewPersonneParent" class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
                             <label>Personnes: </label>
                             <select readonly disabled class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                                 @if (auth()->user()->role == 0)
@@ -277,8 +311,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Row -->
+                @if (auth()->user()->role != 2)
                 <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div id="listFilieresViewParent" class="flex-1 w-full p-2 flex justify-center flex-col space-y-3 items-center overflow-hidden">
                             <label for="listFilieresView" class="underline">Listes des filières à qui passer l'annonce: </label>
@@ -288,6 +324,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
@@ -301,6 +338,7 @@
         </div>
     </div>
 
+    @if (auth()->user()->role != 2)
     <!-- EDIT MODALS -->
     <div id="editModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
@@ -327,7 +365,7 @@
                 <div class="md:flex w-full md:space-x-2 justify-center">
                     <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="editDateExpiration">Date d'expiration: </label>
-                        <input id="editDateExpiration" name="editDateExpiration" type="datetime-local" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                        <input id="editDateExpiration" name="editDateExpiration" type="date" min="<?php echo date('Y-m-d', strtotime('tomorrow')); ?>" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
                 </div>
 
@@ -364,7 +402,7 @@
                 </div>
 
                 <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
+                <div class="md:flex w-full md:space-x-2 justify-center"> <div id="divDisplayListEdit" class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div class="flex-1 w-full p-2 flex justify-center flex-col space-y-3 items-center overflow-hidden">
                             <label for="listFilieresEdit" class="underline">Listes des filières à qui passer l'annonce: </label>
                             <div id="listFilieresEdit" class="w-full flex flex-col items-center space-y-3 border-none">
@@ -391,7 +429,7 @@
             </div>
         </div>
     </div>
-
+    @endif
 
 @endsection
 
@@ -402,6 +440,7 @@
 
     //MODALS MANIPULATIONS
 
+    @if (auth()->user()->role != 2)
     //////////////////////////
     //ADD MODALS
     //////////////////////////
@@ -420,6 +459,7 @@
     const searchAdd = document.getElementById("searchAdd");
     const filiereAdd = document.getElementById('filiereAdd');
     const listFilieres = document.getElementById('listFilieres');
+    const divDisplayListAdd = document.getElementById('divDisplayListAdd');
 
     const optionsParDefaut = Array.from(document.getElementsByClassName('addFilieres'));
 
@@ -429,8 +469,10 @@
     function VerifOptionSelected () {
         if (addFiliere.options[addFiliere.selectedIndex].textContent == 'Toutes les filières') {
             filiereAdd.classList.add('hidden');
+            divDisplayListAdd.classList.add('hidden');
         } else {
             filiereAdd.classList.remove('hidden');
+            divDisplayListAdd.classList.remove('hidden');
         }
         
     }
@@ -482,7 +524,6 @@
             VerifOptionSelected();
         }
     }
-
     //Changement de filière
     addFiliere.addEventListener('change', () => {
         VerifOptionSelected();
@@ -568,6 +609,7 @@
     openModalAdd.addEventListener('click', () => {
         addModal.classList.remove('hidden');
     });
+    @endif
 
     //////////////////////////
     //VIEW MODALS
@@ -586,12 +628,15 @@
     const viewAnnonceur = document.getElementById('viewAnnonceur');
     const viewDateExpiration = document.getElementById('viewDateExpiration');
 
+    const divViewDateExpiration = document.getElementById('divViewDateExpiration');
     const listFilieresViewParent = document.getElementById('listFilieresViewParent');
+    const viewPersonneParent = document.getElementById('viewPersonneParent');
+
     const listFilieresView = document.getElementById('listFilieresView');
 
     //Fermeture modal en haut à droite
     closeModalView.addEventListener('click', () => {
-        resetValuesAddModal();
+        location.reload();
     });
 
     //Ouverture du modal view
@@ -602,8 +647,6 @@
             let response = await fetch(`/annonces/getAnnonceRelation/${id}`);
 
             let data = await response.json();
-
-            viewTitle.value = data.annonce.title;
 
             let lastname;
             let role;
@@ -620,10 +663,56 @@
                 role = 'Professeur: ';
             }
 
+            const annonce = data.annonce;
+
+            viewTitle.value = data.annonce.title;
+            viewContenu.innerHTML = annonce.content;
             viewAnnonceur.value = role + '' + data.annonce.user.first_name + ' ' + last_name;
+
+            @if (auth()->user()->role == 1)
+                if (annonce.user_id != {{ auth()->user()->id }}) {
+                    divViewDateExpiration.classList.add('hidden');
+                    listFilieresViewParent.classList.add('hidden');
+                    viewPersonneParent.classList.add('hidden');
+                    viewFiliereParent.classList.add('hidden');
+                } else {
+                    viewDateExpiration.value = data.annonce.date_expiration;
+
+                    const filieres = data.filieres;
+
+                    //Pour les Filieres
+                    if (annonce.choix_filieres != 'all') {
+                        listFilieresViewParent.classList.remove('hidden');
+                        viewFiliereParent.classList.add('hidden');
+
+                        for (filiere of filieres) {
+                            let name = filiere.sector.name + ': ' + filiere.name;
+                            listFilieresView.innerHTML += `
+                                <div class="flex">${name}</div>
+                            `;
+                        }
+                        
+                    } else {
+                        listFilieresViewParent.classList.add('hidden');
+                        viewFiliereParent.classList.remove('hidden');
+                    }
+
+                    //Pour les personnes visés
+                    if (annonce.choix_personnes != 'all') {
+                        viewPersonnes.forEach((personne) => {
+                            if (personne.value == annonce.choix_personnes) {
+                                personne.selected = true;
+                            }
+                        });
+                    }
+                }
+            
+
+            @endif
+
+            @if (auth()->user()->role == 0)
             viewDateExpiration.value = data.annonce.date_expiration;
 
-            const annonce = data.annonce;
             const filieres = data.filieres;
 
             //Pour les Filieres
@@ -652,12 +741,13 @@
                 });
             }
 
-            viewContenu.innerHTML = annonce.content;
+            @endif
             
             viewModal.classList.remove('hidden');
         });
     });
 
+    @if (auth()->user()->role != 2)
     //////////////////////////
     //EDIT MODALS
     //////////////////////////
@@ -674,6 +764,8 @@
     const editPersonnes = document.getElementById('editPersonnes');
     const editContenu = document.getElementById('editContenu');
 
+    const divDisplayListEdit = document.getElementById('divDisplayListEdit');
+
     const editId = document.getElementById('editId');
 
     const searchEdit = document.getElementById("searchEdit");
@@ -688,8 +780,10 @@
     function VerifOptionSelectedEdit () {
         if (editFiliere.options[editFiliere.selectedIndex].textContent == 'Toutes les filières') {
             filiereEdit.classList.add('hidden');
+            divDisplayListEdit.classList.add('hidden');
         } else {
             filiereEdit.classList.remove('hidden');
+            divDisplayListEdit.classList.remove('hidden');
         }
         
     }
@@ -877,6 +971,7 @@
     cancelEditButton.addEventListener('click', () => {
         resetValuesAddModal();
     });
+    @endif
 
 </script>
 @endsection

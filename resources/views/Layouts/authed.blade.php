@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     </head>
 
     <style>
@@ -95,11 +96,9 @@
                         <a href="{{ route('forums.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-comments"></i> Forums</a>
                     </div>
 
-                    @if (auth()->user()->role != 2)
-                        <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                            <a href="{{ route('annonces.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-bullhorn"></i> Annonces</a>
-                        </div>
-                    @endif
+                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
+                        <a href="{{ route('annonces.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-bullhorn"></i> Annonces</a>
+                    </div>
 
                     <!-- Footer -->
                     <footer class="fixed w-full md:w-[20%] text-center text-white bottom-0 bg-gray-600 hidden">

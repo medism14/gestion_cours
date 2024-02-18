@@ -52,8 +52,18 @@ class AnnonceController extends Controller
                 $loup = 667;
             }
         //Si c'est un professeur
-        } else {
-            $annonces = Annonce::where('user_id', auth()->user()->id)->paginate(5);
+        } else if (auth()->user()->role == 2) {
+            $annonces = Annonce::whereHas('annonces_relations', function ($query) {
+                $query->where('user_id', auth()->user()->id);
+            })->paginate(5);
+
+            $levels = null;
+
+        }else {
+            $annonces = Annonce::where('user_id', auth()->user()->id)
+            ->orWhereHas('annonces_relations', function ($query) {
+                $query->where('user_id', auth()->user()->id);
+            })->paginate(5);
         
             $levels = Level::whereHas('levels_users', function ($query) {
                 $query->where('user_id', auth()->user()->id);
@@ -175,14 +185,24 @@ class AnnonceController extends Controller
 
                 //Après avoir eu les utilisateurs selectionnés
                 foreach ($users as $user) {
-                    AnnoncesRelation::Create([
-                        'annonce_id' => $annonce->id,
-                        'level_id' => $level->id,
-                        'user_id' => $user->id,
-                    ]);
+                    $annonceExistante = false;
 
-                    $user->annonces++;
-                    $user->save();
+                    foreach ($user->annonces_relations as $relation) {
+                        if ($relation->annonce->id == $annonce->id) {
+                            $annonceExistante = true;
+                        }
+                    }
+
+                    if (!$annonceExistante) {
+                        AnnoncesRelation::Create([
+                            'annonce_id' => $annonce->id,
+                            'level_id' => $level->id,
+                            'user_id' => $user->id,
+                        ]);
+    
+                        $user->annonces++;
+                        $user->save();
+                    }
                 }
             }
         //Certains filières
@@ -217,14 +237,24 @@ class AnnonceController extends Controller
 
                 //Après avoir eu les utilisateurs selectionnés
                 foreach ($users as $user) {
-                    AnnoncesRelation::Create([
-                        'annonce_id' => $annonce->id,
-                        'level_id' => $level->id,
-                        'user_id' => $user->id,
-                    ]);
+                    $annonceExistante = false;
 
-                    $user->annonces++;
-                    $user->save();
+                    foreach ($user->annonces_relations as $relation) {
+                        if ($relation->annonce->id == $annonce->id) {
+                            $annonceExistante = true;
+                        }
+                    }
+
+                    if (!$annonceExistante) {
+                        AnnoncesRelation::Create([
+                            'annonce_id' => $annonce->id,
+                            'level_id' => $level->id,
+                            'user_id' => $user->id,
+                        ]);
+        
+                        $user->annonces++;
+                        $user->save();
+                    }
                 }
             }
 
@@ -324,14 +354,24 @@ class AnnonceController extends Controller
                     }
 
                     foreach ($usersChoixFilieresAll as $user) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-                
-                        $user->annonces++;
-                        $user->save();
+                        $annonceExistante = false;
+
+                        foreach ($user->annonces_relations as $relation) {
+                            if ($relation->annonce->id == $annonce->id) {
+                                $annonceExistante = true;
+                            }
+                        }
+
+                        if (!$annonceExistante) {
+                            AnnoncesRelation::Create([
+                                'annonce_id' => $annonce->id,
+                                'level_id' => $level->id,
+                                'user_id' => $user->id,
+                            ]);
+        
+                            $user->annonces++;
+                            $user->save();
+                        }
                     }
                 }
                 
@@ -380,14 +420,24 @@ class AnnonceController extends Controller
                             break;
                     }
                     foreach ($usersChoixFiliereNotAll as $user) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-                
-                        $user->annonces++;
-                        $user->save();
+                        $annonceExistante = false;
+                    
+                        foreach ($user->annonces_relations as $relation) {
+                            if ($relation->annonce->id == $annonce->id) {
+                                $annonceExistante = true;
+                            }
+                        }
+
+                        if (!$annonceExistante) {
+                            AnnoncesRelation::Create([
+                                'annonce_id' => $annonce->id,
+                                'level_id' => $level->id,
+                                'user_id' => $user->id,
+                            ]);
+            
+                            $user->annonces++;
+                            $user->save();
+                        }
                     }
                 }
             }
@@ -448,14 +498,24 @@ class AnnonceController extends Controller
                     }
 
                     foreach ($userChoixFilieresElse as $user) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-                
-                        $user->annonces++;
-                        $user->save();
+                        $annonceExistante = false;
+                        
+                        foreach ($user->annonces_relations as $relation) {
+                            if ($relation->annonce->id == $annonce->id) {
+                                $annonceExistante = true;
+                            }
+                        }
+
+                        if (!$annonceExistante) {
+                            AnnoncesRelation::Create([
+                                'annonce_id' => $annonce->id,
+                                'level_id' => $level->id,
+                                'user_id' => $user->id,
+                            ]);
+        
+                            $user->annonces++;
+                            $user->save();
+                        }
                     }
                 }
             }
@@ -513,14 +573,24 @@ class AnnonceController extends Controller
 
                 //Ajout des annonces aux utilisateurs
                 foreach ($usersChoixPersonnes as $user) {
-                    AnnoncesRelation::Create([
-                        'annonce_id' => $annonce->id,
-                        'level_id' => $level->id,
-                        'user_id' => $user->id,
-                    ]);
+                    $annonceExistante = false;
                     
-                    $user->annonces++;
-                    $user->save();
+                    foreach ($user->annonces_relations as $relation) {
+                        if ($relation->annonce->id == $annonce->id) {
+                            $annonceExistante = true;
+                        }
+                    }
+
+                    if (!$annonceExistante) {
+                        AnnoncesRelation::Create([
+                            'annonce_id' => $annonce->id,
+                            'level_id' => $level->id,
+                            'user_id' => $user->id,
+                        ]);
+        
+                        $user->annonces++;
+                        $user->save();
+                    }
                 }
             }
         }
@@ -568,7 +638,7 @@ class AnnonceController extends Controller
     public function getAnnonceCreatedTime ($id) {
         $annonce = AnnoncesRelation::find($id);
 
-        $date = $annonce->created_at->toDateTimeString();
+        $date = $annonce->created_at->toDateString();
 
         return response()->json($date, 200);
     }
@@ -606,6 +676,18 @@ class AnnonceController extends Controller
 
         return redirect()->back()->with([
             'success' => 'Les annonces ont bien été supprimés'
+        ]);
+    }
+
+    public function deleteRelation ($id) {
+        $annonce = AnnoncesRelation::where('user_id', auth()->user()->id)->whereHas('annonce', function ($query) use ($id) {
+            $query->where('id', $id);
+        })->first();
+
+        $annonce->delete();
+
+        return redirect()->back()->with([
+            'success' => 'Cette annonce a bien été supprimé pour vous'
         ]);
     }
 }

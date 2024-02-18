@@ -70,13 +70,17 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
     ##Annonces
     ########################
     Route::prefix('/annonces')->name('annonces.')->group(function () {
+        Route::get('/', [AnnonceController::class, 'index'])->name('index');
         Route::get('/getAnnonces', [AnnonceController::class, 'getAnnonces'])->name('getAnnonces');
         Route::get('/getAnnonce/{id}', [AnnonceController::class, 'getAnnonce'])->name('getAnnonce');
         Route::get('/getAnnonceCreatedTime/{id}', [AnnonceController::class, 'getAnnonceCreatedTime'])->name('getAnnonceCreatedTime');
         Route::get('/getAnnonceRelation/{id}', [AnnonceController::class, 'getAnnonceRelation'])->name('getAnnonceRelation');
         Route::get('/resetAnnonces', [AnnonceController::class, 'resetAnnonces'])->name('resetAnnonces');
         Route::delete('/suppAnnonces', [AnnonceController::class, 'suppAnnonces'])->name('suppAnnonces');
+        Route::delete('/deleteRelation/{id}', [AnnonceController::class, 'deleteRelation'])->name('deleteRelation');
     });
+
+
     
 });
 
@@ -147,7 +151,6 @@ Route::middleware(['auth', 'adminEtProf'])->group(function() {
     ##Annonces
     ########################
     Route::prefix('/annonces')->name('annonces.')->group(function () {
-        Route::get('/', [AnnonceController::class, 'index'])->name('index');
         Route::post('/store', [AnnonceController::class, 'store'])->name('store');
         Route::post('/edit', [AnnonceController::class, 'edit'])->name('edit');
         Route::delete('/delete/{id}', [AnnonceController::class, 'delete'])->name('delete');

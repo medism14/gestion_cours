@@ -26,7 +26,7 @@ class UserController extends Controller
 
         //Suppression des annonces au cas où
         $annonces = Annonce::all();
-        $date = now()->toDateTimeString();
+        $date = now()->toDateString();
 
         foreach ($annonces as $annonce) {
             if ($annonce->date_expiration < $date) {

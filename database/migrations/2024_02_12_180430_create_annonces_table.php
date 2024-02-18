@@ -17,7 +17,7 @@ return new class extends Migration
             $table->longText('content');
             $table->string('choix_filieres');
             $table->string('choix_personnes');
-            $table->datetime('date_expiration');
+            $table->date('date_expiration');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
 
