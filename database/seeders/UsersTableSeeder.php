@@ -18,6 +18,7 @@ class UsersTableSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'phone' => '0033788888888',
             'role' => 0,
+            'sexe' => 'H',
             'first_connection' => true,
             'password' => bcrypt('admin'),
         ]);

@@ -18,14 +18,15 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->integer('role');
+            $table->string('sexe')->nullable();
             $table->boolean('first_connection');
             $table->bigInteger('notifs')->nullable();
+            $table->datetime('notif_viewed')->nullable();
+            $table->bigInteger('annonces')->nullable();
+            $table->datetime('annonce_viewed')->nullable();
             $table->string('password');
-            $table->unsignedBigInteger('level_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
-        
-            $table->foreign('level_id')->references('id')->on('levels')->onDelete('cascade');
     });
     }
     

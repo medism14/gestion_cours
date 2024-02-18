@@ -12,6 +12,7 @@ use App\Models\Level;
 use App\Models\LevelsUser;
 use App\Models\Module;
 use App\Models\Notif;
+use App\Models\AnnoncesRelation;
 
 class User extends Authenticatable
 {
@@ -23,10 +24,13 @@ class User extends Authenticatable
         'email',
         'phone',
         'role',
+        'sexe',
         'first_connection',
         'notifs',
+        'notif_viewed',
+        'annonces',
+        'annonce_viewed',
         'password',
-        'level_id'
     ];
 
     
@@ -55,5 +59,13 @@ class User extends Authenticatable
 
     public function modules () {
         return $this->hasMany(Module::class);
+    }
+
+    public function annonces () {
+        return $this->hasMany(Annonce::class);
+    }
+
+    public function annonces_relations () {
+        return $this->hasMany(AnnoncesRelation::class);
     }
 }

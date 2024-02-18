@@ -10,6 +10,7 @@
         <div class="p-5 mb-3 bg-gray-600 md:w-[70%] pb-10 mx-auto rounded-t-none rounded-lg">
             <form method="POST" action="{{ route('parameters') }}" class="m-0 p-0" onsubmit="return password_check()">
             @csrf
+            @if (auth()->user()->role == 0)
             <!-- Row -->
             <div class="md:flex w-full mb-5">
                 <!-- Column -->
@@ -37,6 +38,7 @@
                     <input id="phone" name="phone" type="number" value="{{ $user->phone }}" class="p-2 outline-none rounded-lg text-md w-full shadow-lg">
                 </div>
             </div>
+            @endif
 
             <!-- Row -->
             <div class="md:flex w-full mb-10">

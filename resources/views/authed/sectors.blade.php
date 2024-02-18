@@ -127,7 +127,7 @@
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('sectors.store') }}" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -175,11 +175,11 @@
     <!-- VIEW MODALS -->
     <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
             <!-- Close -->
             <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
             <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Vue de</div>
+            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Vue de filière</div>
                 
             <!-- Corps -->
             <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
@@ -193,7 +193,10 @@
 
                 <!-- Row -->
                 <div id="levelListView" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
-                    <span class="text-center block">Niveaux:</span>
+                    <div class="w-full flex space-x-6">
+                        <span class="flex-1 flex justify-end">Identifiant</span>
+                        <span class="flex-1 flex justify-start">Niveaux</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,7 +205,7 @@
     <!-- Edit MODALS -->
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('sectors.edit') }}" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -229,7 +232,7 @@
                             <input id="editLevel" name="editLevel" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                         </div>
                         <div>
-                            <button type="button" id="editLevelBtn" class="p-2 bg-slate-500 text-white rounded-lg transition-all duration-300 ease-in-out ">Ajouter</button>
+                            <button type="button" id="editLevelBtn" class="px-2 py-1 bg-slate-500 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-slate-600">Ajouter</button>
                         </div>
                         
                     </div>
@@ -274,24 +277,9 @@
     const addLevelBtn = document.getElementById('addLevelBtn');
     const levelList = document.getElementById('levelList');
 
-    var j = 1;
-
+    var jAdd = 1;
 
     function resetValuesAddModal() {
-        addModal.classList.add('hidden');
-
-        addName.value = '';
-        addLevel.value = '';
-
-        const removeElement = Array.from(document.getElementsByClassName('removeElement'));
-        
-        removeElement.forEach((element, index) => {
-            let row = element.parentNode.parentNode.parentNode;
-
-            row.remove();
-        })
-
-        j = 1;
 
         window.location.reload();
 
@@ -338,20 +326,21 @@
 
         i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
 
-        input_nombreI.value = j;
-        input_nombreI.setAttribute('name', 'addDegree' + j);
+
+        input_nombreI.value = jAdd;
+        input_nombreI.setAttribute('name', 'addDegree' + jAdd);
         input_nombreI.classList.add('hidden', 'inputDegreeLevel');
 
         input.value = level;
         input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
-        input.setAttribute('name', 'addName' + j)
+        input.setAttribute('name', 'addName' + jAdd)
         input.setAttribute('readonly', true);
 
         span.appendChild(i);
 
         div1.appendChild(input);
         div2.appendChild(span);
-        div3.textContent = j;
+        div3.textContent = jAdd;
 
         divGenerale.appendChild(input_nombreI);
         divGenerale.appendChild(div3);
@@ -360,9 +349,9 @@
 
         levelList.appendChild(divGenerale);
 
-        addMaxDegree.value = j;
+        addMaxDegree.value = jAdd;
 
-        j++;
+        jAdd++;
     });
     
     levelList.addEventListener('click', (event) => {
@@ -378,33 +367,34 @@
     });
 
     function ordinateDegreeAndName () {
+
         const inputNameLevels = Array.from(document.getElementsByClassName('inputNameLevel'));
         const inputDegreeLevels = Array.from(document.getElementsByClassName('inputDegreeLevel'));
         const divDegreeLevels = Array.from(document.getElementsByClassName('divDegreeLevel'));
 
-        let j = 1;
-
         addMaxDegree.value = inputNameLevels.length;
 
         inputNameLevels.forEach((inputNameLevel) => {
-            inputNameLevel.setAttribute('name', 'addName' + j);
-            j++;
+            inputNameLevel.setAttribute('name', 'inputNameLevel' + jAdd);
+            inputNameLevel.value = inputNameLevel.value;
+            jAdd++;
         });
 
-        j = 1;
+        jAdd = 1;
 
         inputDegreeLevels.forEach((inputDegreeLevel) => {
-            inputDegreeLevel.setAttribute('name', 'addDegree' + j);
-            inputDegreeLevel.value = j;
-            j++;
+            inputDegreeLevel.setAttribute('name', 'addDegree' + jAdd);
+            inputDegreeLevel.value = jAdd;
+            jAdd++;
         });
         
-        j = 1;
+        jAdd = 1;
 
         divDegreeLevels.forEach((divDegreeLevel) => {
-            divDegreeLevel.textContent = j;
-            j++;
+            divDegreeLevel.textContent = jAdd;
+            jAdd++;
         });
+
 
     }
 
@@ -469,20 +459,12 @@
                 
                 levels.forEach((level) => {
 
-                    let div = document.createElement('div');
-                    div.classList.add('w-full', 'flex', 'block', 'space-x-6', 'removeElementView');
-
-                    let spanDegree = document.createElement('span');
-                    spanDegree.classList.add('flex-1', 'flex', 'justify-end');
-                    spanDegree.textContent = level.degree;
-                    let spanName = document.createElement('span');
-                    spanName.classList.add('flex-1', 'flex', 'justify-start', 'text-center');
-                    spanName.textContent = level.name;
-
-                    div.appendChild(spanDegree);
-                    div.appendChild(spanName);
-
-                    levelListView.appendChild(div);
+                    levelListView.innerHTML += `
+                        <div class="w-full flex space-x-6">
+                            <span class="flex-1 flex justify-end">${level.id}</span>
+                            <span class="flex-1 flex justify-start">${level.name}</span>
+                        </div>
+                    `;
 
                 })
 
@@ -514,7 +496,7 @@
     const levelListEdit = document.getElementById('levelListEdit');
     const editMaxDegree = document.getElementById('editMaxDegree');
 
-    var j = 1;
+    var jEdit = 1;
 
 
     function resetValuesEditModal() {
@@ -534,7 +516,7 @@
 
         window.location.reload();
 
-        j = 1;
+        jEdit = 1;
 
     }
 
@@ -594,20 +576,20 @@
 
                     i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
 
-                    input_nombreI.value = j;
-                    input_nombreI.setAttribute('name', 'editDegree' + j);
+                    input_nombreI.value = jEdit;
+                    input_nombreI.setAttribute('name', 'editDegree' + jEdit);
                     input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
 
                     input.value = level;
                     input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
-                    input.setAttribute('name', 'editName' + j)
+                    input.setAttribute('name', 'editName' + jEdit)
                     input.setAttribute('readonly', true);
 
                     span.appendChild(i);
 
                     div1.appendChild(input);
                     div2.appendChild(span);
-                    div3.textContent = j;
+                    div3.textContent = jEdit;
 
                     divGenerale.appendChild(input_nombreI);
                     divGenerale.appendChild(div3);
@@ -616,7 +598,7 @@
 
                     levelListEdit.appendChild(divGenerale);
 
-                    editMaxDegree.value = j;
+                    editMaxDegree.value = jEdit;
 
                     j++;
 
@@ -657,20 +639,20 @@
 
         i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
 
-        input_nombreI.value = j;
-        input_nombreI.setAttribute('name', 'editDegree' + j);
+        input_nombreI.value = jEdit;
+        input_nombreI.setAttribute('name', 'editDegree' + jEdit);
         input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
 
         input.value = level;
         input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
-        input.setAttribute('name', 'editName' + j)
+        input.setAttribute('name', 'editName' + jEdit)
         input.setAttribute('readonly', true);
 
         span.appendChild(i);
 
         div1.appendChild(input);
         div2.appendChild(span);
-        div3.textContent = j;
+        div3.textContent = jEdit;
 
         divGenerale.appendChild(input_nombreI);
         divGenerale.appendChild(div3);
@@ -679,11 +661,11 @@
 
         levelListEdit.appendChild(divGenerale);
 
-        editMaxDegree.value = j;
+        editMaxDegree.value = jEdit;
 
         ordinateDegreeAndNameEdit();
 
-        j++;
+        jEdit++;
     });
     
 
@@ -701,30 +683,30 @@
     function ordinateDegreeAndNameEdit () {
         const inputNameLevels = Array.from(document.getElementsByClassName('inputNameLevelEdit'));
         const inputDegreeLevels = Array.from(document.getElementsByClassName('inputDegreeLevelEdit'));
-        const divDegreeLevels = Array.from(document.getElementsByClassName('divDegreeLevelEdit'));
+        const divDegreeLevelsEdit = Array.from(document.getElementsByClassName('divDegreeLevelEdit'));
 
-        let j = 1;
+        let jEdit = 1;
 
         editMaxDegree.value = inputNameLevels.length;
 
         inputNameLevels.forEach((inputNameLevel) => {
-            inputNameLevel.setAttribute('name', 'editName' + j);
-            j++;
+            inputNameLevel.setAttribute('name', 'editName' + jEdit);
+            jEdit++;
         });
 
-        j = 1;
+        jEdit = 1;
 
         inputDegreeLevels.forEach((inputDegreeLevel) => {
-            inputDegreeLevel.setAttribute('name', 'editDegree' + j);
-            inputDegreeLevel.value = j;
-            j++;
+            inputDegreeLevel.setAttribute('name', 'editDegree' + jEdit);
+            inputDegreeLevel.value = jEdit;
+            jEdit++;
         });
         
-        j = 1;
+        jEdit = 1;
 
-        divDegreeLevels.forEach((divDegreeLevel) => {
-            divDegreeLevel.textContent = j;
-            j++;
+        divDegreeLevelsEdit.forEach((divDegreeLevel) => {
+            divDegreeLevel.textContent = jEdit;
+            jEdit++;
         });
 
     }
@@ -734,38 +716,6 @@
     //Afficher les niveaux
     //////////////////////////
 
-    function media_change () {
-        // Inférieur à 768px
-        if (mediaQuery.matches) {
-            //ID
 
-            subAddModal.classList.add('h-screen');
-            subAddModal.classList.add('overflow-y-scroll');
-
-            subViewModal.classList.add('h-screen');
-            subViewModal.classList.add('overflow-y-scroll');
-
-            subEditModal.classList.add('h-screen');
-            subEditModal.classList.add('overflow-y-scroll');
-
-        // Supérieur à 768px
-        } else {
-            //ID
-            subAddModal.classList.remove('h-screen');
-            subAddModal.classList.remove('overflow-y-scroll');
-
-            subViewModal.classList.remove('h-screen');
-            subViewModal.classList.remove('overflow-y-scroll');
-
-            subEditModal.classList.remove('h-screen');
-            subEditModal.classList.remove('overflow-y-scroll');
-        }
-    }
-
-    mediaQuery.addEventListener('change', (event) => {
-        media_change();
-    });
-
-    media_change();
 </script>
 @endsection

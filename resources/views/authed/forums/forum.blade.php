@@ -62,7 +62,16 @@
                     <!-- Si le message vient de moi -->
                     @if ($forum ->user->id == auth()->user()->id)
                         <div class="flex flex-col justify-center p-2 items-end">
-                            <span class="text-red-600">{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+                            <span class="text-red-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+
+                            @if (auth()->user()->role == 0) 
+                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                </form>
+                            @endif
+                            </span>
                             <p title="Aujourd'hui 15:12" class="w-full text-right break-words">
                                 {{ $forum->message }}
                             </p>
@@ -70,7 +79,16 @@
                      <!-- Si le message vient d'une autre personne -->
                     @else
                         <div class="flex flex-col justify-start p-2">
-                            <span class="text-red-600">{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+                            <span class="text-red-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+
+                            @if (auth()->user()->role == 0) 
+                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                </form>
+                            @endif
+                            </span>
                             <p title="Aujourd'hui 15:12">{{ $forum->message }}</p>
                         </div>
                     @endif
@@ -79,7 +97,16 @@
                     <!-- Si le message vient de moi -->
                     @if ($forum ->user->id == auth()->user()->id)
                         <div class="flex flex-col justify-center p-2 items-end">
-                            <span class="text-blue-600">{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+                            <span class="text-blue-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+
+                            @if (auth()->user()->role == 0) 
+                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                </form>
+                            @endif
+                            </span>
                             <p title="Aujourd'hui 15:12" class="w-full text-right break-words">
                             {{ $forum->message }}
                             </p>
@@ -87,7 +114,16 @@
                      <!-- Si le message vient d'une autre personne -->
                     @else
                         <div class="flex flex-col justify-start p-2 text-left">
-                            <span class="text-blue-600">{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
+                            <span class="text-blue-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }} </span>
+
+                            @if (auth()->user()->role == 0) 
+                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                </form>
+                            @endif
+                            </span>
                             <p title="Aujourd'hui 15:12">{{ $forum->message }}</p>
                         </div>
                     @endif  
@@ -95,18 +131,20 @@
             @endforeach
             <!--  -->
         </div>
-        <!-- Message d'envoie -->
-        <div class="flex justify-center flex-col">
-            <form method="POST" action="{{ route('forums.addMsgForum', ['level_id' => request('level_id')]) }}" class="p-0 m-0">
-            @csrf
-            <div class="flex justify-center">
-                <textarea id="ecritureMessage" name="ecritureMessage" cols="50" rows="5" class="rounded-lg outline-none p-2" maxlength="150"></textarea>
+        @if (auth()->user()->role != 0)
+            <!-- Message d'envoie -->
+            <div class="flex justify-center flex-col">
+                <form method="POST" action="{{ route('forums.addMsgForum', ['level_id' => request('level_id')]) }}" class="p-0 m-0">
+                @csrf
+                <div class="flex justify-center">
+                    <textarea id="ecritureMessage" name="ecritureMessage" cols="50" rows="5" class="rounded-lg outline-none p-2" maxlength="150"></textarea>
+                </div>
+                <div class="flex justify-center">
+                        <button class="px-3 py-1 bg-blue-400 text-white rounded-lg m-2 shadow-md transition-all duration-300 hover:bg-blue-500">Envoyer</button>
+                    </form>
+                </div>
             </div>
-            <div class="flex justify-center">
-                    <button class="px-3 py-1 bg-blue-400 text-white rounded-lg m-2 shadow-md transition-all duration-300 hover:bg-blue-500">Envoyer</button>
-                </form>
-            </div>
-        </div>
+        @endif
     </div>
 
 @endsection
@@ -123,16 +161,21 @@
     //
     
     //Check pour les medias
+    @if (auth()->user()->role != 0)
         const ecritureMessage = document.getElementById('ecritureMessage');
+    @endif
         if (mediaQuery.matches) {
-            ecritureMessage.setAttribute('cols', '30');
-            ecritureMessage.setAttribute('rows', '3');
-
+            @if (auth()->user()->role != 0)
+                ecritureMessage.setAttribute('cols', '30');
+                ecritureMessage.setAttribute('rows', '3');
+            @endif
             var tailleEcran = window.innerWidth - 10;
             messagerie.style.width = tailleEcran + 'px';
         } else {
-            ecritureMessage.setAttribute('cols', '50');
-            ecritureMessage.setAttribute('rows', '4');
+            @if (auth()->user()->role != 0)
+                ecritureMessage.setAttribute('cols', '50');
+                ecritureMessage.setAttribute('rows', '4');
+            @endif
 
             messagerie.style.width = '100%';
         }

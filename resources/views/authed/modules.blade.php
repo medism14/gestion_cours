@@ -137,7 +137,7 @@
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('modules.store') }}" class="m-0 p-0" onsubmit="return validProf()">    
             @csrf
             <!-- Close -->
@@ -192,7 +192,7 @@
     <!-- VIEW MODALS -->
     <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('modules.store') }}" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -232,7 +232,7 @@
     <!-- Edit MODALS -->
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('modules.edit') }}" class="m-0 p-0" onsubmit="return validProfEdit()">    
             @csrf
             <!-- Close -->
@@ -721,15 +721,6 @@
                 changeTaille.setAttribute('colspan', 2);
             }
 
-            subAddModal.classList.add('h-screen');
-            subAddModal.classList.add('overflow-y-scroll');
-
-            subViewModal.classList.add('h-screen');
-            subViewModal.classList.add('overflow-y-scroll');
-
-            subEditModal.classList.add('h-screen');
-            subEditModal.classList.add('overflow-y-scroll');
-
         // Supérieur à 768px
         } else {
             //ID
@@ -757,16 +748,6 @@
             c_filiere.forEach((element) => {
                 element.classList.remove('hidden');
             });
-
-
-            subAddModal.classList.remove('h-screen');
-            subAddModal.classList.remove('overflow-y-scroll');
-
-            subViewModal.classList.remove('h-screen');
-            subViewModal.classList.remove('overflow-y-scroll');
-
-            subEditModal.classList.remove('h-screen');
-            subEditModal.classList.remove('overflow-y-scroll');
 
             if (changeTaille) {
                 changeTaille.setAttribute('colspan', 4  );

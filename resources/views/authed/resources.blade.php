@@ -87,9 +87,9 @@
                                     @csrf
                                     <button type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
                                 </form>
-                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 <button class="id hidden">{{ $resource->id }}</button>
                                 @if (auth()->user()->role != 2)  
+                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                     <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                     <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('resources.delete', ['id' => $resource->id]) }}" class="m-0 p-0">
                                         @csrf
@@ -153,7 +153,7 @@
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
         <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('resources.store') }}" enctype="multipart/form-data" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -219,7 +219,7 @@
     <!-- VIEW MODALS -->
     <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
         <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
             <!-- Close -->
             <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
             <!-- Titre -->
@@ -277,7 +277,7 @@
     <!-- EDIT MODALS -->
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
         <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
         <form method="POST" action="{{ route('resources.edit') }}" enctype="multipart/form-data" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -401,7 +401,6 @@
                     option.selected = false;
                 }
             });
-
         }
 
         function resetValuesAddModal() {
@@ -690,7 +689,7 @@
             });
 
             if (changeTaille) {
-                changeTaille.setAttribute('colspan', 4);
+                changeTaille.setAttribute('colspan', 5);
             }
         }
     }

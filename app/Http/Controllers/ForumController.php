@@ -100,4 +100,14 @@ class ForumController extends Controller
 
         return redirect()->back();
     }
+
+    public function suppForum (Request $request, $id) {
+        $forum = Forum::find($id);
+        
+        $forum->delete();
+
+        return redirect()->back()->with([
+            'success' => 'Le message selectionné a bien été supprimé'
+        ]);
+    }
 }

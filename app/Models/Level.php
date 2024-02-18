@@ -9,6 +9,7 @@ use App\Models\Forum;
 use App\Models\Resource;
 use App\Models\Sector;
 use App\Models\LevelsUser;
+use App\Models\AnnoncesRelation;
 
 class Level extends Model
 {
@@ -28,12 +29,16 @@ class Level extends Model
         return $this->hasMany(LevelsUser::class);
     }
 
-    public function forums () {
-        return $this->hasMany(Forum::class);
+    public function forum () {
+        return $this->hasOne(Forum::class);
     }
 
     public function sector () {
         return $this->belongsTo(Sector::class);
+    }
+
+    public function annonces_relations () {
+        return $this->hasMany(AnnoncesRelation::class);
     }
 
 }

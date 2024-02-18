@@ -212,8 +212,8 @@ class ResourceController extends Controller
                 $user->save();
 
                 Notif::Create([
+                    'resource_id' => $resource->id,
                     'user_id' => $user->id,
-                    'resource_id' => $resource->id
                 ]);
             }
         }
@@ -326,6 +326,7 @@ class ResourceController extends Controller
             $file = $resource->file;
 
             $filePath = storage_path("app/public/{$file->path}");
+            
 
             unlink($filePath);
 
@@ -368,7 +369,20 @@ class ResourceController extends Controller
     public function delete (Request $request, $id) {
         $resource = Resource::find($id);
 
-        if ($resource) {
+        if ($resource) {   
+
+            $level = $resource->module->level;
+
+            $users = User::whereHas('levels_users.level', function ($query) use ($level) {
+                $query->where('id', $level->id);    
+            })->where('role', 2)->get(); 
+
+            foreach ($users as $user) {
+                if ($user->notif_viewed < $resource->created_at) {
+                    $user->notifs = $user->notifs - 1;
+                    $user->save();
+                }
+            }
             
             $filePath = storage_path("app/public/{$resource->file->path}");
 

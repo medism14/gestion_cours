@@ -59,7 +59,7 @@ class SectorController extends Controller
                 'error' => 'Veuillez bien remplir les champs'
             ]);
         }
-
+            
         //Secteur
         $sector = Sector::Create([
             'name' => $sectorName
@@ -135,13 +135,22 @@ class SectorController extends Controller
         $sector->save();
 
         foreach ($sector->levels as $l) {
-            $l->delete();
+            $i = 0;
+            foreach ($names as $key => $value) {
+                if ($l->name == $value) {
+                    unset($names[$key]);
+                    unset($degrees[$key]);
+
+                    $names = array_values($names);
+                    $degrees = array_values($degrees);
+                }
+            }
         }
 
-        for ($i = 1; $i <= $maxDegree; $i++) {
+        foreach ($names as $key => $name) {
             Level::create([
-                'name' => $names[$i],
-                'degree' => $degrees[$i],
+                'name' => $names[$key],
+                'degree' => $degrees[$key],
                 'sector_id' => $sector->id,
             ]);
         }

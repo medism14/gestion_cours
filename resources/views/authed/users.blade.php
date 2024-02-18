@@ -47,10 +47,16 @@
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex space-x-5 justify-end">
-            <div class="flex-1 flex justify-start">
+            <div class="flex-1 flex justify-start space-x-1 md:space-x-3">
                 <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0">
                     @csrf
-                    <button id="download" class="border-2 text-orange-600 border-orange-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-orange-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-download"></i></button>
+                    <button id="download" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Télécharger <i class="fas fa-download"></i></button>
+                </form>
+
+                <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data">
+                    @csrf
+                    <input id="importInput" name="fichier" type="file" class="hidden">
+                    <button id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Uploader <i class="fas fa-upload"></i></button>
                 </form>
             </div>
             <div class="flex-1 flex justify-end">
@@ -154,7 +160,7 @@
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
         <form method="POST" action="{{ route('users.store') }}" class="m-0 p-0">    
             @csrf
             <!-- Close -->
@@ -185,6 +191,17 @@
                     <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="addPhone">Phone: </label>
                         <input id="addPhone" name="addPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Row -->
+                <div class="md:flex w-full md:space-x-2 justify-center">
+                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
+                        <label for="addSexe">Sexe: </label>
+                        <select name="addSexe" id="addSexe" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                            <option value="H">Homme</option>
+                            <option value="F">Femme</option>
+                        </select>
                     </div>
                 </div>
 
@@ -233,7 +250,7 @@
     <!-- VIEW MODALS -->
     <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
             <!-- Close -->
             <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
             <!-- Titre -->
@@ -264,6 +281,17 @@
                         <input id="viewPhone" readonly name="viewPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
                     </div>
                 </div>
+
+                <!-- Row -->
+                <div class="md:flex w-full md:space-x-2 justify-center">
+                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
+                        <label for="viewSexe">Sexe: </label>
+                        <select name="viewSexe" id="viewSexe" disabled class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                            <option value="H">Homme</option>
+                            <option value="F">Femme</option>
+                        </select>
+                    </div>
+                </div>
                     
                 <!-- Row -->
                 <div class="md:flex w-full md:space-x-2">
@@ -290,7 +318,7 @@
     <!-- EDIT MODALS -->
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg md:mt-[2rem] pb-[1rem] md:pb-0">
+        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
         <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0" onsubmit="confirmMDP()">    
             @csrf
             <!-- Close -->
@@ -322,6 +350,17 @@
                     <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <label for="editPhone">Phone: </label>
                         <input id="editPhone" name="editPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Row -->
+                <div class="md:flex w-full md:space-x-2 justify-center">
+                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
+                        <label for="editSexe">Sexe: </label>
+                        <select name="editSexe" id="editSexe" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                            <option value="H">Homme</option>
+                            <option value="F">Femme</option>
+                        </select>
                     </div>
                 </div>
                     
@@ -394,6 +433,32 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
+        //Manipulation boutons pour télécharger
+        const importInput = document.getElementById('importInput');
+        const formImport = document.getElementById('formImport');
+        const importBtn = document.getElementById('import');
+
+        importBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            importInput.click();
+        });
+
+        importInput.addEventListener('change', (event) => {
+            let item = event.target;
+            if (item.files && item.files.length > 0) {
+                submitImport();
+            }
+        });
+
+        function submitImport () {
+            let result = confirm ("Voulez vous vraiment ajouter des utilisateurs avec un fichier excel ?");
+
+            if (result) {
+                formImport.submit();
+            }
+        }
+
+
         //////////////////////////
         //ADD MODALS
         //////////////////////////
@@ -410,6 +475,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const addEmail = document.getElementById('addEmail');
         const addPhone = document.getElementById('addPhone');
         const addRole = document.getElementById('addRole');
+        const addSexe = document.getElementById('addSexe');
         const addFiliere = document.getElementById('addFiliere');
         const rowFiliereAdd = Array.from(document.getElementsByClassName('rowFiliereAdd'));
 
@@ -504,18 +570,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     input.setAttribute('name', 'levelIdAdd' + level_id)
                     input.value = level_id;
 
+                    let span1 = document.createElement('span');
+                    span1.classList.add('w-1/3');
+
                     let span = document.createElement('span');
-                    span.textContent = value;
-                    span.classList.add('text-end', 'w-2/3', 'mr-3', 'valueSpan');
+                    span.innerHTML = value + '<i class="fas fa-times removedElementAdd cursor-pointer text-red-600 ml-3 text-lg"></i>';
+                    span.classList.add('text-center', 'w-2/3', 'mr-3', 'valueSpan');
 
                     let span2 = document.createElement('span');
-                    span2.innerHTML = '<i class="fas fa-times removedElementAdd cursor-pointer"></i>';
-                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center', 'w-1/3');
+                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'text-start', 'w-1/3');
 
                     let span3 = document.createElement('span');
                     span3.classList.add('flex-1')
                     
                     div.appendChild(input);
+                    div.appendChild(span1);
                     div.appendChild(span);
                     div.appendChild(span2);
 
@@ -583,6 +652,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const viewLastName = document.getElementById('viewLastName');
         const viewEmail = document.getElementById('viewEmail');
         const viewPhone = document.getElementById('viewPhone');
+        const viewSexe = document.getElementById('viewSexe');
         const viewRole = document.getElementById('viewRole');
         const viewFiliere = document.getElementById('viewRole');
 
@@ -623,11 +693,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     let phone = data.phone;
                     let role = data.role;
 
+                    let sexes = viewSexe.querySelectorAll('option');
+                    sexes.forEach((sexe) => {
+                        if (sexe.value == data.sexe) {
+                            sexe.selected = true;
+                        }
+                    });
+
                      viewFirstName.value = first_name;
                      viewLastName.value = last_name;
                      viewEmail.value = email;
                      viewPhone.value = phone;
                      viewRole.value = role;
+                
+                    
 
                     let levels = data.levels_users;
 
@@ -673,6 +752,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const editEmail = document.getElementById('editEmail');
         const editPhone = document.getElementById('editPhone');
         const editRole = document.getElementById('editRole');
+        const editSexe = document.getElementById('editSexe');
         const editFiliere = document.getElementById('editFiliere');
 
         const editsectorLists = document.getElementById('editsectorLists');
@@ -778,6 +858,14 @@ document.addEventListener("DOMContentLoaded", function() {
                     let email = data.email;
                     let phone = data.phone;
                     let role = data.role;
+
+                    let sexes = editSexe.querySelectorAll('option');
+                    sexes.forEach((sexe) => {
+                        if (sexe.value == data.sexe) {
+                            sexe.selected = true;
+                        }
+                    });
+
 
                     if (role == 0) {
                         editRole.parentNode.remove();

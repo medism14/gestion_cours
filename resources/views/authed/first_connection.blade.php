@@ -34,20 +34,20 @@
     </div>
 
     <section class="flex flex-col space-y-0 mt-16">
-        <h1 class="text-3xl font-bold text-center bg-gray-200 text-black p-4 mx-auto rounded-t-lg w-[80%] md:w-[60%]">Changez votre mot de passe</h1>
-        <section class="bg-green-600 rounded-lg border-2 border-green-600 w-[80%] md:w-[60%] mx-auto mt-20 rounded-t-none p-10 my-auto text-white">
+        <h1 class="text-3xl font-bold text-center bg-gray-200 text-black p-4 mx-auto rounded-t-lg w-[80%] md:w-[60%]">Changez votre mot de passe par defaut</h1>
+        <section class="bg-gray-600 rounded-lg border-2 border-gray-600 w-[80%] md:w-[60%] mx-auto mt-20 rounded-t-none p-10 my-auto text-white">
             <form action="{{ route('first_connection') }}" method="POST" class="m-0 p-0" onsubmit="return confirmMDP()">
             @csrf
             <input type="text" readonly class="hidden" value="{{ auth()->user()->id }}" name="id">
                 <div class="md:flex text-white">
                     <div class="md:flex-1 flex flex-col space-y-2 items-center mb-5 md:mb-0">
                         <label for="password">Mot de passe: </label>
-                        <input name="password" id="password" type="password" class="p-1 outline-none shadow-md rounded text-gray-900 focus:ring-2 focus:ring-green-300 w-[80%]">
+                        <input name="password" id="password" type="password" class="p-1 outline-none shadow-md rounded text-gray-900 focus:ring-2 focus:ring-gray-300 w-[80%]">
                     </div>
 
                     <div class="md:flex-1 flex flex-col space-y-2 items-center">
                         <label for="confirmation_password">Confirmation: </label>
-                        <input name="confirmation_password" id="confirmation_password" type="password" class="p-1 outline-none shadow-md rounded text-gray-900 focus:ring-2 focus:ring-green-300 w-[80%]">
+                        <input name="confirmation_password" id="confirmation_password" type="password" class="p-1 outline-none shadow-md rounded text-gray-900 focus:ring-2 focus:ring-gray-300 w-[80%]">
                     </div>
                 </div>
 
