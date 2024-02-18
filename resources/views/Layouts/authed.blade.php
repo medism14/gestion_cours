@@ -9,7 +9,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="icon" href="{{ asset('images/roundedLogo.jpg') }}">
+        <link rel="icon" href="{{ asset('images/academiaArabe.png') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
@@ -116,7 +116,7 @@
                     </div>
                     <div id="divNavbar" class="flex-1 flex items-center">
                         <span class="flex w-full justify-start ml-5">
-                            <img src="{{ asset('images/roundedLogo.jpg') }}" alt="Logo" width="50" height="50">
+                            <img src="{{ asset('images/academiaArabe.png') }}" alt="Logo" width="50" height="50">
                         </span>
                         <div class="ml-12 md:ml-24 flex-1 text-center text-base md:text-xl font-bold">
                         </div> 

@@ -35,14 +35,31 @@
 
     <!-- Barre de recherche -->
     <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <div class="w-full flex justify-center items-center">
         <form action="{{ route('annonces.index') }}" class="p-0 m-0">
             @csrf
-            <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-        </div>
-        <div class="w-full flex justify-center mt-3">
-            <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-        </div>
+            <div class="w-full flex justify-center space-x-1 items-center">
+                <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
+                <i id="tooltipIcon" class="fas fa-question-circle p-1">
+                </i>
+                @if (auth()->user()->role == 2)
+                    <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
+                        Recherche par:
+                        <p class="text-center mt-3">Prénom de l'utilisateur qui a posté, Titre de l'annonce</p>
+                        
+                        <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+                    </div>
+                @else 
+                    <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
+                        Recherche par:
+                        <p class="text-center mt-3">Prénom de l'utilisateur qui a posté, Nom de la filière, Titre de l'annonce</p>
+                        
+                        <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+                    </div>
+                @endif
+            </div>
+            <div class="w-full flex justify-center mt-3">
+                <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
+            </div>
         </form> 
     </div>
 
@@ -78,7 +95,7 @@
                                             @method('DELETE')
                                             <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
-                                    @else 
+                                    @elseif (auth()->user()->role == 1 && $annonce->user_id != auth()->user()->id)
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.deleteRelation', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
                                             @method('DELETE')
@@ -436,7 +453,41 @@
 @section('scripts')
 <script>
 
+            //Tooltip manipulation
+            const tooltipIcon = document.getElementById('tooltipIcon');
+            const tooltipInfo = document.getElementById('tooltipInfo');
+            const searchBar = document.getElementById('search');
 
+            function positionnementTooltip () {
+                let xPosition = tooltipIcon.getBoundingClientRect().x;
+                let yPosition = tooltipIcon.getBoundingClientRect().y + tooltipIcon.getBoundingClientRect().height;
+
+                if (mediaQuery.matches) {
+                    xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
+                }
+                
+                tooltipInfo.classList.add(`left-[${xPosition}px]`);
+                tooltipInfo.classList.add(`top-[${yPosition}px]`);
+            }
+
+            positionnementTooltip();
+
+            tooltipIcon.addEventListener('mouseenter', function () {
+                tooltipInfo.classList.remove('hidden');
+            }); 
+
+            tooltipIcon.addEventListener('mouseleave', function () {
+                tooltipInfo.classList.add('hidden');
+            });
+
+            if (mediaQuery.matches) {
+                tooltipIcon.addEventListener('click', function () {
+                    tooltipInfo.classList.toggle('hidden');
+                }); 
+            }
+            
+
+        //
 
     //MODALS MANIPULATIONS
 

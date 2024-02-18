@@ -15,27 +15,34 @@ class AnnonceController extends Controller
 {
     public function index (Request $request) {
 
+        auth()->user()->annonces = 0;
+        auth()->user()->save();
+
         $loup = null;
+        
+        function min ($string) {
+            return strtolower($string);
+        }
+
+        function maj ($string) {
+            return strtoupper($string);
+        }
+
+        function cap ($string) {
+            return ucfirst($string);
+        }
+
+        if ($request->input('search')) {
+            $search = $request->input('search');
+        }
+        
         //Si c'est un administrateur
         if (auth()->user()->role == 0) {
             $annonces = Annonce::paginate(5);
         
             $levels = Level::all();
 
-            function min ($string) {
-                return strtolower($string);
-            }
-
-            function maj ($string) {
-                return strtoupper($string);
-            }
-
-            function cap ($string) {
-                return ucfirst($string);
-            }
-
             if ($request->input('search')) {
-                $search = $request->input('search');
                 $annonces = Annonce::where(function ($query) use ($search) {
                     $query->whereHas('user', function ($query) use ($search) {
                         $query->where('first_name', 'like', min($search). '%')
@@ -45,20 +52,49 @@ class AnnonceController extends Controller
                         $query->where('name', 'like', min($search). '%')
                               ->orWhere('name', 'like', maj($search). '%')
                               ->orWhere('name', 'like', cap($search). '%');
-                    });
+                    })
+                    ->orWhere('title', 'like', min($search). '%')
+                    ->orWhere('title', 'like', maj($search). '%')
+                    ->orWhere('title', 'like', cap($search). '%');
                 })
                 ->paginate(5);
     
                 $loup = 667;
             }
-        //Si c'est un professeur
+        //Si c'est un étudiant
         } else if (auth()->user()->role == 2) {
             $annonces = Annonce::whereHas('annonces_relations', function ($query) {
                 $query->where('user_id', auth()->user()->id);
             })->paginate(5);
 
-            $levels = null;
+            if ($request->input('search')) {
+                
+                //Verification si l'utilisateur est le bon
+                $annonces = Annonce::whereHas('annonces_relations', function($query) use ($search) {
+                    $query->where('user_id', auth()->user()->id);
+                })
+                //Separation des deux
+                ->where(function($query) use ($search){
+                        //On verifie s'il y'a un titre de ce nom
+                        $query->where(function ($query) use ($search) {
+                            $query->where('title', 'like', min($search). '%')
+                            ->orWhere('title', 'like', maj($search). '%')
+                            ->orWhere('title', 'like', cap($search). '%');
+                        })
+                        //On verifie s'il y'a un annonceur de ce nom
+                        ->orWhereHas('user', function ($query) use ($search){
+                            $query->where('first_name', 'like', min($search). '%')
+                            ->orWhere('first_name', 'like', maj($search). '%')
+                            ->orWhere('first_name', 'like', cap($search). '%');
+                        });
+                })
+                ->paginate(5);
+    
+                $loup = 667;
+            }
 
+            $levels = null;
+        //Si c'est un professeur
         }else {
             $annonces = Annonce::where('user_id', auth()->user()->id)
             ->orWhereHas('annonces_relations', function ($query) {
@@ -70,13 +106,53 @@ class AnnonceController extends Controller
             })->get();
 
             if ($request->input('search')) {
-
-                $annonces = Annonce::whereHas('annonces_relations.level.sector', function($query) use ($search) {
-                    $query->where('name', 'like', min($search). '%')
-                          ->orWhere('name', 'like', maj($search). '%')
-                          ->orWhere('name', 'like', cap($search). '%');
+                //Si c'est pas lui qui a posté la requête
+                $annonces = Annonce::where(function ($query) use ($search) {
+                    $query->whereHas('annonces_relations', function ($query) use ($search) {
+                        $query->where('user_id', auth()->user()->id);
+                    })
+                    //Groupement du where pour separer les deux parties
+                    ->where(function ($query) use ($search) {
+                        //On verifie s'il y'a un titre de ce nom
+                        $query->where(function ($query) use ($search) {
+                            $query->where('title', 'like', min($search). '%')
+                            ->orWhere('title', 'like', maj($search). '%')
+                            ->orWhere('title', 'like', cap($search). '%');
+                        })
+                        //On verifie s'il y'a un annonceur de ce nom
+                        ->orWhereHas('user', function ($query) use ($search){
+                            $query->where('first_name', 'like', min($search). '%')
+                            ->orWhere('first_name', 'like', maj($search). '%')
+                            ->orWhere('first_name', 'like', cap($search). '%');
+                        })
+                        //On verifie s'il y'a un filière de ce nom
+                        ->orWhereHas('annonces_relations.level.sector', function($query) use ($search) {
+                            $query->where('name', 'like', min($search). '%')
+                                  ->orWhere('name', 'like', maj($search). '%')
+                                  ->orWhere('name', 'like', cap($search). '%');
+                        });
+                    });
                 })
-                ->where('user_id', auth()->user()->id)
+                //Si c'est lui qui a posté la requête
+                ->orWhere(function ($query) use ($search) {
+                    //Pour dire que si c'est lui qui a posté
+                    $query->where('user_id', auth()->user()->id)
+                    //Separation des deux parties
+                    ->where(function($query) use ($search){
+                        //Verification pour un titre de ce nom
+                        $query->where(function ($query) use ($search) {
+                            $query->where('title', 'like', min($search). '%')
+                            ->orWhere('title', 'like', maj($search). '%')
+                            ->orWhere('title', 'like', cap($search). '%');
+                        })
+                        //Verification pour un filière de ce nom
+                        ->orWhereHas('annonces_relations.level.sector', function($query) use ($search) {
+                            $query->where('name', 'like', min($search). '%')
+                                  ->orWhere('name', 'like', maj($search). '%')
+                                  ->orWhere('name', 'like', cap($search). '%');
+                        });
+                    });
+                })
                 ->paginate(5);
     
                 $loup = 667;

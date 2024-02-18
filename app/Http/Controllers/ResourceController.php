@@ -17,6 +17,9 @@ class ResourceController extends Controller
 {
     public function index (Request $request) {
 
+        auth()->user()->notifs = 0;
+        auth()->user()->save();
+
         $id = auth()->user()->id;
         function manip($type, $string) {
             if ($type == "maj") {
@@ -86,11 +89,6 @@ class ResourceController extends Controller
                                              ->orWhere('filename', 'like', manip("cap", $search) . '%');
                                         })
                                         ->orWhereHas('module', function($query) use ($search) {
-                                             $query->where('name', 'like', manip("maj", $search) . '%')
-                                             ->orWhere('name', 'like', manip("min", $search) . '%')
-                                             ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                         })
-                                         ->orWhereHas('module.level.sector', function($query) use ($search) {
                                              $query->where('name', 'like', manip("maj", $search) . '%')
                                              ->orWhere('name', 'like', manip("min", $search) . '%')
                                              ->orWhere('name', 'like', manip("cap", $search) . '%');
