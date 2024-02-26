@@ -14,7 +14,8 @@ class Forum extends Model
     protected $fillable = [
         'message',
         'user_id',
-        'level_id'
+        'level_id',
+        'message_viewed_at'
     ];
 
     public function user () {

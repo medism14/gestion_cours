@@ -238,21 +238,21 @@ class AnnonceController extends Controller
                 //Type d'utilisateur selectionné
                 switch ($request->input('addPersonnes')) {
                     case 'all':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
+                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
                             $query->where('level_id', $level->id);
                         })->get();
 
                         break;
                     
                     case 'teachers':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
+                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
                             $query->where('level_id', $level->id);
                         })->where('role', 1)->get();
 
                         break;
                     
                     case 'students':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
+                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
                             $query->where('level_id', $level->id);
                         })->where('role', 2)->get();
 
@@ -260,16 +260,16 @@ class AnnonceController extends Controller
                 }
 
                 //Après avoir eu les utilisateurs selectionnés
-                foreach ($users as $user) {
-                    $annonceExistante = false;
+                foreach ($usersOnAllFiliereStore as $user) {
+                    $annonceExistanteOnAllFiliereStore = false;
 
                     foreach ($user->annonces_relations as $relation) {
                         if ($relation->annonce->id == $annonce->id) {
-                            $annonceExistante = true;
+                            $annonceExistanteOnAllFiliereStore = true;
                         }
                     }
 
-                    if (!$annonceExistante) {
+                    if (!$annonceExistanteOnAllFiliereStore) {
                         AnnoncesRelation::Create([
                             'annonce_id' => $annonce->id,
                             'level_id' => $level->id,

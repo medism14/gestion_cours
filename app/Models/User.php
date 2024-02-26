@@ -30,6 +30,8 @@ class User extends Authenticatable
         'notif_viewed',
         'annonces',
         'annonce_viewed',
+        'messages',
+        'message_viewed_at',
         'password',
     ];
 

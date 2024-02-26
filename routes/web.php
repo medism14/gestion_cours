@@ -9,6 +9,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\AnnonceController;
 
+use App\Events\ForumMessage;
 
 ########################
 ##Authentification
@@ -54,7 +55,10 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
     Route::prefix('/forums')->name('forums.')->group(function () {
         Route::match(['get', 'post'], '/', [ForumController::class, 'index'])->name('index');
         Route::get('/forum/{level_id}', [ForumController::class, 'forum'])->name('forum');
-        Route::post('/addMsgForum/{level_id}', [ForumController::class, 'addMsgForum'])->name('addMsgForum');
+        Route::match(['get', 'post'], '/addMsgForum/{level_id}', [ForumController::class, 'addMsgForum'])->name('addMsgForum');
+        Route::post('/viewMsgForum/{user_id}', [ForumController::class, 'viewMsgForum'])->name('viewMsgForum');
+        Route::delete('/suppAllMsg/{level_id}', [ForumController::class, 'suppAllMsg'])->name('suppAllMsg');
+        Route::get('changerVariablePHP/{forumId}', [ForumController::class, 'changerVariablePHP'])->name('changerVariablePHP');
     });
 
     ########################
@@ -77,7 +81,6 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
         Route::get('/getAnnonceRelation/{id}', [AnnonceController::class, 'getAnnonceRelation'])->name('getAnnonceRelation');
         Route::get('/resetAnnonces', [AnnonceController::class, 'resetAnnonces'])->name('resetAnnonces');
         Route::delete('/suppAnnonces', [AnnonceController::class, 'suppAnnonces'])->name('suppAnnonces');
-        Route::delete('/deleteRelation/{id}', [AnnonceController::class, 'deleteRelation'])->name('deleteRelation');
     });
 
 
@@ -129,10 +132,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     ##Forums
     ########################
     Route::prefix('/forums')->name('forums.')->group(function () {
-        Route::delete('/suppForum/{id}', [ForumController::class, 'suppForum'])->name('suppForum');
+        Route::post('/suppForum/{id}', [ForumController::class, 'suppForum'])->name('suppForum');
     });
-
-
 });
 
 /////////////////////////////////////
@@ -166,7 +167,6 @@ Route::middleware(['auth', 'prof'])->group(function() {
         Route::post('/store', [ResourceController::class, 'store'])->name('store');
         });
 });
-
 
 });
 

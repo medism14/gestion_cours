@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Resource;
 use App\Models\Sector;
 use App\Models\Level;
 use App\Models\Notif;
@@ -41,16 +42,37 @@ class UserController extends Controller
             }
         }
 
+        if (auth()->user()->role == 0) {
+            $nombreFilieres = Sector::count();
+            $nombreProfs = User::where('role', 1)->count();
+            $nombreEtudiants = User::where('role', 2)->count();
 
-        $nombreFilieres = Sector::count();
-        $nombreProfs = User::where('role', 1)->count();
-        $nombreEtudiants = User::where('role', 2)->count();
+            return view('authed.dashboard', [
+                'nombreFilieres' => $nombreFilieres,
+                'nombreProfs' => $nombreProfs,
+                'nombreEtudiants' => $nombreEtudiants,
+            ]);
 
-        return view('authed.dashboard', [
-            'nombreFilieres' => $nombreFilieres,
-            'nombreProfs' => $nombreProfs,
-            'nombreEtudiants' => $nombreEtudiants,
-        ]);
+        } else if (auth()->user()->role == 1) {
+
+            $ressourcesDisponibles = Resource::whereHas('module', function ($query) {
+                $query->where('user_id', auth()->user()->id);
+            })->count();
+
+            $messagesNonLus;
+            
+            return view('authed.dashboard');
+
+        } else {
+            $ressourcesDisponibles = Resource::whereHas('module.level.levels_users', function ($query) {
+                $query->where('user_id', auth()->user()->id);
+            })->count();
+
+            $messagesNonLus;
+
+            return view('authed.dashboard');
+
+        }
 
     }
 
@@ -117,21 +139,43 @@ class UserController extends Controller
                                       ->orWhere('name', 'like', strtoupper($search) . '%');
                            })->paginate(5);
                         $loup = 667;
-        } else {
-            $users = User::with(['levels_users.level.sector'])->paginate(5);
+        } else if ($request->input('searchFiliere')) {
+            $search = $request->input('searchFiliere');
+            
+            if ($search == 'all') {
+                $users = User::whereHas('levels_users')->with('levels_users.level.sector')->paginate(5);
+            } else {
+                $users = User::whereHas('levels_users.level', function ($query) use ($search) {
+                    $query->where('id', $search);
+                })->with('levels_users.level.sector')->paginate(5);
+            }
 
-            $loup = null;
+            $loup = 667;
+        }else {
+            if ($request->input('nombreProfesseurs')) {
+                $users = User::where('role', 1)->with(['levels_users.level.sector'])->paginate(5);
+                $loup = 667;
+            } else if ($request->input('nombreEtudiants')) {
+                $users = User::where('role', 2)->with(['levels_users.level.sector'])->paginate(5);
+                $loup = 667;
+            } else {
+                $users = User::with(['levels_users.level.sector'])->paginate(5);
+                $loup = null;
+            }
+
         }
 
         $sectors = Sector::with(['levels' => function ($query) {
             $query->orderBy('sector_id')->orderBy('degree', 'asc');
         }])->orderBy('id')->get();
 
-        
+        $levels = Level::all();
+
         return view('authed.users',[ 
         'users' => $users,
         'loup' => $loup,
-        'sectors' => $sectors
+        'sectors' => $sectors,
+        'levels' => $levels
         ]);
 
     }
@@ -428,9 +472,12 @@ class UserController extends Controller
     }
 
     public function download(Request $request) {
-        // Récupérer tous les utilisateurs depuis la base de données
-        $users = User::all();
+        //Recuperation des utilisateurs
+        $users = json_decode($request->input('users'));
+        $users = $users->data;
 
+        // $users = User::All();
+        // dd($users);
         // Définir le nom du fichier CSV téléchargé
         $fileName = 'users.csv';
 

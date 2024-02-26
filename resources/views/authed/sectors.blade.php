@@ -136,7 +136,7 @@
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('sectors.store') }}" class="m-0 p-0">    
+        <form method="POST" id="formAddSector" action="{{ route('sectors.store') }}" class="m-0 p-0">    
             @csrf
             <!-- Close -->
             <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -298,7 +298,9 @@
                 }); 
             }
             
-
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
         //
 
     //MODALS MANIPULATIONS
@@ -319,7 +321,64 @@
     const addLevelBtn = document.getElementById('addLevelBtn');
     const levelList = document.getElementById('levelList');
 
+    const formAddSector = document.getElementById('formAddSector');
+
     var jAdd = 1;
+
+    //Pour l'entrée addLevel
+    addLevel.addEventListener('keydown', (event) => {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            let level = addLevel.value;
+        addLevel.value = '';
+
+        let input = document.createElement('input');
+        let span = document.createElement('span');
+        let input_nombreI = document.createElement('input');
+        let i = document.createElement('i');
+
+        let div1 = document.createElement('div');
+        let div2 = document.createElement('div');
+        let div3 = document.createElement('div');
+
+        let divGenerale = document.createElement('div');
+
+        divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
+
+        div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
+        div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
+        div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevel');
+
+        i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
+
+
+        input_nombreI.value = jAdd;
+        input_nombreI.setAttribute('name', 'addDegree' + jAdd);
+        input_nombreI.classList.add('hidden', 'inputDegreeLevel');
+
+        input.value = level;
+        input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
+        input.setAttribute('name', 'addName' + jAdd)
+        input.setAttribute('readonly', true);
+
+        span.appendChild(i);
+
+        div1.appendChild(input);
+        div2.appendChild(span);
+        div3.textContent = jAdd;
+
+        divGenerale.appendChild(input_nombreI);
+        divGenerale.appendChild(div3);
+        divGenerale.appendChild(div1);
+        divGenerale.appendChild(div2);
+
+        levelList.appendChild(divGenerale);
+
+        addMaxDegree.value = jAdd;
+
+        jAdd++;
+        }
+    });
 
     function resetValuesAddModal() {
 
@@ -345,7 +404,6 @@
     const addMaxDegree = document.getElementById('addMaxDegree');
 
     addLevelBtn.addEventListener('click', () => {
-        
         let level = addLevel.value;
         addLevel.value = '';
 

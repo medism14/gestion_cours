@@ -50,23 +50,46 @@
 
     <!-- Barre de recherche -->
     <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('users.index') }}" class="p-0 m-0">
+        <form action="{{ route('users.index') }}" class="p-0 m-0 inline" onsubmit="return confirmFiliere()">
             @csrf
-            <div class="w-full flex justify-center space-x-1 items-center">
-                <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-                <i id="tooltipIcon" class="fas fa-question-circle p-1">
-                </i>
-                <div id="tooltipInfo" class="hidden break-words absolute bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                    Recherche par:
-                    <p class="text-center mt-3 break-words">Prenom, Nom, Email, Telephone, Role, Filières</p>
+            <div class="w-full flex justify-center mb-1">
+                <div class="mr-3 flex flex-col space-y-2 border-r-2 border-gray-900 px-6">
+                    <input type="text" id="searchFiliereInput" placeholder="Selection rapide..." class="outline-none px-3 py-1 rounded-lg focus:ring-2 border-none focus:border-slate-700 shadow-md">
+                    <select name="searchFiliere" id="searchFiliere" class="outline-none px-3 py-1 rounded-lg focus:ring-2 border-none focus:border-slate-700 shadow-md">
+                        @if (!$levels->isEmpty())
+                            <option value="all">Toutes les filières</option>
+                        @endif
+                        @foreach ($levels as $level)
+                            <option value="{{ $level->id }}">{{ $level->sector->name }}: {{ $level->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="w-full flex justify-center mt-3">
+                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
+                    </div>
+                </div>
+                </form> 
+                <div class="flex flex-col items-center justify-center px-3">
+                <form action="{{ route('users.index') }}" class="p-0 m-0 inline">
+                    @csrf
+                    <div class="flex">
+                        <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
+                        <div class="px-3">
+                            <i id="tooltipIcon" class="fas fa-question-circle p-1">
+                            </i>
+                            <div id="tooltipInfo" class="hidden break-words absolute bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
+                                Recherche par:
+                                <p class="text-center mt-3 break-words">Prenom, Nom, Email, Telephone, Role, Nom de la filière</p>
 
-                    <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+                                <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center mt-3">
+                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
+                    </div>
+                </form> 
                 </div>
             </div>
-            <div class="w-full flex justify-center mt-3">
-                <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-            </div>
-        </form> 
     </div>
 
     <!-- Tableau -->
@@ -75,6 +98,7 @@
             <div class="flex-1 flex justify-start space-x-1 md:space-x-3">
                 <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0">
                     @csrf
+                    <input type="hidden" name="users" value="{{ json_encode($users) }}">
                     <button id="download" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
                 </form>
 
@@ -444,12 +468,77 @@
 @section('scripts')
     <script>
 
+            
 
-                
-document.addEventListener("DOMContentLoaded", function() {
+        //Recherche des filières
+        
+            function searchFiliereFunction(value) {
+                let options = Array.from(searchFiliere.options);
+                let i = 0;
+                let selected = false;
+
+                options.forEach((option) => {
+                    if (!RegExp('^' + value, 'i').test(option.textContent)) {
+                        option.disabled = true;
+                        option.classList.add('hidden');
+                        i++
+                    } else {
+                        if (!selected) {
+                            option.selected = true;
+                            selected = true;
+                        }
+                    }
+                });
+
+                if (options.length == i) {
+                    searchFiliere.innerHTML += '';
+                }
+            }
+
+            const searchFiliere = document.getElementById('searchFiliere');
+            const searchFiliereInput = document.getElementById('searchFiliereInput');
+
+            searchFiliereInput.addEventListener('input', () => {
+                let options = Array.from(searchFiliere.options);
+                let selected = false;
+
+                if (searchFiliereInput.value.length == 0) {
+                    options.forEach((option) => {
+                        option.disabled = false;
+                        option.classList.remove('hidden');
+
+                        if (!selected) {
+                            option.selected = true;
+                            selected = true;
+                        }
+
+                    });
+                } else {
+                    searchFiliereFunction(searchFiliereInput.value);
+                }
+            });
+
+            function confirmFiliere() {
+                let options = Array.from(searchFiliere.options);
+                let i = 0;
+
+                options.forEach((option) => {
+                    if (option.disabled) {
+                        i++
+                    }
+                });
+
+                if (options.length == i) {
+                    alert('Veuillez selectionner une filière');
+                    return false
+                } else {
+                    return true;
+                }
+            }  
+        //
 
         //Tooltip manipulation
-            const tooltipIcon = document.getElementById('tooltipIcon');
+            let tooltipIcon = document.getElementById('tooltipIcon');
             const tooltipInfo = document.getElementById('tooltipInfo');
             const searchBar = document.getElementById('search');
 
@@ -460,7 +549,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (mediaQuery.matches) {
                     xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
                 }
-                
+
                 tooltipInfo.classList.add(`left-[${xPosition}px]`);
                 tooltipInfo.classList.add(`top-[${yPosition}px]`);
             }
@@ -481,7 +570,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 }); 
             }
             
-
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
         //
 
         //MODALS MANIPULATIONS
@@ -1176,7 +1267,5 @@ document.addEventListener("DOMContentLoaded", function() {
         toutLesDiv.forEach((div) => {
             div.style.minHeight = height + 'px';
         })
-});
-
     </script>
 @endsection

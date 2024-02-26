@@ -13,7 +13,7 @@ use App\Models\Level;
 class SectorController extends Controller
 {
     public function index (Request $request) {
-
+        //Si l'on fait une recherche
         if ($request->input('search')) {
 
             $search = $request->input('search');

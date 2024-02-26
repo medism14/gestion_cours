@@ -13,7 +13,9 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+        <script src="https://js.pusher.com/7.2.0/pusher.min.js"></script>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
 
     <style>
@@ -123,15 +125,15 @@
 
                         <div class="flex items-center justify-end">
                             @if (auth()->user()->role != 0)
-                                <button id="annonce" class="mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
+                                <button id="annonce" class="notifClass mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
                                     <span id="nombreAnnonce" class="text-gray-900 font-bold text-[0.5rem] text-blue-500 font-bold absolute top-0 right-0">{{ auth()->user()->annonces }}</span>
                                     <i class="fa fa-bullhorn"></i>
                                 </button>
                             @endif
                             @if (auth()->user()->role == 2)
-                                <button id="notif" class="mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
+                                <button id="notif" class="annonceClass mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
                                     <span id="nombreNotif" class="text-gray-900 font-bold text-[0.5rem] text-blue-500 font-bold absolute top-0 right-0">{{ auth()->user()->notifs }}</span>
-                                    <i class="fa fa-bell "></i>
+                                    <i class="fa fa-bell"></i>
                                 </button>
                             @endif
                             <a href="{{ route('parameters') }}" id="user" class="mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative " title="Paramètres">
@@ -144,7 +146,7 @@
                         </div>
                     </div>
                     
-                    <div id="notifList" class="hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
+                    <div id="notifList" class="notifClass hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
                         <div class="flex w-full items-center">
                             <h1 id="notifResource" class="flex-1 text-center font-bold mb-3  px-4 border-r-2">Notifications Ressources</h1>
                             <form action="{{ route('users.suppNotifs') }}"  method="POST" class="m-0 p-0 flex justify-end" onsubmit="return confirm('Voulez-vous vraiment supprimer vos notifications ?')">
@@ -170,7 +172,7 @@
                         
                     </div>
 
-                    <div id="userList" class="hidden absolute flex flex-col text-xs md:text-sm p-3 bg-slate-800 border-2 border-gray-400 rounded-lg">
+                    <div id="userList" class="hidden z-20 absolute flex flex-col text-xs md:text-sm p-3 bg-slate-800 border-2 border-gray-400 rounded-lg">
                         <div class="flex w-full flex-col">
                             <h1 class="w-full text-center font-bold mb-3 text-base md:text-lg p-2">Informations Utilisateur</h1>
                             <div class="flex flex-col">
@@ -205,7 +207,7 @@
                             @foreach (session('error') as $i => $v)
                                 @foreach ($v as $sub_v)
                                 <script>
-                                    errors += '{!! $sub_v !!}\n';
+                                    errors += "{!! $sub_v !!}\n";
                                 </script>
 
                                 @endforeach
@@ -515,14 +517,24 @@
                 }
 
                 annonceTitle.innerHTML = data.annonce.title;
-                annonceUser.innerHTML = role + '' + data.annonce.user.first_name + ' ' + lastName;
-                annonceContent.innerHTML = data.annonce.content;
+                annonceUser.innerHTML = role + ': ' + data.annonce.user.first_name + ' ' + lastName;
+                
+                let annonceContentt = data.annonce.content;
+
+                annonceContent.innerHTML = annonceContentt.replace(/\n/g, "<br>");
 
                 modalVoirAnnonce.classList.remove('hidden');
             }
         });
 
+        document.addEventListener('click', (event) => {
+            let item = event.target;
 
+            if ((!item.classList.contains('annonceClass') && !item.classList.contains('notifClass')) && (!item.parentNode.classList.contains('annonceClass') && !item.parentNode.classList.contains('notifClass'))) {
+                annonceList.classList.add('hidden');
+                notifList.classList.add('hidden');
+            }
+        });
 
         //Bien positionner la liste des annonces
         function positionnementAnnonce () {

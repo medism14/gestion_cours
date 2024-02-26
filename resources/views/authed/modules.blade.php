@@ -332,7 +332,9 @@
                 }); 
             }
             
-
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
         //
 
     //MODALS MANIPULATIONS

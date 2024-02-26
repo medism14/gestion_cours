@@ -279,6 +279,7 @@ class ResourceController extends Controller
         $moduleNouveau = Module::find($editModule);
         $moduleAncien = Module::find($resource->module->id);
 
+        //S'il a changé de module
         if ($moduleAncien->id != $moduleNouveau->id) {
             $level_id_ancien = $moduleAncien->level->id;
             $level_id_nouveau = $moduleNouveau->level->id;
@@ -298,7 +299,9 @@ class ResourceController extends Controller
                 $user->save();
 
                 $notif = Notif::where('user_id', $user->id)->where('resource_id', $resource->id)->first();
-                $notif->delete();
+                if ($notif) {
+                    $notif->delete();
+                }
             }
 
             foreach ($usersNouveauModule as $user) {
@@ -324,7 +327,6 @@ class ResourceController extends Controller
             $file = $resource->file;
 
             $filePath = storage_path("app/public/{$file->path}");
-            
 
             unlink($filePath);
 

@@ -29,7 +29,7 @@
 </style>
 
 @section('content')
-    <h1 class="text-center md:text-3xl lg: font-bold">Gestion de resources</h1>
+    <h1 class="text-center md:text-3xl lg: font-bold">Gestion de ressources</h1>
 
     <!-- Barre de recherche -->
     <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
@@ -396,7 +396,9 @@
                 }); 
             }
             
-
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
         //
 
     //MODALS MANIPULATIONS

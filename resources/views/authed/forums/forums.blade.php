@@ -124,6 +124,47 @@
 @section('scripts')
 <script>
 
+//
 
+//Tooltip manipulation
+const tooltipIcon = document.getElementById('tooltipIcon');
+            const tooltipInfo = document.getElementById('tooltipInfo');
+            const searchBar = document.getElementById('search');
+
+            function positionnementTooltip () {
+                let xPosition = tooltipIcon.getBoundingClientRect().x;
+                let yPosition = tooltipIcon.getBoundingClientRect().y + tooltipIcon.getBoundingClientRect().height;
+
+                if (mediaQuery.matches) {
+                    xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
+                }
+                
+                tooltipInfo.classList.add(`left-[${xPosition}px]`);
+                tooltipInfo.classList.add(`top-[${yPosition}px]`);
+            }
+
+            positionnementTooltip();
+
+            tooltipIcon.addEventListener('mouseenter', function () {
+                tooltipInfo.classList.remove('hidden');
+            }); 
+
+            tooltipIcon.addEventListener('mouseleave', function () {
+                tooltipInfo.classList.add('hidden');
+            });
+
+            if (mediaQuery.matches) {
+                tooltipIcon.addEventListener('click', function () {
+                    tooltipInfo.classList.toggle('hidden');
+                }); 
+            }
+
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
+            
+
+        //
+        
 </script>
 @endsection

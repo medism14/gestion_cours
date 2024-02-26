@@ -85,10 +85,14 @@
                         <td class="nom flex-1"><div class="flex justify-center items-center">{{ $annonce->user->role == '0' ? 'Responsable:' : ($annonce->user->role  == 1 ? 'Professeur: ' : '   ' ) }} {{ $annonce->user->first_name }} {{ $annonce->user->last_name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
-                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                @if (auth()->user()->role == 2)
+                                    <button class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                @endif
+
                                 <button class="id hidden">{{ $annonce->id }}</button>
                                 @if (auth()->user()->role != 2)
                                     @if (auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id)
+                                        <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                         <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
@@ -96,15 +100,12 @@
                                             <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     @elseif (auth()->user()->role == 1 && $annonce->user_id != auth()->user()->id)
-                                        <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.deleteRelation', ['id' => $annonce->id]) }}" class="m-0 p-0">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
-                                        </form>
+                                        <button class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                     @endif
-
+                                
 
                                     @if (auth()->user()->role == 0)
+                                        <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                         <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
@@ -113,11 +114,6 @@
                                         </form>
                                     @endif
                                 @else
-                                <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.deleteRelation', ['id' => $annonce->id]) }}" class="m-0 p-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
-                                </form>
                                 @endif
                             </div>
                         </td>
@@ -355,6 +351,42 @@
         </div>
     </div>
 
+    <!-- Modal Voir Annonce -->
+    <div id="viewModal2" class="hidden z-50 absolute bg-gray-500 bg-opacity-75 inset-0">
+        <!-- Modal body -->
+        <div class="bg-gray-100 w-[50%] mx-auto mt-20 flex flex-col rounded">
+            <!-- Header -->
+            <div class="bg-green-800 text-white text-center p-4 rounded rounded-b-none text-xl relative">
+                Annonce
+                <span class="absolute right-0 px-4"><i class="fas fa-times cursor-pointer" id="closeModalView2"></i></span>
+            </div>
+            <!-- Body -->
+            <div class="p-4 flex flex-col space-y-5">
+                <!-- Row -->
+                <div class="flex justify-center">
+                    <div class="flex-1 flex justify-center">
+                        <h3 class="text-xl font-bold underline" id="annonceTitleViewModal2"></h3>
+                    </div>
+                </div>
+
+                <!-- Row -->
+                <div class="flex justify-center">
+                    <div class="flex-1 flex justify-start">
+                        <h3 class="text-base font-bold" id="annonceUserViewModal2"></h3>
+                    </div>
+                </div>
+
+                <!-- Row -->
+                <div class="flex justify-center">
+                    <div class="flex-1 flex justify-center break-words">
+                        <p id="annonceContentViewModal2"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     @if (auth()->user()->role != 2)
     <!-- EDIT MODALS -->
     <div id="editModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
@@ -485,7 +517,9 @@
                     tooltipInfo.classList.toggle('hidden');
                 }); 
             }
-            
+            window.addEventListener('resize', () => {
+                positionnementTooltip();
+            });
 
         //
 
@@ -667,6 +701,8 @@
     //////////////////////////
     const closeModalView = document.getElementById('closeModalView');
     const openModalView = Array.from(document.getElementsByClassName('openModalView'));
+    const openModalView2 = Array.from(document.getElementsByClassName('openModalView2'));
+    const closeModalView2 = document.getElementById('closeModalView2');
     const viewModal = document.getElementById('viewModal');
 
     const viewFiliere = document.getElementById('viewFiliere');
@@ -682,6 +718,11 @@
     const divViewDateExpiration = document.getElementById('divViewDateExpiration');
     const listFilieresViewParent = document.getElementById('listFilieresViewParent');
     const viewPersonneParent = document.getElementById('viewPersonneParent');
+ 
+    const viewModal2 = document.getElementById('viewModal2');
+    const annonceTitleViewModal2 = document.getElementById('annonceTitleViewModal2');
+    const annonceUserViewModal2 = document.getElementById('annonceUserViewModal2');
+    const annonceContentViewModal2 = document.getElementById('annonceContentViewModal2');
 
     const listFilieresView = document.getElementById('listFilieresView');
 
@@ -690,7 +731,48 @@
         location.reload();
     });
 
-    //Ouverture du modal view
+    //Fermeture modal en haut à droite
+    closeModalView2.addEventListener('click', () => {
+        location.reload();
+    });
+
+    //Ouveture du modal view pour etudiant ou prof pour annonce
+    openModalView2.forEach((btn) => {
+        btn.addEventListener('click', async (event) => {
+            let id = parseInt(btn.parentNode.querySelector('.id').textContent);
+
+            let response = await fetch(`/annonces/getAnnonceRelation/${id}`);
+
+            let data = await response.json();
+
+            let lastname;
+            let role;
+            
+            if (data.annonce.user.last_name == null) {
+                last_name = '';
+            } else {
+                last_name = data.annonce.user.last_name;
+            }
+
+            if (data.annonce.user.role == 0) {
+                role = 'Responsable: ';
+            } else {
+                role = 'Professeur: ';
+            }
+
+            const annonce = data.annonce;
+
+            annonceTitleViewModal2.innerHTML = data.annonce.title;
+
+            let annonceContent = annonce.content;
+            annonceContentViewModal2.innerHTML = annonceContent.replace(/\n/g, "<br>");
+            annonceUserViewModal2.innerHTML = role + ': ' + data.annonce.user.first_name + ' ' + last_name;
+
+            viewModal2.classList.remove('hidden');
+        })
+    })
+
+    //Ouverture du modal view pour prof et admin
     openModalView.forEach((btn) => {
         btn.addEventListener('click', async (event) => {
             let id = parseInt(btn.parentNode.querySelector('.id').textContent);
@@ -717,7 +799,9 @@
             const annonce = data.annonce;
 
             viewTitle.value = data.annonce.title;
-            viewContenu.innerHTML = annonce.content;
+
+            let annonceContent = annonce.content;
+            viewContenu.innerHTML = annonceContent.replace(/\n/g, "<br>");
             viewAnnonceur.value = role + '' + data.annonce.user.first_name + ' ' + last_name;
 
             @if (auth()->user()->role == 1)
@@ -829,14 +913,18 @@
 
     //Verification de l'option selectionné
     function VerifOptionSelectedEdit () {
-        if (editFiliere.options[editFiliere.selectedIndex].textContent == 'Toutes les filières') {
+        if (editFiliere.options.length == 0) {
             filiereEdit.classList.add('hidden');
-            divDisplayListEdit.classList.add('hidden');
-        } else {
-            filiereEdit.classList.remove('hidden');
             divDisplayListEdit.classList.remove('hidden');
+        } else {
+            if (editFiliere.options[editFiliere.selectedIndex].textContent == 'Toutes les filières') {
+                filiereEdit.classList.add('hidden');
+                divDisplayListEdit.classList.add('hidden');
+            } else {
+                filiereEdit.classList.remove('hidden');
+                divDisplayListEdit.classList.remove('hidden');
+            }
         }
-        
     }
     
     //Partie recherche filière
@@ -965,7 +1053,10 @@
             //Remplissage des input
             editTitle.value = data.annonce.title;
             editDateExpiration.value = data.annonce.date_expiration;
-            editContenu.value = data.annonce.content;
+
+            let annonceContent = data.annonce.content;
+
+            editContenu.value = annonceContent;
 
             //Remplissage pour la selection des personnes;
             let optionsPeronnes = editPersonnes.querySelectorAll('option');

@@ -9,7 +9,26 @@
 </style>
 
 @section('content')
-    <h1 class="text-center md:text-3xl font-bold">Forums de discussion</h1>
+@php
+    $forumId = 667;
+@endphp
+
+    <div class="flex w-full">
+        <div class="w-1/6"></div>
+        <div class="w-4/6 flex justify-center">
+            <h1 class="text-center md:text-3xl font-bold">Forums de discussion</h1>
+        </div>
+        <div class="w-1/6 flex justify-end text-[0.7rem] md:text-xs align-end">
+            @if (auth()->user()->role == 0)
+                <form method="POST" action="{{ route('forums.suppAllMsg', ['level_id' => $level_id]) }}" class="p-0 m-0" onsubmit="return confirm('Voulez-vous vraiment supprimer toutes les messages?')">
+                    @method('DELETE')
+                    @csrf
+                    <button class="px-2 py-1 rounded-lg text white border-2 border-red-500 transition duration-300 hover:bg-red-500 hover:text-white">Supprimer tout les messages</button>
+                </form>
+            @endif
+        </div>
+    </div>
+    
     
     <div id="messagerie" class="rounded-lg flex flex-col space-y-2">
         <!-- Tout les messages -->
@@ -61,70 +80,58 @@
                 @if ($forum->user->role == 1)
                     <!-- Si le message vient de moi -->
                     @if ($forum ->user->id == auth()->user()->id)
-                        <div class="flex flex-col justify-center p-2 items-end">
+                        <div class="messages flex flex-col justify-center p-2 items-end">
+                            <input type="hidden" value="{{ $forum->id }}">
                             <span class="text-red-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
 
                             @if (auth()->user()->role == 0) 
-                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
                             @endif
                             </span>
-                            <p title="Aujourd'hui 15:12" class="w-full text-right break-words">
-                                {{ $forum->message }}
+                            <p class="w-full text-right break-words">
+                                {!! $forum->message !!}
                             </p>
                         </div>
                      <!-- Si le message vient d'une autre personne -->
                     @else
-                        <div class="flex flex-col justify-start p-2">
+                        <div class="messages flex flex-col justify-start p-2">
+                            <input type="hidden" value="{{ $forum->id }}">
                             <span class="text-red-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
 
                             @if (auth()->user()->role == 0) 
-                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
                             @endif
                             </span>
-                            <p title="Aujourd'hui 15:12">{{ $forum->message }}</p>
+                            <p>{!! $forum->message !!}</p>
                         </div>
                     @endif
                 <!-- Si c'est un etudiant -->
                 @elseif ($forum->user->role == 2)
                     <!-- Si le message vient de moi -->
                     @if ($forum ->user->id == auth()->user()->id)
-                        <div class="flex flex-col justify-center p-2 items-end">
+                        <div class="messages flex flex-col justify-center p-2 items-end">
+                            <input type="hidden" value="{{ $forum->id }}">
                             <span class="text-blue-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
 
                             @if (auth()->user()->role == 0) 
-                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
                             @endif
                             </span>
-                            <p title="Aujourd'hui 15:12" class="w-full text-right break-words">
-                            {{ $forum->message }}
+                            <p class="w-full text-right break-words">
+                            {!! $forum->message !!}
                             </p>
                         </div>
                      <!-- Si le message vient d'une autre personne -->
                     @else
-                        <div class="flex flex-col justify-start p-2 text-left">
+                        <div class="messages flex flex-col justify-start p-2 text-left">
+                            <input type="hidden" value="{{ $forum->id }}">
                             <span class="text-blue-600 flex items-center"><span>{{ $forum->user->first_name }} {{ $forum->user->last_name }} </span>
 
                             @if (auth()->user()->role == 0) 
-                                <form action="{{ route('forums.suppForum', ['id' => $forum->id]) }}" method="POST" class="m-0 p-0" onsubmit="return confirm('Etes vous sûr de supprimer ce message ?')">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button class="ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
                             @endif
                             </span>
-                            <p title="Aujourd'hui 15:12">{{ $forum->message }}</p>
+                            <p>{!! $forum->message !!}</p>
                         </div>
                     @endif  
                 @endif
@@ -150,16 +157,55 @@
 @endsection
 
 @section('scripts')
+
+
+    
 <script>
+
     //Manipulation de la messagerie
         const messagerie = document.getElementById('messagerie');
         const messagerieContainer = document.getElementById('messagerieContainer');
-        let diffHaut = Math.floor(messagerie.getBoundingClientRect().top);
-        messagerie.style.height = window.innerHeight - diffHaut + 'px';
+        function ReglageTailleMessagerie () {
+            let diffHaut = Math.floor(messagerie.getBoundingClientRect().top);
+            messagerie.style.height = window.innerHeight - diffHaut + 'px';
 
-        messagerieContainer.scrollTop = messagerieContainer.scrollHeight;
+            messagerieContainer.scrollTop = messagerieContainer.scrollHeight;
+        } 
+        ReglageTailleMessagerie();
+
+        window.addEventListener('resize', function() {
+            ReglageTailleMessagerie();
+        });
+        
     //
     
+    @if (auth()->user()->role == 0)
+    //Supprimer un commentaire
+        let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        function AllMessages () {
+            var allMessage = Array.from(document.getElementsByClassName('suppMsg'));
+
+            allMessage.forEach((msg) => {
+                msg.addEventListener('click', async (event) => {
+                    let id = parseInt(msg.parentNode.parentNode.querySelector('input').value);
+
+                    if (confirm("Etes vous sûr de vouloir supprimer le message ?")) {
+                        await fetch(`/forums/suppForum/${id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        AllMessages();
+    //
+    @endif
+
     //Check pour les medias
     @if (auth()->user()->role != 0)
         const ecritureMessage = document.getElementById('ecritureMessage');
@@ -180,7 +226,131 @@
             messagerie.style.width = '100%';
         }
     //
-
-    
 </script>
+
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+        var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+        });
+
+        var channel = pusher.subscribe('forum-channel');
+        channel.bind('forum-new-message', async function(data) {
+            let forum = data.forum;
+
+            let forumId = forum.id;
+
+            if (data.actualiser) {
+                location.reload();
+            }
+
+            let level_id_broadcast = parseInt(forum.level.id);
+
+            let level_id_actual = parseInt({{ $level_id }});
+
+            if (level_id_broadcast == level_id_actual) {
+                let userMessageOrigine = forum.user;
+                let actualUser = @json(auth()->user());
+                let message = forum.message;
+
+                //Si l'origine du message est un professeur
+                if (userMessageOrigine.role == 1) {
+                    //Si c'est l'utilisateur connecté
+                    if (actualUser.id == userMessageOrigine.id) {
+                        messagerieContainer.innerHTML += `
+                            <div class="messages flex flex-col justify-center p-2 items-end">
+                                <input type="hidden" value="${forumId}">
+                                
+                                <span class="text-red-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+
+                                @if (auth()->user()->role == 0) 
+                                    <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                @endif
+                                </span>
+                                <p class="w-full text-right break-words">
+                                    ${message}
+                                </p>
+                            </div>
+                        `;
+                    //Si c'est pas lui
+                    } else {
+                        messagerieContainer.innerHTML += `
+                        <div class="messages flex flex-col justify-start p-2">
+                            <input type="hidden" value="${forumId}">
+                            <span class="text-red-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+
+                            @if (auth()->user()->role == 0) 
+                                <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                            @endif
+                            </span>
+                            <p>${message}</p>
+                        </div>
+                        `;
+                    }   
+                //Si l'origine du message est un étudiant
+                } else if (userMessageOrigine.role == 2) {
+                    //Si c'est l'utilisateur connecté
+                    if (actualUser.id == userMessageOrigine.id) {
+                        messagerieContainer.innerHTML += `
+                            <div class="messages flex flex-col justify-center p-2 items-end">
+                                <input type="hidden" value="${forumId}">
+                                <span class="text-blue-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+
+                                @if (auth()->user()->role == 0) 
+                                    <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                @endif
+                                </span>
+                                <p class="w-full text-right break-words">
+                                ${message}
+                                </p>
+                        </div>
+                        `;
+                    //Si c'est pas lui
+                    } else {
+                        messagerieContainer.innerHTML += `
+                            <div class="messages flex flex-col justify-start p-2 text-left">
+                                <input type="hidden" value="${forumId}">
+                                <span class="text-blue-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+
+                                @if (auth()->user()->role == 0) 
+                                    <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
+                                @endif
+                                </span>
+                                <p>${message}</p>
+                            </div>
+                        `;
+                    }
+                }
+                ReglageTailleMessagerie();
+                AllMessages();
+            }
+        });
+
+        channel.bind('forum-delete-message', function (data) {
+            let forum = data.forum
+
+            const allMsg = Array.from(document.getElementsByClassName('messages'));
+
+            allMsg.forEach((message) => {
+                let input = message.querySelector('input');
+
+                if (input.value == forum.id) {
+                    message.remove();
+                }
+            });
+        });
+
+        channel.bind('forum-clear', function (data) {
+            let level_id_broadcast = parseInt(data.level_id);
+
+            let level_id_actual = parseInt({{ $level_id }});
+
+            if (level_id_broadcast == level_id_actual) {
+                location.reload();
+            }
+        })
+
+        
+    </script>
+
 @endsection
