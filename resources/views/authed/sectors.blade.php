@@ -497,8 +497,11 @@
 
         addMaxDegree.value = inputNameLevels.length;
 
+        jAdd = 1
+
         inputNameLevels.forEach((inputNameLevel) => {
-            inputNameLevel.setAttribute('name', 'inputNameLevel' + jAdd);
+            inputNameLevel.removeAttribute('name');
+            inputNameLevel.setAttribute('name', 'addName' + jAdd);
             inputNameLevel.value = inputNameLevel.value;
             jAdd++;
         });
@@ -506,6 +509,7 @@
         jAdd = 1;
 
         inputDegreeLevels.forEach((inputDegreeLevel) => {
+            inputDegreeLevel.removeAttribute('name');
             inputDegreeLevel.setAttribute('name', 'addDegree' + jAdd);
             inputDegreeLevel.value = jAdd;
             jAdd++;
@@ -517,7 +521,6 @@
             divDegreeLevel.textContent = jAdd;
             jAdd++;
         });
-
 
     }
 
@@ -810,7 +813,7 @@
         const inputDegreeLevels = Array.from(document.getElementsByClassName('inputDegreeLevelEdit'));
         const divDegreeLevelsEdit = Array.from(document.getElementsByClassName('divDegreeLevelEdit'));
 
-        let jEdit = 1;
+        jEdit = 1;
 
         editMaxDegree.value = inputNameLevels.length;
 

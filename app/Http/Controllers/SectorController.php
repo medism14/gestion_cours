@@ -60,7 +60,7 @@ class SectorController extends Controller
                 'error' => 'Veuillez bien remplir les champs'
             ]);
         }
-            
+
         //Secteur
         $sector = Sector::Create([
             'name' => $sectorName
@@ -139,25 +139,46 @@ class SectorController extends Controller
         $sector->name = $sectorName;
         $sector->save();
 
-        foreach ($sector->levels as $l) {
+        $toDelete = [];
+        
+        //Pour ajouter
+        foreach ($names as $key => $value) {
             $i = 0;
-            foreach ($names as $key => $value) {
-                if ($l->name == $value) {
-                    unset($names[$key]);
-                    unset($degrees[$key]);
+            $trouver = false;
 
-                    $names = array_values($names);
-                    $degrees = array_values($degrees);
+            foreach ($sector->levels as $l) {
+                if ($l->name == $value) {
+                    $trouver = true;
                 }
+            }
+
+            if (!$trouver) {
+                Level::create([
+                    'name' => $names[$key],
+                    'degree' => $degrees[$key],
+                    'sector_id' => $sector->id,
+                ]);
             }
         }
 
-        foreach ($names as $key => $name) {
-            Level::create([
-                'name' => $names[$key],
-                'degree' => $degrees[$key],
-                'sector_id' => $sector->id,
-            ]);
+        //Pour retirer
+        foreach ($sector->levels as $l) {
+            $uneFois = false;
+            if ($l->name == $value) {
+                $trouver = true;
+            }
+
+            foreach ($names as $key => $value) {
+                if (!$uneFois) {
+                    if ($l->name == $value) {
+                        $uneFois = true;
+                    }
+                }
+            }
+
+            if (!$uneFois) {
+                Level::where('id', $l->id)->delete();
+            }
         }
 
         event(new SectorRefresh($sector));
