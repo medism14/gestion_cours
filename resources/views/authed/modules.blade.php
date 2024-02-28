@@ -55,7 +55,7 @@
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
         </div>
         <table id="tableModule" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
             <thead>
@@ -69,6 +69,23 @@
             </thead>
             <tbody>
                 @foreach ($modules as $module)
+
+                    <!-- Toutes les tooltips -->
+                    <div id="tooltip-view{{$module->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Voir
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-edit{{$module->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Modifier
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-delete{{$module->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Supprimer
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
                     <tr>
                         <td class="informations">
                             <div class="flex justify-center items-start flex-col tdDivs">
@@ -77,18 +94,18 @@
                                 <span>Filière: {{ $module->level->sector->name }}: {{ $module->level->name }}</span>
                             </div>
                         </td>
-                        <td class="nom"><div class="flex justify-center items-center tdDivs">{{ $module->name }}</div></td>
-                        <td class="professeur"><div class="flex justify-center items-center tdDivs">{{ $module->user->first_name }} {{ $module->user->last_name }}</div></td>
-                        <td class="filiere"><div class="flex justify-center items-center tdDivs">{{ $module->level->sector->name }}: {{ $module->level->name }}</div></td>
+                        <td class="nom"><div class="flex justify-center items-center font-bold tdDivs">{{ $module->name }}</div></td>
+                        <td class="professeur"><div class="flex justify-center items-center font-bold tdDivs">{{ $module->user->first_name }} {{ $module->user->last_name }}</div></td>
+                        <td class="filiere"><div class="flex justify-center items-center font-bold tdDivs">{{ $module->level->sector->name }}: {{ $module->level->name }}</div></td>
                         <td class="actions">
-                            <div class="flex justify-center items-center tdDivs">
-                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                            <div class="flex justify-center items-center font-bold tdDivs">
+                                <button data-tooltip-target="tooltip-view{{$module->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 <button class="id hidden">{{ $module->id }}</button>
-                                <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button data-tooltip-target="tooltip-edit{{$module->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                 <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('modules.delete', ['id' => $module->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button value="{{ $module->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                    <button data-tooltip-target="tooltip-delete{{$module->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $module->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
                         </td>
@@ -187,6 +204,7 @@
                         </select>
                     </div>
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -283,6 +301,7 @@
                         </select>
                     </div>
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -478,6 +497,8 @@
         if (addProf.value == '') {
             alert('Vous devez saisir un professeur');
             return false;
+        } else {
+            return submitFunction();
         }
     }
     
@@ -554,6 +575,7 @@
 
     const editName = document.getElementById('editName');
     const editFiliere = document.getElementById('editFiliere');
+    const editProf = document.getElementById('editProf');
     const editListBtn = document.getElementById('editListBtn');
 
     function resetValuesEditModal() {
@@ -585,7 +607,7 @@
         resetValuesEditModal();
     });
 
-    //Ouverture du modal avec le bouton +
+    //Ouverture du modal avec le bouton edit
     openModalEdit.forEach((btn) => {
             btn.addEventListener('click', () => {
                 id = parseInt(btn.parentNode.querySelector('.id').textContent);
@@ -597,15 +619,16 @@
                     }
                     return response.json();
                 })
-                .then(data => {
+                .then(async data => {
                     let name = data.name;
                     let level_id = data.level.id;
-                    
+                    let user_id = data.user.id;
+
                     let editOptions = Array.from(document.getElementsByClassName('editOptions'));
 
                     editOptions.forEach((option) => {
                         if (option.value == level_id) {
-                            option.setAttribute('selected', 'true');
+                            option.selected = true;
                         }
                     });
 
@@ -614,7 +637,8 @@
                     editName.value = name;
 
                     editModal.classList.remove('hidden');
-                    profParDefautEdit();
+                    await profParDefautEditModifie(user_id);
+
             })
             .catch(error => {
                 console.error('Error:', error)
@@ -624,25 +648,50 @@
 
     var searchEdit = document.getElementById('searchEdit');
 
-    //Prof par defaut add
-        async function profParDefautEdit () {
-            id = editFiliere.value; 
-            console.log(id); 
-            fetch(`modules/getProfFiliere/${id}`)
-            .then(response => response.json())
-            .then(data => {
-                editProf.innerHTML = '';
-                data.forEach((user) => {
-                    editProf.innerHTML += `
-                        <option value="${user.id}">${user.first_name} ${user.last_name}</option>
-                    `;
+        //Prof par defaut edit
+            async function profParDefautEdit () {
+                id = editFiliere.value; 
+                fetch(`modules/getProfFiliere/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    editProf.innerHTML = '';
+                    data.forEach((user) => {
+                        editProf.innerHTML += `
+                            <option value="${user.id}">${user.first_name} ${user.last_name}</option>
+                        `;
+                    })
+                }) 
+                .catch(error => {
+                    console.error(error);
                 })
-            }) 
-            .catch(error => {
-                console.error(error);
-            })
-        }
-    //
+            }
+        //
+
+        //Prof par defaut edit
+        async function profParDefautEditModifie (user_id) {
+                id = editFiliere.value; 
+                fetch(`modules/getProfFiliere/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    editProf.innerHTML = '';
+                    data.forEach((user) => {
+                        if (user.id == user_id) {
+                            editProf.innerHTML += `
+                                <option selected value="${user.id}">${user.first_name} ${user.last_name}</option>
+                            `;
+                        } else {
+                            editProf.innerHTML += `
+                                <option value="${user.id}">${user.first_name} ${user.last_name}</option>
+                            `;
+                        }
+                        
+                    })
+                }) 
+                .catch(error => {
+                    console.error(error);
+                })
+            }
+        //
 
     //Faire une recherche dynamique
     searchEdit.addEventListener('input', async (event) => {
@@ -711,6 +760,8 @@
         if (editProf.value == '') {
             alert('Vous devez saisir un professeur');
             return false;
+        } else {
+            return submitFunction();
         }
     }
 
@@ -812,4 +863,18 @@
         div.style.minHeight = height + 'px';
     });
 </script>
+
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
+
+    var channel = pusher.subscribe('module-channel');
+
+    channel.bind('module-refresh', async function (data) {
+        location.reload();
+    });
+</script>
+
 @endsection

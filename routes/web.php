@@ -66,9 +66,11 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
     ########################
     Route::get('/getUserNotifs/{id}', [UserController::class , 'getUserNotifs'])->name('getUserNotifs');
     Route::get('/getNotifCreatedTime/{id}', [UserController::class , 'getNotifCreatedTime'])->name('getNotifCreatedTime');
+    Route::get('/getUserInfos/{id}', [UserController::class , 'getUserInfos'])->name('getUserInfos');
     Route::get('/resetNotifs/{id}', [UserController::class , 'resetNotifs'])->name('resetNotifs');
     Route::post('/users/suppNotifs', [UserController::class , 'suppNotifs'])->name('users.suppNotifs');
     Route::post('/users/suppAnnonces', [UserController::class , 'suppAnnonces'])->name('users.suppAnnonces');
+    Route::get('/users/resetMsg/{level_id}', [UserController::class , 'resetMsg'])->name('users.resetMsg');
 
     ########################
     ##Annonces

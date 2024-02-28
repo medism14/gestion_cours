@@ -96,20 +96,30 @@
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex space-x-5 justify-end">
             <div class="flex-1 flex justify-start space-x-1 md:space-x-3">
-                <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0">
+                <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0" onsubmit="return submitFunction()">
                     @csrf
-                    <input type="hidden" name="users" value="{{ json_encode($users) }}">
-                    <button id="download" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
+                    <input type="hidden" name="users" value="{{ json_encode($allUsers) }}">
+                    <button id="download" data-tooltip-target="tooltip-download" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
+                
+                    <div id="tooltip-download" role="tooltip" class="absolute invisible z-10 inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-md opacity-0 tooltip dark:bg-gray-700">
+                        Télécharger
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
                 </form>
 
-                <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data">
+                <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data" onsubmit="return submitFunction()">
                     @csrf
                     <input id="importInput" name="fichier" type="file" class="hidden">
-                    <button id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
+                    <button title="Importer" id="import" data-tooltip-target="tooltip-import" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
+
+                    <div id="tooltip-import" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Importer
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
                 </form>
             </div>
             <div class="flex-1 flex justify-end">
-                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button title="Ajouter" id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.65rem] lg:text-sm">
@@ -122,10 +132,28 @@
                     <th id="phone"><div>Phone</div></th>
                     <th id="role"><div>Role</div></th>
                     <th id="actions"><div>Actions</div></th>
+                    
                 </tr>
             </thead>
             <tbody>
                 @foreach ($users as $user)
+
+                    <!-- Toutes les tooltips -->
+                    <div id="tooltip-view{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Voir
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-edit{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Modifier
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-delete{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Supprimer
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
                     <tr>
                         <td class="informations w-full hidden">
                             <div class="flex items-center tdDivs">
@@ -137,22 +165,23 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="prenom"><div class="flex justify-center items-center tdDivs">{{ $user->first_name }}</div></td>
-                        <td class="nom"><div class="flex justify-center items-center tdDivs">{{ $user->last_name }}</div></td>
-                        <td class="email"><div class="flex justify-center items-center tdDivs">{{ $user->email }}</div></td>
-                        <td class="phone"><div class="flex justify-center items-center tdDivs">{{ $user->phone }}</div></td>
-                        <td class="role"><div class="flex justify-center items-center tdDivs">
+                        <td class="prenom"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->first_name }}</div></td>
+                        <td class="nom"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->last_name }}</div></td>
+                        <td class="email"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->email }}</div></td>
+                        <td class="phone"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->phone }}</div></td>
+                        <td class="role"><div class="flex justify-center items-center font-bold tdDivs">
                             {{ $user->role == 0 ? 'Administrateur' : ($user->role == 1 ? 'Professeur' : 'Etudiant' )}}
                         </div></td>
                         <td class="actions">
-                            <div class="flex justify-center items-center tdDivs">
-                                <button class="openModalView text-blue-600 p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm text-xs rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                            <div class="flex justify-center items-center font-bold tdDivs">
+                                <button data-tooltip-target="tooltip-view{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm text-xs rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                
                                 <button class="id hidden">{{ $user->id }}</button>
-                                <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button data-tooltip-target="tooltip-edit{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                 <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('users.delete', ['id' => $user->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button value="{{ $user->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                    <button data-tooltip-target="tooltip-delete{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $user->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
                         </td>
@@ -210,7 +239,7 @@
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" action="{{ route('users.store') }}" class="m-0 p-0">    
+        <form method="POST" action="{{ route('users.store') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -368,7 +397,7 @@
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0" onsubmit="confirmMDP()">    
+        <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -467,9 +496,6 @@
 
 @section('scripts')
     <script>
-
-            
-
         //Recherche des filières
         
             function searchFiliereFunction(value) {
@@ -576,13 +602,7 @@
         //
 
         //MODALS MANIPULATIONS
-        const confirmMDP = () => {
-            const password = document.getElementById('editPassword');
-            if (password.value.length < 5) {
-                alert('le mot de passe est trop court');
-                return false;
-            }
-        }
+
 
         //Manipulation boutons pour télécharger
         const importInput = document.getElementById('importInput');
@@ -1268,4 +1288,18 @@
             div.style.minHeight = height + 'px';
         })
     </script>
+
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+        var pusher = new Pusher('6979301f0eee4d497b90', {
+            cluster: 'eu'
+        });
+
+        var channel = pusher.subscribe('user-channel');
+
+        channel.bind('user-refresh', async function (data) {
+            location.reload();
+        });
+    </script>
+
 @endsection

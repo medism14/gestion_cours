@@ -10,6 +10,8 @@ use App\Models\Module;
 use App\Models\User;
 use App\Models\Sector;
 
+use App\Events\ModuleRefresh;
+
 class ModuleController extends Controller
 {
     public function index (Request $request) {
@@ -83,9 +85,10 @@ class ModuleController extends Controller
             'user_id' => $user_id
         ]);
 
+        event(new ModuleRefresh($module));
+
         return redirect()->back()->with([
             'success' => 'Le module a bien été enregistré',
-            'class' => 'success'
         ]);
     }  
 
@@ -122,6 +125,8 @@ class ModuleController extends Controller
         $module->level_id = $level_id;
         $module->save();
 
+        event(new ModuleRefresh($module));
+
         return redirect()->back()->with([
             'success' => 'Le module a bien été enregistré',
             'class' => 'success'
@@ -151,6 +156,8 @@ class ModuleController extends Controller
     public function delete ($id) {
         $module = Module::find($id);
 
+        event(new ModuleRefresh($module));
+        
         if ($module) {
             $module->delete();
         } else {

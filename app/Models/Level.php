@@ -10,6 +10,7 @@ use App\Models\Resource;
 use App\Models\Sector;
 use App\Models\LevelsUser;
 use App\Models\AnnoncesRelation;
+use App\Models\UsersMessage;
 
 class Level extends Model
 {
@@ -41,4 +42,7 @@ class Level extends Model
         return $this->hasMany(AnnoncesRelation::class);
     }
 
+    public function users_messages () {
+        return $this->hasMany(UsersMessage::class);
+    }
 }

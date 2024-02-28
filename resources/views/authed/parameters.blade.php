@@ -4,10 +4,10 @@
 
 @section('content')
     <section class="flex flex-col">
-        <div class="bg-pink-800 mx-auto p-5 w-[70%] text-center rounded-b-none rounded-lg text-gray-100">
+        <div class="bg-pink-800 mx-auto p-5 w-[80%] md:w-[70%] text-center rounded-b-none rounded-lg text-gray-100">
             Paramétrer ton compte
         </div>
-        <div class="p-5 mb-3 bg-gray-600 md:w-[70%] pb-10 mx-auto rounded-t-none rounded-lg">
+        <div class="p-5 mb-3 bg-gray-600 w-[80%] md:w-[70%] pb-10 mx-auto rounded-t-none rounded-lg">
             <form method="POST" action="{{ route('parameters') }}" class="m-0 p-0" onsubmit="return password_check()">
             @csrf
             @if (auth()->user()->role == 0)
@@ -80,6 +80,8 @@
             if (mdp.value != mdp_confirmation.value) {
                 alert("Les mots de passe ne correspondent pas");
                 return false;
+            } else {
+                return submitFunction();
             }
         }
     </script>

@@ -12,6 +12,7 @@ use App\Models\Level;
 use App\Models\LevelsUser;
 use App\Models\Module;
 use App\Models\Notif;
+use App\Models\UsersMessage;
 use App\Models\AnnoncesRelation;
 
 class User extends Authenticatable
@@ -30,8 +31,6 @@ class User extends Authenticatable
         'notif_viewed',
         'annonces',
         'annonce_viewed',
-        'messages',
-        'message_viewed_at',
         'password',
     ];
 
@@ -69,5 +68,9 @@ class User extends Authenticatable
 
     public function annonces_relations () {
         return $this->hasMany(AnnoncesRelation::class);
+    }
+
+    public function users_messages () {
+        return $this->hasMany(UsersMessage::class);
     }
 }

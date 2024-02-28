@@ -8,7 +8,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="icon" href="{{ asset('images/academiaArabe.png') }}">
+        <link rel="icon" href="{{ asset('images/papaRounded.png') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
@@ -33,8 +33,8 @@
     <body class="bg-gray-200">
         <!-- Header -->
         <header class="bg-gray-700 flex items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[20px] text-xs sm:text-base">
-            <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/academiaArabe.png') }}" width="55" height="55"></div>
-            <div class="flex-1 flex justify-center"><h1 class="text-base md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1></div>
+            <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/papa.png') }}" width="55" height="55"></div>
+            <div class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1></div>
             <div class="flex-1 flex justify-end">
             <nav class="mr-5">
                 <ul class="list-style-none">

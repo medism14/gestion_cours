@@ -61,6 +61,25 @@
     </section>
     
     <script>
+
+        //Soummission des formulaires
+            var formIsSubmitting = false;
+
+            function submitFunction () {
+
+                if (formIsSubmitting) {
+                    return false
+                } else {
+                    formIsSubmitting = true;
+                    return true;
+                }
+            }
+
+            function submitFunctionFalse () {
+                return false
+            }
+        //
+
         const confirmMDP = () => {
             const password = document.getElementById('password');
             const confirmation_password = document.getElementById('confirmation_password');
@@ -72,7 +91,13 @@
                 alert('Les mot de passes ne correspondent pas');
                 return false;
             }
+
+            if (password.value == confirmation_password.value && password.value.length >= 5) {
+                return submitFunction();
+            }
         }
+
+        
     </script>
 </body>
 </html>

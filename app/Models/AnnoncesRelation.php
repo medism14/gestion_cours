@@ -16,7 +16,8 @@ class AnnoncesRelation extends Model
     protected $fillable = [
         'annonce_id',
         'level_id',
-        'user_id'
+        'user_id',
+        'notif'
     ];  
 
     public function annonce () {

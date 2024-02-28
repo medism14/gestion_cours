@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Forum;
 use App\Models\User;
 use App\Models\Level;
+use App\Models\UsersMessage;
 
 use App\Events\ForumMessage;
 use App\Events\ForumDeleteMessage;
@@ -73,6 +74,15 @@ class ForumController extends Controller
     public function forum(Request $request, $level_id) {
         $user = User::find(auth()->user()->id);
 
+        foreach ($user->users_messages as $userMsg) {
+
+            if ($userMsg->level_id == $level_id) {
+                $userMsg->viewed_at = now();
+                $userMsg->message = 0;
+                $userMsg->save();
+            }
+        }
+
         $trouver = false;
 
         foreach ($user->levels_users as $level) {
@@ -97,8 +107,13 @@ class ForumController extends Controller
 
     public function addMsgForum (Request $request, $level_id) {
         $user_id = auth()->user()->id;
-        $user = auth()->user();
         $message = $request->input('ecritureMessage');
+
+        if (!$message) {
+            return redirect()->back()->with([
+                'error' => 'Veuillez ecrire du contenu dans le message',
+            ]);
+        }
 
         $lastForum = Forum::where('level_id', $level_id)->orderBy('id', 'desc')->first();
 
@@ -108,7 +123,19 @@ class ForumController extends Controller
             'user_id' => $user_id,
         ]);
 
-            $forum = Forum::with('user', 'level')->find($forumGet->id);
+        //Ajouter un nouveau messages à tout les gens
+        $usersNewMsg = User::where('role', '!=', 0)->whereHas('levels_users', function($query) use ($level_id) {
+            $query->where('level_id', $level_id);
+        })->get();
+
+        foreach ($usersNewMsg as $userM) {
+            $userMessage = UsersMessage::where('level_id', $level_id)->where('user_id', $userM->id)->first();
+
+            $userMessage->message++;
+            $userMessage->save();
+        }
+
+        $forum = Forum::with('user', 'level')->find($forumGet->id);
             
         if (!$lastForum) {
             $actualiser = false;
@@ -124,21 +151,36 @@ class ForumController extends Controller
             }
         }
 
-        
-
         event(new ForumMessage($forum, $actualiser));
 
         return redirect()->back();
     }
 
-    public function changerVariablePHP(Request $request, $forumId)
-    {
+    public function changerVariablePHP(Request $request, $forumId) {
         $forum = $forumId;
         return response()->json(['message' => 'Variable PHP changée avec succès']);
     }
 
     public function suppForum (Request $request, $id) {
         $forum = Forum::find($id);
+
+        $level_id = $forum->level_id;
+
+        //Manipulation de nombre de message
+        $usersNewMsg = User::where('role', '!=', 0)->whereHas('levels_users', function($query) use ($level_id) {
+            $query->where('level_id', $level_id);
+        })->get();
+
+        foreach ($usersNewMsg as $userM) {
+            $userMessage = UsersMessage::where('level_id', $level_id)->where('user_id', $userM->id)->first();
+
+            //Reduction de l'utilisateur si la condition est validé
+            if ($userMessage->viewed_at < $forum->update_at) {
+                $userMessage->message--;
+                $userMessage->save();
+            }
+            
+        }
 
         event(new ForumDeleteMessage($forum));
         
@@ -161,6 +203,19 @@ class ForumController extends Controller
     public function suppAllMsg (Request $request, $level_id) {
         
         Forum::where('level_id', $level_id)->delete();
+
+        //Manipulation de nombre de message
+        $usersNewMsg = User::where('role', '!=', 0)->whereHas('levels_users', function($query) use ($level_id) {
+            $query->where('level_id', $level_id);
+        })->get();
+
+        foreach ($usersNewMsg as $userM) {
+            $userMessage = UsersMessage::where('level_id', $level_id)->where('user_id', $userM->id)->first();
+
+            $userMessage->viewed_at = now();
+            $userMessage->message = 0;
+            $userMessage->save();
+        }
 
         event(new ForumClear($level_id));
 

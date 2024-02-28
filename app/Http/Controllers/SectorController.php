@@ -10,6 +10,8 @@ use App\Models\Sector;
 use App\Models\User;
 use App\Models\Level;
 
+use App\Events\SectorRefresh;
+
 class SectorController extends Controller
 {
     public function index (Request $request) {
@@ -40,8 +42,7 @@ class SectorController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {   
+    public function store(Request $request) {   
         $maxDegree = $request->input('addMaxDegree');
         $sectorName = $request->input('addName');
 
@@ -73,6 +74,8 @@ class SectorController extends Controller
             ]);
         }
 
+        event(new SectorRefresh($sector));
+
         return redirect()->back()->with([
             'success' => 'La filière a bien été ajouté',
         ]);
@@ -81,6 +84,8 @@ class SectorController extends Controller
     public function delete (Request $request, $id) {
         $sector = Sector::find($id);
 
+        event(new SectorRefresh($sector));
+        
         if ($sector) {
             $sector->delete();
         } else {
@@ -154,6 +159,8 @@ class SectorController extends Controller
                 'sector_id' => $sector->id,
             ]);
         }
+
+        event(new SectorRefresh($sector));
 
         return redirect()->back()->with([
             'success' => 'La filière a bien été modifié',

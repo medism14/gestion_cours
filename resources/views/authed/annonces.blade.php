@@ -67,7 +67,7 @@
     <div id="table-div" class="block w-full">
         @if (auth()->user()->role != 2)
             <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         @endif
         <table id="tableannonce" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
@@ -80,37 +80,58 @@
             </thead>
             <tbody>
                 @foreach ($annonces as $annonce)
+
+                    <!-- Toutes les tooltips -->
+                    <div id="tooltip-view{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Voir
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    @if (auth()->user()->role != 2)
+                        @if ((auth()->user()->role == 1 && annonce->user_id == auth()->user()->id) || auth()->user()->role == 0)
+                            <div id="tooltip-edit{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                                Modifier
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+
+                            <div id="tooltip-delete{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                                Supprimer
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        @endif
+                    @endif
+
                     <tr>
-                        <td class="nom flex-1"><div class="flex justify-center items-center">{{ $annonce->title }}</div></td>
-                        <td class="nom flex-1"><div class="flex justify-center items-center">{{ $annonce->user->role == '0' ? 'Responsable:' : ($annonce->user->role  == 1 ? 'Professeur: ' : '   ' ) }} {{ $annonce->user->first_name }} {{ $annonce->user->last_name }}</div></td>
+                        <td class="nom flex-1"><div class="flex justify-center items-center font-bold">{{ $annonce->title }}</div></td>
+                        <td class="nom flex-1"><div class="flex justify-center items-center font-bold">{{ $annonce->user->role == '0' ? 'Responsable:' : ($annonce->user->role  == 1 ? 'Professeur: ' : '   ' ) }} {{ $annonce->user->first_name }} {{ $annonce->user->last_name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
                                 @if (auth()->user()->role == 2)
-                                    <button class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                    <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 @endif
 
                                 <button class="id hidden">{{ $annonce->id }}</button>
                                 @if (auth()->user()->role != 2)
                                     @if (auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id)
-                                        <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                        <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button data-tooltip-target="tooltip-edit{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
                                             @method('DELETE')
-                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                            <button data-tooltip-target="tooltip-delete{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     @elseif (auth()->user()->role == 1 && $annonce->user_id != auth()->user()->id)
-                                        <button class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                     @endif
                                 
 
                                     @if (auth()->user()->role == 0)
-                                        <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                        <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button data-tooltip-target="tooltip-edit{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
                                             @method('DELETE')
-                                            <button value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                            <button data-tooltip-target="tooltip-delete{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     @endif
                                 @else
@@ -173,7 +194,7 @@
     <div id="addModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subAddModal" class="flex flex-col absolute w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('annonces.store') }}" class="m-0 p-0">    
+        <form method="POST" action="{{ route('annonces.store') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -249,6 +270,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -343,7 +365,7 @@
                 <div class="md:flex w-full md:space-x-2 justify-center"> <div class="flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
                         <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
                             <label for="viewContenu" class="underline">Contenu: </label>
-                            <p id="viewContenu" class="break-words text-center"></p>
+                            <p id="viewContenu" class="break-words text-center mt-2"></p>
                         </div>
                     </div>
                 </div>
@@ -378,7 +400,7 @@
 
                 <!-- Row -->
                 <div class="flex justify-center">
-                    <div class="flex-1 flex justify-center break-words">
+                    <div class="flex-1 flex justify-center break-words text-center">
                         <p id="annonceContentViewModal2"></p>
                     </div>
                 </div>
@@ -392,7 +414,7 @@
     <div id="editModal" class="hidden fixed z-50 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subEditModal" class="flex flex-col absolute w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('annonces.edit') }}" class="m-0 p-0">    
+        <form method="POST" action="{{ route('annonces.edit') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <input type="text" class="hidden" id="editId" name="id">
@@ -469,6 +491,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -1116,4 +1139,18 @@
     @endif
 
 </script>
+
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
+
+    var channel = pusher.subscribe('annonce-channel');
+
+    channel.bind('annonce-refresh', async function (data) {
+        
+    });
+</script>
+
 @endsection

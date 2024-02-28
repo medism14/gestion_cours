@@ -11,6 +11,9 @@ use App\Models\AnnoncesRelation;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
+use App\Events\AnnonceRefresh;
+use App\Events\AnnonceEdit;
+
 class AnnonceController extends Controller
 {
     public function index (Request $request) {
@@ -336,6 +339,12 @@ class AnnonceController extends Controller
 
 
         }
+
+        $annonce = Annonce::with('annonces_relations')->find($annonce->id);
+        $type = 'add';
+
+        event(new AnnonceRefresh($annonce, $type));
+
         return redirect()->back()->with([
             'success' => "L'annnoce a bien été posté",
         ]);
@@ -343,7 +352,9 @@ class AnnonceController extends Controller
 
     public function edit (Request $request) {
         $id = $request->input('id');
-        $annonce = Annonce::find($id);
+        $annonce = Annonce::with('annonces_relations')->find($id);
+        
+        $oldAnnoncesRelations = $annonce->annonces_relations;
 
         $validator = Validator::make($request->all(), [
             'editTitle' => 'required',
@@ -391,7 +402,7 @@ class AnnonceController extends Controller
 
             //On commence par reduire le nombre d'annonce vue
             foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->created_at && $relation->user->annonce_viewed > 0) {
+                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
                     $relation->user->annonces--;
                     $relation->user->save();
                 }
@@ -522,7 +533,7 @@ class AnnonceController extends Controller
         } else {
             //On commence par reduire le nombre d'annonce vue
             foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->created_at && $relation->user->annonce_viewed > 0) {
+                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
                     $relation->user->annonces--;
                     $relation->user->save();
                 }
@@ -609,7 +620,7 @@ class AnnonceController extends Controller
 
             //Reduction du nombre d'annonce pour les utilisateurs
             foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->created_at && $relation->user->annonce_viewed > 0) {
+                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
                     $relation->user->annonces--;
                     $relation->user->save();
                 }
@@ -672,13 +683,18 @@ class AnnonceController extends Controller
         }
 
         $annonce->save();
+
+        $newAnnonce = Annonce::with('annonces_relations')->find($annonce->id);
+
+        event(new AnnonceRefresh($newAnnonce, 'edit'));
+
         return redirect()->back()->with([
             'success' => "L'annnoce a bien été modifié",
         ]);
     }
 
     public function getAnnonces () {
-        $annonces = AnnoncesRelation::where('user_id', auth()->user()->id)->with('annonce')->orderBy('created_at', 'desc')->get();
+        $annonces = AnnoncesRelation::where('user_id', auth()->user()->id)->where('notif', 'oui')->with('annonce')->orderBy('created_at', 'desc')->get();
 
         if ($annonces->isEmpty()) {
             $annonces = [];
@@ -714,7 +730,7 @@ class AnnonceController extends Controller
     public function getAnnonceCreatedTime ($id) {
         $annonce = AnnoncesRelation::find($id);
 
-        $date = $annonce->created_at->toDateString();
+        $date = $annonce->updated_at->toDateString();
 
         return response()->json($date, 200);
     }
@@ -724,11 +740,16 @@ class AnnonceController extends Controller
 
 
         foreach ($annonce->annonces_relations as $relation) {
-            if ($relation->user->annonce_viewed < $relation->created_at && $relation->user->annonce_viewed > 0) {
+            if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
                 $relation->user->annonces--;
                 $relation->user->save();
             }
         }
+
+        $annonce = Annonce::with('annonces_relations')->find($annonce->id);
+        $type = 'delete';
+
+        event(new AnnonceRefresh($annonce, $type));
 
         $annonce->delete();
 
@@ -746,9 +767,12 @@ class AnnonceController extends Controller
     }
 
     public function suppAnnonces () {
-        $annonces = AnnoncesRelation::where('user_id', auth()->user()->id);
+        $annonces = AnnoncesRelation::where('user_id', auth()->user()->id)->get();
 
-        $annonces->delete();
+        foreach ($annonces as $annonce) {
+            $annonce->notif = 'non';
+            $annonce->save();
+        }
 
         return redirect()->back()->with([
             'success' => 'Les annonces ont bien été supprimés'

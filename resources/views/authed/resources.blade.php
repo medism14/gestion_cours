@@ -31,41 +31,81 @@
 @section('content')
     <h1 class="text-center md:text-3xl lg: font-bold">Gestion de ressources</h1>
 
+    @if (auth()->user()->role != 2)
     <!-- Barre de recherche -->
     <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('resources.index') }}" class="p-0 m-0">
+        <form action="{{ route('resources.index') }}" class="p-0 m-0" onsubmit="return submitFunction()">
             @csrf
             <div class="w-full flex justify-center space-x-1 items-center">
                 <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
                 <i id="tooltipIcon" class="fas fa-question-circle p-1">
                 </i>
-                @if (auth()->user()->role == 2)
-                    <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                        Recherche par:
-                        <p class="text-center mt-3">Section du ressource, Nom du fichier, Nom du module</p>
-                        
-                        <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
-                    </div>
-                @else 
                     <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
                         Recherche par:
                         <p class="text-center mt-3">Section du ressource, Nom du fichier, Nom du module, Nom du filière</p>
                         
                         <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
                     </div>
-                @endif
             </div>
             <div class="w-full flex justify-center mt-3">
                 <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
             </div>
         </form> 
     </div>
+    @endif
+
+    @if (auth()->user()->role == 2)
+    <!-- Barre de recherche -->
+    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
+        <form id="formModuleList" action="{{ route('resources.index') }}" class="p-0 m-0 inline">
+            @csrf
+            <div class="w-full flex justify-center mb-1">
+                <div class="mr-3 flex flex-col space-y-2 border-r-2 border-gray-900 px-6">
+                    <label for="moduleList" class="text-center">Modules:</label>
+                    @if ($modulesSearch->isEmpty())
+                    <select disabled name="moduleList" id="moduleList" class="outline-none px-3 py-1 rounded-lg text-xs md:text-base focus:ring-2 border-none focus:border-slate-700 shadow-md">
+                        <option class="hidden" value="" selected>Aucun module</option>
+                    </select>
+                    @else
+                    <select name="moduleList" id="moduleList" class="outline-none px-3 py-1 rounded-lg text-xs md:text-base focus:ring-2 border-none focus:border-slate-700 shadow-md">
+                        <option class="hidden" value="" selected></option>
+                        @foreach ($modulesSearch as $moduleSearch)
+                            <option value="{{ $moduleSearch->id }}">{{ $moduleSearch->name }}</option>
+                        @endforeach
+                    </select>
+                    @endif
+                </div>
+        </form> 
+                <div class="flex flex-col items-center justify-center px-3">
+                <form action="{{ route('resources.index') }}" class="p-0 m-0 inline">
+                    @csrf
+                    <div class="flex">
+                        <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
+                        <div class="px-3">
+                            <i id="tooltipIcon" class="fas fa-question-circle p-1">
+                            </i>
+                                <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
+                                    Recherche par:
+                                    <p class="text-center mt-3">Section du ressource, Nom du fichier, Nom du module</p>
+                                    
+                                    <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center mt-3">
+                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
+                    </div>
+                </form> 
+                </div>
+            </div>
+    </div>
+    @endif
 
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
-        @if (auth()->user()->role != 2)  
+        @if (auth()->user()->role == 1)  
             <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         @endif
         <table id="tableResource" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
@@ -81,6 +121,30 @@
             </thead>
             <tbody>
                 @foreach ($resources as $resource)
+
+                    @if (auth()->user()->role != 2)
+                    <!-- Toutes les tooltips -->
+                    <div id="tooltip-view{{$resource->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Voir
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                        <div id="tooltip-edit{{$resource->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                            Modifier
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+
+                        <div id="tooltip-delete{{$resource->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                            Supprimer
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+                        @endif
+
+                        <div id="tooltip-download{{$resource->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                            Télécharger
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+
                     @php
                         $date = explode(' ', $resource->created_at)[0];
                     @endphp
@@ -94,24 +158,24 @@
                                 <span>Date: {{ $date }}</span>
                             </div>
                         </td>
-                        <td class="nomFichier"><div class="flex justify-center items-center tdDivs">{{ $resource->file->filename }}</div></td>
-                        <td class="section"><div class="flex justify-center items-center tdDivs">{{ $resource->section }}</div></td>
-                        <td class="module"><div class="flex justify-center items-center tdDivs">{{ $resource->module->name }}</div></td>
-                        <td class="date"><div class="flex justify-center items-center tdDivs">{{ $date }}</div></td>
+                        <td class="nomFichier"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->file->filename }}</div></td>
+                        <td class="section"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->section }}</div></td>
+                        <td class="module"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->module->name }}</div></td>
+                        <td class="date"><div class="flex justify-center items-center tdDivs font-bold">{{ $date }}</div></td>
                         <td class="actions">
-                            <div class="flex justify-center items-center tdDivs">
-                                <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0">
+                            <div class="flex justify-center items-center tdDivs font-bold">
+                                <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0" onsubmit="return submitFunction()">
                                     @csrf
-                                    <button type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
+                                    <button data-tooltip-target="tooltip-download{{$resource->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
                                 </form>
                                 <button class="id hidden">{{ $resource->id }}</button>
                                 @if (auth()->user()->role != 2)  
-                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                    <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button data-tooltip-target="tooltip-view{{$resource->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                    <button data-tooltip-target="tooltip-edit{{$resource->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                     <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('resources.delete', ['id' => $resource->id]) }}" class="m-0 p-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button value="{{ $resource->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        <button data-tooltip-target="tooltip-delete{{$resource->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" title="Supprimer" value="{{ $resource->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                     </form>
                                 @endif
                             </div>
@@ -171,7 +235,7 @@
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
         <!-- Modal -->
         <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('resources.store') }}" enctype="multipart/form-data" class="m-0 p-0">    
+        <form method="POST" action="{{ route('resources.store') }}" enctype="multipart/form-data" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -222,7 +286,6 @@
                     </div>
                 </div>
             </div>
-            
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -295,7 +358,7 @@
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
         <!-- Modal -->
         <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('resources.edit') }}" enctype="multipart/form-data" class="m-0 p-0">    
+        <form method="POST" action="{{ route('resources.edit') }}" enctype="multipart/form-data" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -362,6 +425,19 @@
 
 @section('scripts')
 <script>
+            @if (auth()->user()->role == 2)
+            //Changement de module
+                const moduleList = document.getElementById('moduleList');
+                const formModuleList = document.getElementById('formModuleList');
+
+                moduleList.addEventListener('change', (event) => {
+                    if (moduleList.value != '') {
+                        formModuleList.submit();
+                    }
+                });
+
+            //
+            @endif
 
             //Tooltip manipulation
             const tooltipIcon = document.getElementById('tooltipIcon');
@@ -402,7 +478,7 @@
         //
 
     //MODALS MANIPULATIONS
-    @if (auth()->user()->role != 2)  
+    @if (auth()->user()->role == 1)  
         //////////////////////////
         //ADD MODALS
         //////////////////////////
@@ -760,4 +836,34 @@
             div.style.minHeight = height + 'px';
         });
 </script>
+
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
+
+    var channel = pusher.subscribe('resource-channel');
+
+    channel.bind('resource-refresh', async function (data) {
+        let resource = data.resource;
+        let actualUserId = {{ auth()->user()->id }};
+
+        const response = await fetch(`/getUserInfos/${actualUserId}`);
+        
+        let actualUser = await response.json();
+
+        if (actualUser.role == 0) {
+            location.reload()
+        } else if (actualUser.role == 2) {
+            actualUser.levels_users.forEach((level) => {
+                if (resource.module.level_id == level.level_id) {
+                    location.reload();
+                }
+            });
+            
+        }
+    });
+</script>
+
 @endsection

@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('annonces_relations', function (Blueprint $table) {
+        Schema::create('users_messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('annonce_id');
+            $table->integer('message');
+            $table->datetime('viewed_at');
             $table->unsignedBigInteger('level_id');
             $table->unsignedBigInteger('user_id');
-            $table->string('notif')->default('oui');
             $table->timestamps();
 
-            $table->foreign('annonce_id')->references('id')->on('annonces')->onDelete('cascade');
             $table->foreign('level_id')->references('id')->on('levels')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('annonces_relations');
+        Schema::dropIfExists('users_messages');
     }
 };

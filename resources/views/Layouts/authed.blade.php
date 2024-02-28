@@ -9,13 +9,15 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="icon" href="{{ asset('images/academiaArabe.png') }}">
+        <link rel="icon" href="{{ asset('images/papaRounded.png') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script src="https://js.pusher.com/7.2.0/pusher.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     </head>
 
     <style>
@@ -82,7 +84,7 @@
                     <!-- SideBar Content -->
                     @if (auth()->user()->role == 0)
                         <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                            <a href="{{ route('users.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-users"></i>Utilisateurs</a>
+                            <a href="{{ route('users.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-users"></i> Utilisateurs</a>
                         </div>
                         <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
                             <a href="{{ route('sectors.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-stream"></i> Filières</a>
@@ -118,7 +120,7 @@
                     </div>
                     <div id="divNavbar" class="flex-1 flex items-center">
                         <span class="flex w-full justify-start ml-5">
-                            <img src="{{ asset('images/academiaArabe.png') }}" alt="Logo" width="50" height="50">
+                            <img src="{{ asset('images/papaRounded.png') }}" alt="Logo" width="50" height="50">
                         </span>
                         <div class="ml-12 md:ml-24 flex-1 text-center text-base md:text-xl font-bold">
                         </div> 
@@ -146,7 +148,7 @@
                         </div>
                     </div>
                     
-                    <div id="notifList" class="notifClass hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
+                    <div id="notifList" class="notifList hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
                         <div class="flex w-full items-center">
                             <h1 id="notifResource" class="flex-1 text-center font-bold mb-3  px-4 border-r-2">Notifications Ressources</h1>
                             <form action="{{ route('users.suppNotifs') }}"  method="POST" class="m-0 p-0 flex justify-end" onsubmit="return confirm('Voulez-vous vraiment supprimer vos notifications ?')">
@@ -157,7 +159,7 @@
                         <hr class="my-2">
                     </div>
 
-                    <div id="annonceList" class="hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
+                    <div id="annonceList" class="annonceList hidden absolute z-50 flex flex-col overflow-y-auto text-xs md:text-base p-3 bg-slate-800 border-2 border-gray-400 rounded-lg" style="max-height: calc(3rem * 3);">
                         <div class="flex w-full items-center">
                             <h1 id="notifAnnonce" class="flex-1 text-center font-bold mb-3 px-4 border-r-2">Notifications Annonces</h1>
                             <form action="{{ route('annonces.suppAnnonces') }}"  method="POST" class="m-0 p-0 flex justify-end" onsubmit="return confirm('Voulez-vous vraiment supprimer vos notifications ?')">
@@ -166,10 +168,7 @@
                                 <button id="allDeleteAnnonce" class="hidden text-red-500 font-bold mb-2 p-2">Tout supprimer</button>
                             </form>
                         </div>
-
                         <hr class="my-2">
-                        
-                        
                     </div>
 
                     <div id="userList" class="hidden z-20 absolute flex flex-col text-xs md:text-sm p-3 bg-slate-800 border-2 border-gray-400 rounded-lg">
@@ -260,7 +259,7 @@
 
                     <!-- Row -->
                     <div class="flex justify-center">
-                        <div class="flex-1 flex justify-center break-words">
+                        <div class="flex-1 flex justify-center break-words text-center">
                             <p id="annonceContent"></p>
                         </div>
                     </div>
@@ -268,10 +267,18 @@
             </div>
         </div>
 
+
+        <!-- tooltip pour add -->
+        <div id="tooltip-add" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+            Ajouter
+            <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
+
     <script>
     // Create a MediaQueryList object for the media query "(max-width:768px)"
     var mediaQuery = window.matchMedia("(max-width:768px)");
 
+    let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     //
     ///////////////////////////////////////////////////////
@@ -328,7 +335,7 @@
                     }
 
                     notifList.innerHTML += `
-                        <div class="flex space-x-2 md:space-x-4 p-2 text-xs md:text-base border-b-2">
+                        <div class="notifValue flex space-x-2 md:space-x-4 p-2 text-xs md:text-base border-b-2">
                             <div class="flex notifs justify-center flex-col items-center">
                                 <span class="">Module:</span>
                                 <span class="underline">${notif.resource.module.name}</span>
@@ -349,7 +356,7 @@
                 if (data.length == 0) {
                     notifResource.classList.remove('border-r-2');
                     notifList.innerHTML += `
-                        <span class="text-center text-xs md:text-base">Aucune notification</span>
+                        <span id="aucuneNotif" class="text-center text-xs md:text-base">Aucune notification</span>
                     `;
                 } else {
                     allDeleteNotif.classList.remove('hidden');
@@ -404,11 +411,10 @@
     ///////////////////////////////////////////////////////
     //Annonce MANIPULATION
     ///////////////////////////////////////////////////////
-    @if (auth()->user()->role != 0)
         const annonceBtn = document.getElementById('annonce');
         const nbreAnnonceBtn = document.getElementById('nbreAnnonce');
         if (!annonceList) {
-            const annonceList = document.getElementById('annonceList');
+            var annonceList = document.getElementById('annonceList');
         }
         
         const modalVoirAnnonce = document.getElementById('modalVoirAnnonce');
@@ -420,7 +426,8 @@
         const nombreAnnonce = document.getElementById('nombreAnnonce');
 
         const allDeleteAnnonce = document.getElementById('allDeleteAnnonce');
-        
+
+    @if (auth()->user()->role != 0)
         //Remplir les annonces
         async function ramenerValeursAnnonces() {
             let response = await fetch(`/annonces/getAnnonces`);
@@ -455,7 +462,7 @@
                 }
 
                 annonceList.innerHTML += `
-                    <div class="flex justify-center text-xs md:text-base space-x-2 py-3 border-b-2">
+                    <div class="annonceValue flex justify-center text-xs md:text-base space-x-2 py-3 border-b-2">
                         <div class="flex-1 flex items-center space-x-2 justify-center underline">${finaleDate}</div>
                         <input value="${annonce.id}" class="hidden">
                         <button class="voirAnnonce flex-1 bg-blue-600 outline-none text-xs md:text-base shadow-md transition-all duration-300 ease-in-out px-1 md:px-3 md:py-1 rounded-lg hover:bg-blue-700">Voir l'annonce</button>
@@ -467,7 +474,7 @@
             if (data.length == 0) {
                 notifAnnonce.classList.remove('border-r-2');
                 annonceList.innerHTML += `
-                    <span class="text-center text-xs md:text-base">Aucune annonce</span>
+                    <span id="aucuneAnnonce" class="text-center text-xs md:text-base">Aucune annonce</span>
                 `;
             } else {
                 allDeleteAnnonce.classList.remove('hidden');
@@ -476,7 +483,7 @@
 
         ramenerValeursAnnonces();
 
-        //Pour afficher les annonces
+         //Pour afficher les annonces
         annonceBtn.addEventListener('click', async () => {
             annonceList.classList.toggle('hidden');
 
@@ -490,49 +497,51 @@
 
         //Fermer les annonces
         closeModal.addEventListener('click', () => {
-            location.reload();
-        });
+                location.reload();
+            });
 
-        //S'il clique pour voir une annonce
-        annonceList.addEventListener('click', async (event) => {
-            let item = event.target;
+         //S'il clique pour voir une annonce
+         annonceList.addEventListener('click', async (event) => {
+                let item = event.target;
 
-            if (item.classList.contains('voirAnnonce')) {
-                let id = item.parentNode.querySelector('input').value;
-                
-                let response = await fetch(`/annonces/getAnnonce/${id}`);
-                let data = await response.json();
-                let lastName;
+                if (item.classList.contains('voirAnnonce')) {
+                    let id = item.parentNode.querySelector('input').value;
+                    
+                    let response = await fetch(`/annonces/getAnnonce/${id}`);
+                    let data = await response.json();
+                    let lastName;
 
-                if (data.annonce.user.last_name == null) {
-                    lastName = '';
-                } else {
-                    lastName = data.annonce.user.last_name;
+                    if (data.annonce.user.last_name == null) {
+                        lastName = '';
+                    } else {
+                        lastName = data.annonce.user.last_name;
+                    }
+
+                    if (data.annonce.user.role == 0) {
+                    role = 'Responsable: ';
+                    } else {
+                        role = 'Professeur: ';
+                    }
+
+                    annonceTitle.innerHTML = data.annonce.title;
+                    annonceUser.innerHTML = role + ': ' + data.annonce.user.first_name + ' ' + lastName;
+                    
+                    let annonceContentt = data.annonce.content;
+
+                    annonceContent.innerHTML = annonceContentt.replace(/\n/g, "<br>");
+
+                    modalVoirAnnonce.classList.remove('hidden');
                 }
-
-                if (data.annonce.user.role == 0) {
-                role = 'Responsable: ';
-                } else {
-                    role = 'Professeur: ';
-                }
-
-                annonceTitle.innerHTML = data.annonce.title;
-                annonceUser.innerHTML = role + ': ' + data.annonce.user.first_name + ' ' + lastName;
-                
-                let annonceContentt = data.annonce.content;
-
-                annonceContent.innerHTML = annonceContentt.replace(/\n/g, "<br>");
-
-                modalVoirAnnonce.classList.remove('hidden');
-            }
-        });
-
+            });
+        
         document.addEventListener('click', (event) => {
             let item = event.target;
 
             if ((!item.classList.contains('annonceClass') && !item.classList.contains('notifClass')) && (!item.parentNode.classList.contains('annonceClass') && !item.parentNode.classList.contains('notifClass'))) {
-                annonceList.classList.add('hidden');
-                notifList.classList.add('hidden');
+                if ((!item.classList.contains('annonceList') && !item.classList.contains('notifList')) && (!item.parentNode.classList.contains('annonceList') && !item.parentNode.classList.contains('notifList')) && (!item.parentNode.parentNode.classList.contains('annonceList') && !item.parentNode.parentNode.classList.contains('notifList')) && (!item.parentNode.parentNode.parentNode.classList.contains('annonceList') && !item.parentNode.parentNode.parentNode.classList.contains('notifList'))) {
+                    annonceList.classList.add('hidden');
+                    notifList.classList.add('hidden');
+                }
             }
         });
 
@@ -653,6 +662,7 @@
                     });
             //
         }
+
 
     ///////////////////////////////////////////////////////
     //DOM MANIPULATION
@@ -783,9 +793,391 @@
                 messages.forEach((message) => {
                     message.remove();
                 })
+                positionnementTooltip();
             }, 4000)
         }
         
+</script>
+
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
+
+    var channelAnnonce = pusher.subscribe('annonce-channel');
+
+    channelAnnonce.bind('annonce-refresh', async function (data) {
+        let actualUser = @json(auth()->user());
+        let annonce = data.annonce;
+        let type = data.type;
+
+        let trouver = false;
+        let annonce_relation;
+
+        annonce.annonces_relations.forEach((relation) => {
+            if (relation.user_id == actualUser.id) {
+                trouver = true;
+                annonce_relation = relation;
+            }
+        });
+
+        if (trouver) {
+            switch (type) {
+                case 'add':
+                    let responseAdd = await fetch(`/annonces/getAnnonces`);
+
+                    let dataAnnoncesAdd = await responseAdd.json();
+
+                    let annonceValueAdd = Array.from(document.getElementsByClassName('annonceValue'));
+
+                    if (annonceValueAdd) {
+                        annonceValueAdd.forEach((annonce) => {
+                            annonce.remove();
+                        });
+                    }
+
+                    dataAnnoncesAdd.forEach(async (annonce) => {
+
+                        let responseOfNowDate = await fetch('/nowDate');
+                        let now = await responseOfNowDate.json();
+
+                        let responseOfCreatedDate = await fetch(`/annonces/getAnnonceCreatedTime/${annonce.id}`);
+                        let created_at = await responseOfCreatedDate.json();
+
+                        now = new Date(now);
+                        created_at = new Date(created_at);
+
+                        let differenceEnMilli = now - created_at;
+
+                        let diffJour = parseInt(differenceEnMilli / (1000*60*60*24));
+
+                        let finaleDate = 'Aujourd\'hui';
+
+                        if (diffJour == 0) {
+                            finaleDate = `Aujourd'hui`;
+                        } else if (diffJour == 1) {
+                            finaleDate = `Hier`;
+                        } else if (diffJour == 2) {
+                            finaleDate = `Avant-Hier`;
+                        } else {
+                            finaleDate = `Il y'a ${diffJour} jours`;
+                        }
+
+                        annonceList.innerHTML += `
+                            <div class="annonceValue flex justify-center text-xs md:text-base space-x-2 py-3 border-b-2">
+                                <div class="flex-1 flex items-center space-x-2 justify-center underline">${finaleDate}</div>
+                                <input value="${annonce.id}" class="hidden">
+                                <button class="voirAnnonce flex-1 bg-blue-600 outline-none text-xs md:text-base shadow-md transition-all duration-300 ease-in-out px-1 md:px-3 md:py-1 rounded-lg hover:bg-blue-700">Voir l'annonce</button>
+                            </div>
+                        `;
+
+                    });
+
+                    document.getElementById('allDeleteAnnonce').classList.remove('hidden');
+
+                    let aucuneAnnonce = document.getElementById('aucuneAnnonce');
+
+                    if (aucuneAnnonce) {
+                        aucuneAnnonce.remove();
+                        notifAnnonce.classList.add('border-r-2');
+                    }
+
+                    nombreAnnonce.innerHTML = parseInt(nombreAnnonce.textContent) + 1;
+                break;
+                    
+                case 'edit':
+                    let responseEdit = await fetch(`/annonces/getAnnonces`);
+
+                    let dataAnnoncesEdit = await responseEdit.json();
+
+                    let annonceValueEdit = Array.from(document.getElementsByClassName('annonceValue'));
+
+                    if (annonceValueEdit) {
+                        annonceValueEdit.forEach((annonce) => {
+                            annonce.remove();
+                        });
+                    }
+                    
+
+                    dataAnnoncesEdit.forEach(async (annonce) => {
+
+                        let responseOfNowDate = await fetch('/nowDate');
+                        let now = await responseOfNowDate.json();
+
+                        let responseOfCreatedDate = await fetch(`/annonces/getAnnonceCreatedTime/${annonce.id}`);
+                        let created_at = await responseOfCreatedDate.json();
+
+                        now = new Date(now);
+                        created_at = new Date(created_at);
+
+                        let differenceEnMilli = now - created_at;
+
+                        let diffJour = parseInt(differenceEnMilli / (1000*60*60*24));
+
+                        let finaleDate = 'Aujourd\'hui';
+
+                        if (diffJour == 0) {
+                            finaleDate = `Aujourd'hui`;
+                        } else if (diffJour == 1) {
+                            finaleDate = `Hier`;
+                        } else if (diffJour == 2) {
+                            finaleDate = `Avant-Hier`;
+                        } else {
+                            finaleDate = `Il y'a ${diffJour} jours`;
+                        }
+
+                        annonceList.innerHTML += `
+                            <div class="annonceValue flex justify-center text-xs md:text-base space-x-2 py-3 border-b-2">
+                                <div class="flex-1 flex items-center space-x-2 justify-center underline">${finaleDate}</div>
+                                <input value="${annonce.id}" class="hidden">
+                                <button class="voirAnnonce flex-1 bg-blue-600 outline-none text-xs md:text-base shadow-md transition-all duration-300 ease-in-out px-1 md:px-3 md:py-1 rounded-lg hover:bg-blue-700">Voir l'annonce</button>
+                            </div>
+                        `;
+
+                    });
+
+                    if (dataAnnoncesEdit.length == 0) {
+                        notifAnnonce.classList.remove('border-r-2');
+                        document.getElementById('allDeleteAnnonce').classList.add('hidden');
+                        annonceList.innerHTML += `
+                            <span id="aucuneAnnonce" class="text-center text-xs md:text-base">Aucune annonce</span>
+                        `;
+                    } else {
+                        notifAnnonce.classList.add('border-r-2');
+                        document.getElementById('allDeleteAnnonce').classList.remove('hidden');
+
+                        let aucuneAnnonce = document.getElementById('aucuneAnnonce');
+
+                        if (aucuneAnnonce) {
+                            aucuneAnnonce.remove();
+                        }
+                    }
+
+                    if (parseInt(nombreAnnonce.textContent) == 0) {
+                        nombreAnnonce.innerHTML = parseInt(nombreAnnonce.textContent) + 1;
+                    }
+
+                break;
+
+                case 'delete':
+                    let responseDelete = await fetch(`/annonces/getAnnonces`);
+
+                    let dataAnnoncesDelete = await responseDelete.json();
+
+                    let annonceValueDelete = Array.from(document.getElementsByClassName('annonceValue'));
+
+                    if (annonceValueDelete) {
+                        annonceValueDelete.forEach((annonce) => {
+                            annonce.remove();
+                        });
+                    }
+                    
+
+                    dataAnnoncesDelete.forEach(async (annonce) => {
+
+                        let responseOfNowDate = await fetch('/nowDate');
+                        let now = await responseOfNowDate.json();
+
+                        let responseOfCreatedDate = await fetch(`/annonces/getAnnonceCreatedTime/${annonce.id}`);
+                        let created_at = await responseOfCreatedDate.json();
+
+                        now = new Date(now);
+                        created_at = new Date(created_at);
+
+                        let differenceEnMilli = now - created_at;
+
+                        let diffJour = parseInt(differenceEnMilli / (1000*60*60*24));
+
+                        let finaleDate = 'Aujourd\'hui';
+
+                        if (diffJour == 0) {
+                            finaleDate = `Aujourd'hui`;
+                        } else if (diffJour == 1) {
+                            finaleDate = `Hier`;
+                        } else if (diffJour == 2) {
+                            finaleDate = `Avant-Hier`;
+                        } else {
+                            finaleDate = `Il y'a ${diffJour} jours`;
+                        }
+
+                        annonceList.innerHTML += `
+                            <div class="annonceValue flex justify-center text-xs md:text-base space-x-2 py-3 border-b-2">
+                                <div class="flex-1 flex items-center space-x-2 justify-center underline">${finaleDate}</div>
+                                <input value="${annonce.id}" class="hidden">
+                                <button class="voirAnnonce flex-1 bg-blue-600 outline-none text-xs md:text-base shadow-md transition-all duration-300 ease-in-out px-1 md:px-3 md:py-1 rounded-lg hover:bg-blue-700">Voir l'annonce</button>
+                            </div>
+                        `;
+
+                    });
+
+                    if (dataAnnoncesDelete.length == 0) {
+                        notifAnnonce.classList.remove('border-r-2');
+                        document.getElementById('allDeleteAnnonce').classList.add('hidden');
+                        annonceList.innerHTML += `
+                            <span id="aucuneAnnonce" class="text-center text-xs md:text-base">Aucune annonce</span>
+                        `;
+                    }
+                    
+
+                    if (parseInt(nombreAnnonce.textContent) > 0) {
+                        nombreAnnonce.innerHTML = parseInt(nombreAnnonce.textContent) - 1;
+                    }
+                break;
+            }
+        }
+        
+    });
+
+    var channelNotif = pusher.subscribe('notif-channel');
+
+    channelNotif.bind('notif-refresh', async function (data) {
+        let resource = data.resource;
+        let actualUserId = {{ auth()->user()->id }};
+        let type = data.type;
+
+        let trouver = false
+
+        const response = await fetch(`/getUserInfos/${actualUserId}`);
+        
+        let actualUser = await response.json();
+
+        actualUser.levels_users.forEach((level) => {
+            if (resource.module.level_id == level.level_id) {
+                trouver = true;
+            }
+        });
+
+        if (trouver) {
+
+            //Supprimer les valeurs déjà existantes
+            let notifValue = Array.from(document.getElementsByClassName('notifValue'));
+            if (notifValue) {
+                notifValue.forEach((notif) => {
+                    notif.remove();
+                });
+            }
+
+            //Pour les notifications et le supprimer
+            let aucuneNotif = document.getElementById('aucuneNotif');
+            if (aucuneNotif) {
+                aucuneNotif.remove();
+            }
+            
+            //Récupérer le id pour l'utiliser dans le fetch
+            let id = {{ auth()->user()->id }};
+
+            fetch(`/getUserNotifs/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(async (notif) => {
+                        let responseOfNowDate = await fetch('/nowDate');
+                        let now = await responseOfNowDate.json();
+
+                        let responseOfCreatedDate = await fetch(`getNotifCreatedTime/${notif.id}`);
+                        let created_at = await responseOfCreatedDate.json();
+
+                        let finalDate;
+
+                        now = new Date(now);
+                        created_at = new Date(created_at);
+
+                        let differenceEnMilli = now - created_at;
+
+                        let diffJour = Math.floor(differenceEnMilli / (1000*60*60*24));
+
+                        if (diffJour == 0) {
+                            finalDate = 'Aujourd\'hui';
+                        } else if (diffJour == 1) {
+                            finalDate = 'Hier';
+                        } else if (diffJour == 2) {
+                            finalDate = 'Avant-hier';
+                        } else {
+                            finalDate = `Il y'a ${diffJour} jours`;
+                        }
+
+                        notifList.innerHTML += `
+                            <div class="notifValue flex space-x-2 md:space-x-4 p-2 text-xs md:text-base border-b-2">
+                                <div class="flex notifs justify-center flex-col items-center">
+                                    <span class="">Module:</span>
+                                    <span class="underline">${notif.resource.module.name}</span>
+                                    <span class="">Date:</span>
+                                    <span class="underline">${finalDate}</span>
+                                </div>
+                                <div class="flex notifs justify-end items-center">
+                                    <form action="{{ route('resources.index') }}" method="POST" class="m-0 p-0">
+                                        @csrf
+                                        <input name="searchNotif" id="searchNotif" type="text" class="hidden" value="${notif.resource.id}">
+                                        <button type="submit" class="bg-yellow-600 px-2 py-1 rounded-lg shadow-md shadow-gray-600 transition-all duration-300 hover:bg-yellow-700">Y accéder</button>
+                                    </form>
+                                    </div>
+                            </div>
+                        `;
+                    })
+
+                    if (data.length == 0) {
+                        allDeleteNotif.classList.add('hidden');
+                        notifResource.classList.remove('border-r-2');
+
+                        notifList.innerHTML += `
+                            <span id="aucuneNotif" class="text-center text-xs md:text-base">Aucune notification</span>
+                        `;
+                    } else {
+                        notifResource.classList.add('border-r-2');
+                        allDeleteNotif.classList.remove('hidden');
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error: ' + error);
+            });
+
+            let nombreNotifActuel = parseInt(nombreNotif.textContent);
+
+            switch (type) {
+                case 'add': 
+                    nombreNotif.innerHTML = nombreNotifActuel + 1;
+                break;
+                    
+                case 'edit':
+                    if (nombreNotifActuel == 0) {
+                        nombreNotif.innerHTML = nombreNotifActuel + 1;
+                    }
+                break;
+                
+                case 'delete':
+                    if (nombreNotifActuel > 0) {
+                        nombreNotif.innerHTML = nombreNotifActuel - 1;
+                    }
+                break;
+            }
+        }
+        
+    });
+
+    //Soummission des formulaires
+        var formIsSubmitting = false;
+
+        function submitFunction () {
+
+            if (formIsSubmitting) {
+                return false
+            } else {
+                formIsSubmitting = true;
+                return true;
+            }
+        }
+
+        function submitFunctionFalse () {
+            return false
+        }
+    //
+
 </script>
  
 @yield('scripts')

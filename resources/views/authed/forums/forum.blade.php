@@ -141,7 +141,7 @@
         @if (auth()->user()->role != 0)
             <!-- Message d'envoie -->
             <div class="flex justify-center flex-col">
-                <form method="POST" action="{{ route('forums.addMsgForum', ['level_id' => request('level_id')]) }}" class="p-0 m-0">
+                <form method="POST" action="{{ route('forums.addMsgForum', ['level_id' => request('level_id')]) }}" class="p-0 m-0" onsubmit="return submitFunction()">
                 @csrf
                 <div class="flex justify-center">
                     <textarea id="ecritureMessage" name="ecritureMessage" cols="50" rows="5" class="rounded-lg outline-none p-2" maxlength="150"></textarea>
@@ -161,6 +161,9 @@
 
     
 <script>
+    function positionnementTooltip() {
+
+    }
 
     //Manipulation de la messagerie
         const messagerie = document.getElementById('messagerie');
@@ -181,7 +184,7 @@
     
     @if (auth()->user()->role == 0)
     //Supprimer un commentaire
-        let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
 
         function AllMessages () {
             var allMessage = Array.from(document.getElementsByClassName('suppMsg'));
@@ -236,6 +239,7 @@
 
         var channel = pusher.subscribe('forum-channel');
         channel.bind('forum-new-message', async function(data) {
+
             let forum = data.forum;
 
             let forumId = forum.id;
@@ -247,6 +251,8 @@
             let level_id_broadcast = parseInt(forum.level.id);
 
             let level_id_actual = parseInt({{ $level_id }});
+
+            let responseResetMsg = fetch(`/users/resetMsg/${level_id_actual}`);
 
             if (level_id_broadcast == level_id_actual) {
                 let userMessageOrigine = forum.user;
@@ -329,6 +335,10 @@
         channel.bind('forum-delete-message', function (data) {
             let forum = data.forum
 
+            let level_id_actual = parseInt({{ $level_id }});
+
+            let responseResetMsg = fetch(`/users/resetMsg/${level_id_actual}`);
+
             const allMsg = Array.from(document.getElementsByClassName('messages'));
 
             allMsg.forEach((message) => {
@@ -344,6 +354,8 @@
             let level_id_broadcast = parseInt(data.level_id);
 
             let level_id_actual = parseInt({{ $level_id }});
+
+            let responseResetMsg = fetch(`/users/resetMsg/${level_id_actual}`);
 
             if (level_id_broadcast == level_id_actual) {
                 location.reload();

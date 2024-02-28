@@ -13,8 +13,11 @@ use App\Models\Level;
 use App\Models\Notif;
 use App\Models\Annonce;
 use App\Models\LevelsUser;
+use App\Models\UsersMessage;
 
 use League\Csv\Reader;
+
+use App\Events\UserRefresh;
 
 use Illuminate\Support\Carbon;
 
@@ -32,7 +35,7 @@ class UserController extends Controller
         foreach ($annonces as $annonce) {
             if ($annonce->date_expiration < $date) {
                 foreach ($annonce->annonces_relations as $relation) {
-                    if ($relation->user->annonce_viewed < $relation->created_at && $relation->user->annonce_viewed > 0) {
+                    if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
                         $relation->user->annonces--;
                         $relation->user->save();
                     }
@@ -53,24 +56,42 @@ class UserController extends Controller
                 'nombreEtudiants' => $nombreEtudiants,
             ]);
 
+        //Si c'est un professeur
         } else if (auth()->user()->role == 1) {
 
             $ressourcesDisponibles = Resource::whereHas('module', function ($query) {
                 $query->where('user_id', auth()->user()->id);
             })->count();
 
-            $messagesNonLus;
-            
-            return view('authed.dashboard');
+            $messagesNonLus = 0;
+            $usersMessages = UsersMessage::where('user_id', auth()->user()->id)->get();
 
+            foreach ($usersMessages as $userM) {
+                $messagesNonLus = $messagesNonLus + $userM->message;
+            }
+
+            return view('authed.dashboard', [
+                'ressourcesDisponibles' => $ressourcesDisponibles,
+                'messagesNonLus' => $messagesNonLus,
+            ]);
+
+        //Si c'est un etudiant
         } else {
             $ressourcesDisponibles = Resource::whereHas('module.level.levels_users', function ($query) {
                 $query->where('user_id', auth()->user()->id);
             })->count();
 
-            $messagesNonLus;
+            $messagesNonLus = 0;
+            $usersMessages = UsersMessage::where('user_id', auth()->user()->id)->get();
 
-            return view('authed.dashboard');
+            foreach ($usersMessages as $userM) {
+                $messagesNonLus = $messagesNonLus + $userM->message;
+            }
+
+            return view('authed.dashboard', [
+                'ressourcesDisponibles' => $ressourcesDisponibles,
+                'messagesNonLus' => $messagesNonLus,
+            ]);
 
         }
 
@@ -138,28 +159,57 @@ class UserController extends Controller
                                       ->orWhere('name', 'like', ucfirst($search) . '%')
                                       ->orWhere('name', 'like', strtoupper($search) . '%');
                            })->paginate(5);
+
+                           $allUsers = User::with(['levels_users.level.sector'])
+                           ->where('first_name', 'like', strtolower($search) . '%')
+                           ->orWhere('first_name', 'like', strtoupper($search) . '%')
+                           ->orWhere('first_name', 'like', ucfirst($search) . '%')
+                           ->orWhere('last_name', 'like', strtolower($search) . '%')
+                           ->orWhere('last_name', 'like', strtoupper($search) . '%')
+                           ->orWhere('last_name', 'like', ucfirst($search) . '%')
+                           ->orWhere('sexe', 'like', strtolower($search) . '%')
+                           ->orWhere('sexe', 'like', strtoupper($search) . '%')
+                           ->orWhere('sexe', 'like', ucfirst($search) . '%')
+                           ->orWhere('email', 'like', $search . '%')
+                           ->orWhere('phone', 'like', $search . '%')
+                           ->orWhere('role', 'like', $search . '%')
+                           ->orWhereHas('levels_users.level.sector', function ($query) use ($search) {
+                                $query->where('name', 'like', strtolower($search) . '%')
+                                      ->orWhere('name', 'like', ucfirst($search) . '%')
+                                      ->orWhere('name', 'like', strtoupper($search) . '%');
+                           })->get();
                         $loup = 667;
         } else if ($request->input('searchFiliere')) {
             $search = $request->input('searchFiliere');
             
             if ($search == 'all') {
                 $users = User::whereHas('levels_users')->with('levels_users.level.sector')->paginate(5);
+
+                $allUsers = User::whereHas('levels_users')->with('levels_users.level.sector')->get();
+
             } else {
                 $users = User::whereHas('levels_users.level', function ($query) use ($search) {
                     $query->where('id', $search);
                 })->with('levels_users.level.sector')->paginate(5);
+
+                $allUsers = User::whereHas('levels_users.level', function ($query) use ($search) {
+                    $query->where('id', $search);
+                })->with('levels_users.level.sector')->get();
             }
 
             $loup = 667;
         }else {
             if ($request->input('nombreProfesseurs')) {
                 $users = User::where('role', 1)->with(['levels_users.level.sector'])->paginate(5);
+                $allUsers = User::where('role', 1)->with(['levels_users.level.sector'])->get();
                 $loup = 667;
             } else if ($request->input('nombreEtudiants')) {
                 $users = User::where('role', 2)->with(['levels_users.level.sector'])->paginate(5);
+                $allUsers = User::where('role', 2)->with(['levels_users.level.sector'])->get();
                 $loup = 667;
             } else {
                 $users = User::with(['levels_users.level.sector'])->paginate(5);
+                $allUsers = User::with(['levels_users.level.sector'])->get();
                 $loup = null;
             }
 
@@ -173,6 +223,7 @@ class UserController extends Controller
 
         return view('authed.users',[ 
         'users' => $users,
+        'allUsers' => $allUsers,
         'loup' => $loup,
         'sectors' => $sectors,
         'levels' => $levels
@@ -235,6 +286,8 @@ class UserController extends Controller
             'notif_viewed' => $now,
             'annonces' => 0,
             'annonce_viewed' => $now,
+            'messages' => 0,
+            'message_viewed' => $now,
             'password' => Hash::make($password. '123') 
         ]);
 
@@ -258,6 +311,13 @@ class UserController extends Controller
                         'level_id' => $level,
                         'user_id' => $user->id
                     ]);
+                    
+                    UsersMessage::Create([
+                        'message' => 0,
+                        'viewed_at' => now(),
+                        'level_id' => $level,
+                        'user_id' => $user->id,
+                    ]);
                 }
             }
         } else if ($role == 2){
@@ -267,10 +327,19 @@ class UserController extends Controller
                 'level_id' => $id,
                 'user_id' => $user->id
             ]);
+
+            UsersMessage::Create([
+                'message' => 0,
+                'viewed_at' => now(),
+                'level_id' => $id,
+                'user_id' => $user->id,
+            ]);
         }
 
+        event(new UserRefresh($user));
+
         return redirect()->back()->with([
-            'success' => 'L utilisateur a bien été enregistré',
+            'success' => 'L\'utilisateur a bien été enregistré',
             'class' => 'success'
         ]);
     }   
@@ -363,13 +432,13 @@ class UserController extends Controller
 
         if ($user->role == 0) {
             return redirect()->back()->with([
-                'success' => 'L utilisateur a bien été modifié'
+                'success' => 'L\'utilisateur a bien été modifié'
             ]);
         }
 
         LevelsUser::where('user_id', $user->id)->delete();
 
-        //Si admin ou prof
+        //Si prof
         if ($role == 1) {
             $levels = array();
             foreach ($request->all() as $key => $value) {
@@ -379,15 +448,70 @@ class UserController extends Controller
             }
 
             //Si ils ont ajouté des filières
-            if (!empty($levels)) {
+            if (empty($levels)) {
+                return redirect()->back()->with([
+                    'error'  => 'Veuillez saisir des filières',
+                ]);
+            }
+             else {
+
+                $userMsgNew = array();
+                $i = 0;
+                //Suppression des filières pour clear les usermessage
+                foreach ($levels as $key => $level) {
+                    $userMsg = UsersMessage::where('user_id', $user->id)->get();
+
+                    foreach ($userMsg as $userM) {
+                        if ($userM->level_id == $level) {
+                            $userMsgNew[$i] = array(
+                                "message" => $userM->message,
+                                "viewed_at" => $userM->viewed_at,
+                                "level_id" => $userM->level_id,
+                                "user_id" => $userM->user_id,
+                            );
+                        }
+                    }
+                    $i++;
+                }
+                
+                UsersMessage::where('user_id', $user->id)->delete();
+
+                foreach ($userMsgNew as $key => $u) {
+                    UsersMessage::Create([
+                        'message' => $u['message'],
+                        'viewed_at' => $u['viewed_at'],
+                        'level_id' => $u['level_id'],
+                        'user_id' => $u['user_id'],
+                    ]);
+                }
+
                 foreach ($levels as $key => $level) {
                     LevelsUser::Create([
                         'level_id' => $level,
-                        'user_id' => $user->id
+                        'user_id' => $user->id,
                     ]);
+
+                    $usersMsg = UsersMessage::where('user_id', $user->id)->get();
+
+                    $trouver = false;
+
+                    foreach ($usersMsg as $userM) {
+                        if ($userM->level_id == $level) {
+                            $trouver = true;
+                        }
+                    }
+
+                    if (!$trouver) {
+                        UsersMessage::Create([
+                            'message' => 0,
+                            'viewed_at' => now(),
+                            'level_id' => $level,
+                            'user_id' => $user->id,
+                        ]);
+                    }
                 }
             }
-            //Si c'est un étudiant
+        //Si c'est un étudiant
         } else {
             $id = $request->input('filiereSolo');
 
@@ -395,10 +519,26 @@ class UserController extends Controller
                 'level_id' => $id,
                 'user_id' => $user->id
             ]);
+
+            $userMsg = UsersMessage::where('user_id', $user->id)->first();
+
+            if ($userMsg->level_id != $id) {
+                UsersMessage::where('user_id', $user->id)->delete();
+
+                UsersMessage::Create([
+                    'message' => 0,
+                    'level_id' => $id,
+                    'user_id' => $user->id,
+                ]);
+
+            }
+
         }
 
+        event(new UserRefresh($user));
+
         return redirect()->back()->with([
-            'success' => 'L utilisateur a bien été modifié'
+            'success' => 'L\'utilisateur a bien été modifié'
         ]);
     }
 
@@ -414,6 +554,8 @@ class UserController extends Controller
                 'error' => 'Utilisateur introuvable'
             ]);
         }
+
+        event(new UserRefresh($user));
 
         $user->delete();
 
@@ -448,7 +590,7 @@ class UserController extends Controller
 
     public function getUserNotifs(Request $request, $id) {
 
-        $notifs = Notif::with(['resource.file'])->with(['resource.module'])->where('user_id', $id)->orderBy('created_at', 'desc')->get();
+        $notifs = Notif::with(['resource.file'])->with(['resource.module'])->where('user_id', $id)->orderBy('updated_at', 'desc')->get();
         
         return response()->json($notifs, 200);
     }
@@ -456,7 +598,7 @@ class UserController extends Controller
     public function getNotifCreatedTime ($id) {
         $notif = Notif::find($id);
 
-        $date = $notif->created_at->toDateTimeString();
+        $date = $notif->updated_at->toDateTimeString();
 
         return response()->json($date, 200);
     }
@@ -474,7 +616,6 @@ class UserController extends Controller
     public function download(Request $request) {
         //Recuperation des utilisateurs
         $users = json_decode($request->input('users'));
-        $users = $users->data;
 
         // $users = User::All();
         // dd($users);
@@ -682,14 +823,43 @@ class UserController extends Controller
                         'level_id' => $level_id,
                         'user_id' => $u->id,
                     ]);
+
+                    UsersMessage::Create([
+                        'message' => 0,
+                        'viewed_at' => now(),
+                        'level_id' => $level_id,
+                        'user_id' => $u->id,
+                    ]);
+
                 }
 
             }
+
+            event(new UserRefresh($users));
+
 
             return redirect()->back()->with('success', 'Les données du fichier CSV ont été traitées avec succès.');
         }
 
         return redirect()->back()->with('error', 'Aucun fichier sélectionné.');
+    }
+
+    public function getUserInfos (Request $request, $id) {
+        $user = User::with('levels_users.level.sector')->find($id);
+
+        return response()->json($user, 200);
+    }
+    
+    public function resetMsg ($level_id) {
+        $user = User::find(auth()->user()->id);
+
+        $userMessage = UsersMessage::where('level_id', $level_id)->where('user_id', $user->id)->first();
+
+        $userMessage->viewed_at = now();
+        $userMessage->message = 0;
+        $userMessage->save();
+
+        return response()->json(200);
     }
 
 } 

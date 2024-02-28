@@ -57,7 +57,7 @@
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
         </div>
         <table id="tablesector" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
             <thead>
@@ -68,17 +68,34 @@
             </thead>
             <tbody>
                 @foreach ($sectors as $sector)
+
+                    <!-- Toutes les tooltips -->
+                    <div id="tooltip-view{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Voir
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-edit{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Modifier
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
+                    <div id="tooltip-delete{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
+                        Supprimer
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+
                     <tr>
-                        <td class="nom"><div class="flex justify-center items-center">{{ $sector->name }}</div></td>
+                        <td class="nom"><div class="flex justify-center items-center font-bold">{{ $sector->name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
-                                <button class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                <button data-tooltip-target="tooltip-view{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 <button class="id hidden">{{ $sector->id }}</button>
-                                <button class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button data-tooltip-target="tooltip-edit{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                 <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button value="{{ $sector->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                    <button data-tooltip-target="tooltip-delete{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $sector->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
                         </td>
@@ -135,8 +152,8 @@
     <!-- ADD MODALS -->
     <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" id="formAddSector" action="{{ route('sectors.store') }}" class="m-0 p-0">    
+        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
+        <form method="POST" id="formAddSector" action="{{ route('sectors.store') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -170,6 +187,7 @@
                 <div id="levelList" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
                     <input type="text" class="hidden" name="addMaxDegree" id="addMaxDegree">
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -214,7 +232,7 @@
     <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
         <!-- Modal -->
         <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('sectors.edit') }}" class="m-0 p-0">    
+        <form method="POST" action="{{ route('sectors.edit') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
             @csrf
             <!-- Close -->
             <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
@@ -249,6 +267,7 @@
                 <div id="levelListEdit" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
                     <input type="text" class="hidden" name="editMaxDegree" id="editMaxDegree">
                 </div>
+            </div>
             <!-- Footer -->
             <div class="w-full p-5 py-3 flex justify-around items-center">
                 <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
@@ -330,54 +349,58 @@
         if (event.keyCode == 13) {
             event.preventDefault();
             let level = addLevel.value;
-        addLevel.value = '';
+            addLevel.value = '';
 
-        let input = document.createElement('input');
-        let span = document.createElement('span');
-        let input_nombreI = document.createElement('input');
-        let i = document.createElement('i');
+            if (level == '') {
+                return false;
+            }
 
-        let div1 = document.createElement('div');
-        let div2 = document.createElement('div');
-        let div3 = document.createElement('div');
+            let input = document.createElement('input');
+            let span = document.createElement('span');
+            let input_nombreI = document.createElement('input');
+            let i = document.createElement('i');
 
-        let divGenerale = document.createElement('div');
+            let div1 = document.createElement('div');
+            let div2 = document.createElement('div');
+            let div3 = document.createElement('div');
 
-        divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
+            let divGenerale = document.createElement('div');
 
-        div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-        div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-        div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevel');
+            divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
 
-        i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
+            div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
+            div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
+            div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevel');
+
+            i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
 
 
-        input_nombreI.value = jAdd;
-        input_nombreI.setAttribute('name', 'addDegree' + jAdd);
-        input_nombreI.classList.add('hidden', 'inputDegreeLevel');
+            input_nombreI.value = jAdd;
+            input_nombreI.setAttribute('name', 'addDegree' + jAdd);
+            input_nombreI.classList.add('hidden', 'inputDegreeLevel');
 
-        input.value = level;
-        input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
-        input.setAttribute('name', 'addName' + jAdd)
-        input.setAttribute('readonly', true);
+            input.value = level;
+            input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
+            input.setAttribute('name', 'addName' + jAdd)
+            input.setAttribute('readonly', true);
 
-        span.appendChild(i);
+            span.appendChild(i);
 
-        div1.appendChild(input);
-        div2.appendChild(span);
-        div3.textContent = jAdd;
+            div1.appendChild(input);
+            div2.appendChild(span);
+            div3.textContent = jAdd;
 
-        divGenerale.appendChild(input_nombreI);
-        divGenerale.appendChild(div3);
-        divGenerale.appendChild(div1);
-        divGenerale.appendChild(div2);
+            divGenerale.appendChild(input_nombreI);
+            divGenerale.appendChild(div3);
+            divGenerale.appendChild(div1);
+            divGenerale.appendChild(div2);
 
-        levelList.appendChild(divGenerale);
+            levelList.appendChild(divGenerale);
 
-        addMaxDegree.value = jAdd;
+            addMaxDegree.value = jAdd;
 
-        jAdd++;
-        }
+            jAdd++;
+            }
     });
 
     function resetValuesAddModal() {
@@ -596,6 +619,8 @@
     const levelListEdit = document.getElementById('levelListEdit');
     const editMaxDegree = document.getElementById('editMaxDegree');
 
+    
+
     var jEdit = 1;
 
 
@@ -811,11 +836,82 @@
 
     }
 
+    //Pour l'entrée editLevel
+    editLevel.addEventListener('keydown', (event) => {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            let level = editLevel.value;
+            editLevel.value = '';
+
+            if (level == '') {
+                return false;
+            }
+
+            let input = document.createElement('input');
+            let span = document.createElement('span');
+            let input_nombreI = document.createElement('input');
+            let i = document.createElement('i');
+
+            let div1 = document.createElement('div');
+            let div2 = document.createElement('div');
+            let div3 = document.createElement('div');
+
+            let divGenerale = document.createElement('div');
+
+            divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
+
+            div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
+            div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
+            div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevelEdit');
+
+            i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
+
+            input_nombreI.value = jEdit;
+            input_nombreI.setAttribute('name', 'editDegree' + jEdit);
+            input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
+
+            input.value = level;
+            input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
+            input.setAttribute('name', 'editName' + jEdit)
+            input.setAttribute('readonly', true);
+
+            span.appendChild(i);
+
+            div1.appendChild(input);
+            div2.appendChild(span);
+            div3.textContent = jEdit;
+
+            divGenerale.appendChild(input_nombreI);
+            divGenerale.appendChild(div3);
+            divGenerale.appendChild(div1);
+            divGenerale.appendChild(div2);
+
+            levelListEdit.appendChild(divGenerale);
+
+            editMaxDegree.value = jEdit;
+
+            ordinateDegreeAndNameEdit();
+
+            jEdit++;
+        }
+    });
+
 
     //////////////////////////
     //Afficher les niveaux
     //////////////////////////
+</script>
 
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
 
+    var channel = pusher.subscribe('sector-channel');
+
+    channel.bind('sector-refresh', async function (data) {
+        location.reload();
+    });
 </script>
 @endsection

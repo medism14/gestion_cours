@@ -24,8 +24,6 @@ return new class extends Migration
             $table->datetime('notif_viewed')->nullable();
             $table->bigInteger('annonces')->nullable();
             $table->datetime('annonce_viewed')->nullable();
-            $table->bigInteger('messages')->nullable();
-            $table->datetime('message_viewed_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

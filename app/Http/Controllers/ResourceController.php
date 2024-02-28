@@ -7,11 +7,15 @@ use App\Models\Resource;
 use App\Models\Sector;
 use App\Models\Module;
 use App\Models\Notif;
+use App\Models\Level;
 use App\Models\File;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+
+use App\Events\ResourceRefresh;
+use App\Events\NotifRefresh;
 
 class ResourceController extends Controller
 {
@@ -20,7 +24,8 @@ class ResourceController extends Controller
         auth()->user()->notifs = 0;
         auth()->user()->save();
 
-        $id = auth()->user()->id;
+        $user_id = auth()->user()->id;
+
         function manip($type, $string) {
             if ($type == "maj") {
                 return strtoupper($string);
@@ -31,10 +36,18 @@ class ResourceController extends Controller
             }
         }
 
+        if ($request->input('moduleList')) {
+            $id = $request->input('moduleList');
+
+            $resources = Resource::where('module_id', $id)->orderBy('id', 'desc')->paginate(5);
+
+            $loup = 667;
+        }
+
         if ($request->input('searchNotif')) {
             $id = $request->input('searchNotif');
 
-            $resources = Resource::where('id', $id)->paginate(5);
+            $resources = Resource::where('id', $id)->orderBy('id', 'desc')->paginate(5);
             $loup = 667;
         }
 
@@ -44,9 +57,9 @@ class ResourceController extends Controller
             if (auth()->user()->role == 1) {
             $modules = Module::where('user_id', auth()->user()->id)->get();
 
-            $resources = Resource::where(function ($query) use ($search, $id) {
-                                $query->whereHas('module', function ($query) use ($id) {
-                                    $query->where('user_id', $id);
+            $resources = Resource::where(function ($query) use ($search, $user_id) {
+                                $query->whereHas('module', function ($query) use ($user_id) {
+                                    $query->where('user_id', $user_id);
                                 });
                         
                                 $query->where(function ($query) use ($search) {
@@ -70,13 +83,13 @@ class ResourceController extends Controller
                                         });
                                 });
                             })
-                            ->paginate(5);
+                            ->orderBy('id', 'desc')->paginate(5);
             //Si c'est un etudiant qui fait la recherche
             } else if (auth()->user()->role == 2) {
 
-                $resources = Resource::where(function ($query) use ($id, $search) {
-                                    $query->whereHas('module.level.levels_users.user', function($query) use ($id){
-                                        $query->where('id', $id)->where('role', 2);
+                $resources = Resource::where(function ($query) use ($user_id, $search) {
+                                    $query->whereHas('module.level.levels_users.user', function($query) use ($user_id){
+                                        $query->where('id', $user_id)->where('role', 2);
                                     });
 
                                     $query->where(function($query) use ($search) {
@@ -94,7 +107,7 @@ class ResourceController extends Controller
                                              ->orWhere('name', 'like', manip("cap", $search) . '%');
                                          });
                                     });
-                                })->paginate(5);
+                                })->orderBy('id', 'desc')->paginate(5);
             //Si c'est un admin qui fait la recherche
             } else {
                 $modules = Module::all();
@@ -116,34 +129,43 @@ class ResourceController extends Controller
                                         ->orWhere('name', 'like', manip("min", $search) . '%')
                                         ->orWhere('name', 'like', manip("cap", $search) . '%');
                                     })
-                                    ->paginate(5);
+                                    ->orderBy('id', 'desc')->paginate(5);
             }
 
             $loup = 667;
         } 
         
-        if (!$request->input('searchNotif') && !$request->input('search')) {
+        if (!$request->input('searchNotif') && !$request->input('search') && !$request->input('moduleList')) {
             $loup = null;
 
             if (auth()->user()->role == 1) {
                 $modules = Module::where('user_id', auth()->user()->id)->get();
-                $resources = Resource::whereHas('module', function($query) use ($id){
-                    $query->where('user_id', $id);
-                })->paginate(5);
+                $resources = Resource::whereHas('module', function($query) use ($user_id){
+                    $query->where('user_id', $user_id);
+                })->orderBy('id', 'desc')->paginate(5);
             } else if (auth()->user()->role == 2) {
-                $resources = Resource::whereHas('module.level.levels_users.user', function($query) use ($id){
-                    $query->where('id', $id)->where('role', 2);
-                })->paginate(5);
+                $resources = Resource::whereHas('module.level.levels_users.user', function($query) use ($user_id){
+                    $query->where('id', $user_id)->where('role', 2);
+                })->orderBy('id', 'desc')->paginate(5);
             } else {
                 $modules = Module::all();
-                $resources = Resource::paginate(5);
+                $resources = Resource::orderBy('id', 'desc')->paginate(5);
             }
 
         }
 
         if (auth()->user()->role == 2) {
-            return view('authed.resources', [
+
+                $level= Level::whereHas('levels_users', function($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                })->first();
+
+
+                $modulesSearch = Module::where('level_id', $level->id)->get();
+
+                return view('authed.resources', [
                 'resources' => $resources,
+                'modulesSearch' => $modulesSearch,
                 'loup' => $loup
             ]);
         } else {
@@ -154,7 +176,6 @@ class ResourceController extends Controller
             ]);
         }
 
-        
     }
 
     public function store (Request $request) {
@@ -229,6 +250,11 @@ class ResourceController extends Controller
             'filetype' => $fileType,
             'resource_id' => $resource->id 
         ]);
+
+        $resource = Resource::where('id', $resource->id)->with('module.level')->first();
+
+        event(new ResourceRefresh($resource));
+        event(new NotifRefresh($resource, 'add'));
 
         return redirect()->back()->with([
             'success' => 'La resource a bien été ajouté'
@@ -315,6 +341,37 @@ class ResourceController extends Controller
                     'resource_id' => $resource->id,
                 ]);
             }
+        //S'il n'a pas changé de module mais qu'on verifie tout de même
+        } else {
+            //Recuperer le level_id
+            $level_id = $resource->module->level_id;
+
+            //Users qui auront la notifs
+            $usersNotifs = User::where('role', 2)->whereHas('levels_users', function($query) use ($level_id) {
+                $query->where('level_id', $level_id);
+            })->get();
+
+            //Reduire les notifs de l'utilisateur
+            foreach ($usersNotifs as $user) {
+                if ($resource->updated_at > $user->notif_viewed && $user->notifs != 0) {
+                    $user->notifs = $user->notifs--;
+                    $user->save();
+                }
+            }
+
+            //Supprimer toutes les notifs
+            $notifsToDelete = Notif::where('resource_id', $resource->id)->delete();
+
+            //Ajouter des nouvelles notifs
+            foreach ($usersNotifs as $user) {
+                Notif::Create([
+                    'user_id' => $user->id,
+                    'resource_id' => $resource->id,
+                ]);
+
+                $user->notifs = $user->notifs++;
+                $user->save();
+            }
         }
 
         $resource->description = $description;
@@ -345,6 +402,12 @@ class ResourceController extends Controller
             ]);
         }
 
+        $resource = Resource::where('id', $resource->id)->with('module.level')->first();
+
+        event(new ResourceRefresh($resource));
+        event(new NotifRefresh($resource, 'edit'));
+
+
         return redirect()->back()->with([
             'success' => 'La resource a bien été modifié'
         ]);
@@ -367,7 +430,10 @@ class ResourceController extends Controller
     }
 
     public function delete (Request $request, $id) {
-        $resource = Resource::find($id);
+        $resource = Resource::with('module.level')->find($id);
+
+        event(new ResourceRefresh($resource));
+        event(new NotifRefresh($resource, 'delete'));
 
         if ($resource) {   
 
@@ -378,7 +444,7 @@ class ResourceController extends Controller
             })->where('role', 2)->get(); 
 
             foreach ($users as $user) {
-                if ($user->notif_viewed < $resource->created_at) {
+                if ($user->notif_viewed < $resource->updated_at) {
                     $user->notifs = $user->notifs - 1;
                     $user->save();
                 }
