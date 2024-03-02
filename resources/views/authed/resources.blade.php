@@ -68,14 +68,14 @@
                     </select>
                     @else
                     <select name="moduleList" id="moduleList" class="outline-none px-3 py-1 rounded-lg text-xs md:text-base focus:ring-2 border-none focus:border-slate-700 shadow-md">
-                        <option class="hidden" value="" selected></option>
+                        <option class="hidden" value="" selected>Recherchez un module</option>
                         @foreach ($modulesSearch as $moduleSearch)
                             <option value="{{ $moduleSearch->id }}">{{ $moduleSearch->name }}</option>
                         @endforeach
                     </select>
                     @endif
                 </div>
-        </form> 
+        </form>     
                 <div class="flex flex-col items-center justify-center px-3">
                 <form action="{{ route('resources.index') }}" class="p-0 m-0 inline">
                     @csrf

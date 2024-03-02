@@ -34,7 +34,8 @@
         <!-- Header -->
         <header class="bg-gray-700 flex items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[20px] text-xs sm:text-base">
             <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/papa.png') }}" width="55" height="55"></div>
-            <div class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1></div>
+            <div id="petitEcran" class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">ENT</h1></div>
+            <div id="grandEcran" class="flex-1 flex justify-center hidden"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Espace de travail numérique</h1></div>
             <div class="flex-1 flex justify-end">
             <nav class="mr-5">
                 <ul class="list-style-none">
@@ -154,9 +155,6 @@
                 let newWidth = email.offsetWidth  - width;
 
                 password.style.width = `${newWidth}px`;
-
-
-
             }
 
             window.addEventListener('resize', () => {
@@ -164,6 +162,24 @@
             });
 
             modifTaille();
+
+            const petitEcran = document.getElementById('petitEcran');
+            const grandEcran = document.getElementById('grandEcran');
+            
+            window.addEventListener('resize', () => {
+                EntName();
+            });
+
+            function EntName () {
+                if (mediaQuery.matches) {
+                    petitEcran.classList.remove('hidden');
+                    grandEcran.classList.add('hidden');
+                } else {
+                    petitEcran.classList.add('hidden');
+                    grandEcran.classList.remove('hidden');
+                }
+            }
+            EntName();
         </script>
     </body>
     </html>

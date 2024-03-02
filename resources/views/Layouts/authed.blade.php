@@ -77,7 +77,7 @@
                     </div>
                     <!-- SideBar Title -->
                     <div class="block p-5 rounded-lg text-white text-xl text-center">
-                        <a href="{{ route('dashboard') }}" class="border-b-2">Gestion de cours</a>
+                        <a href="{{ route('dashboard') }}" class="border-b-2">Espace de Travail Numérique</a>
                     </div>
 
                     <hr class="mb-4 rounded border-4 border-gray-400"></hr>
@@ -258,8 +258,8 @@
                     </div>
 
                     <!-- Row -->
-                    <div class="flex justify-center">
-                        <div class="flex-1 flex justify-center break-words text-center">
+                    <div class="flex">
+                        <div class="flex-1 flex break-words">
                             <p id="annonceContent"></p>
                         </div>
                     </div>
@@ -307,12 +307,11 @@
                 return response.json();
             })
             .then(data => {
-                    
                 data.forEach(async (notif) => {
                     let responseOfNowDate = await fetch('/nowDate');
                     let now = await responseOfNowDate.json();
 
-                    let responseOfCreatedDate = await fetch(`getNotifCreatedTime/${notif.id}`);
+                    let responseOfCreatedDate = await fetch(`/getNotifCreatedTime/${notif.id}`);
                     let created_at = await responseOfCreatedDate.json();
 
                     let finalDate;

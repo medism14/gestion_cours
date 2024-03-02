@@ -88,7 +88,7 @@
                     </div>
 
                     @if (auth()->user()->role != 2)
-                        @if ((auth()->user()->role == 1 && annonce->user_id == auth()->user()->id) || auth()->user()->role == 0)
+                        @if ((auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id) || auth()->user()->role == 0)
                             <div id="tooltip-edit{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
                                 Modifier
                                 <div class="tooltip-arrow" data-popper-arrow></div>
@@ -399,8 +399,8 @@
                 </div>
 
                 <!-- Row -->
-                <div class="flex justify-center">
-                    <div class="flex-1 flex justify-center break-words text-center">
+                <div class="flex">
+                    <div class="flex-1 flex break-words">
                         <p id="annonceContentViewModal2"></p>
                     </div>
                 </div>
@@ -1149,7 +1149,7 @@
     var channel = pusher.subscribe('annonce-channel');
 
     channel.bind('annonce-refresh', async function (data) {
-        
+        location.reload();
     });
 </script>
 

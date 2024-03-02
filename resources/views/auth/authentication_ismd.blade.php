@@ -34,7 +34,7 @@
         <!-- Header -->
         <header class="bg-[#157D0A] flex items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[20px] text-xs sm:text-base">
             <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/ismd.jpg') }}" width="55" height="55"></div>
-            <div class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Gestion de cours</h1></div>
+            <div class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Campus ISMD</h1></div>
             <div class="flex-1 flex justify-end">
             <nav class="mr-5">
                 <ul class="list-style-none">
