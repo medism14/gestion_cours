@@ -67,7 +67,7 @@
     <div id="table-div" class="block w-full">
         @if (auth()->user()->role != 2)
             <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button id="openModalAdd" title="Ajouter" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         @endif
         <table id="tableannonce" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
@@ -81,57 +81,37 @@
             <tbody>
                 @foreach ($annonces as $annonce)
 
-                    <!-- Toutes les tooltips -->
-                    <div id="tooltip-view{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Voir
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
-                    @if (auth()->user()->role != 2)
-                        @if ((auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id) || auth()->user()->role == 0)
-                            <div id="tooltip-edit{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                                Modifier
-                                <div class="tooltip-arrow" data-popper-arrow></div>
-                            </div>
-
-                            <div id="tooltip-delete{{$annonce->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                                Supprimer
-                                <div class="tooltip-arrow" data-popper-arrow></div>
-                            </div>
-                        @endif
-                    @endif
-
                     <tr>
                         <td class="nom flex-1"><div class="flex justify-center items-center font-bold">{{ $annonce->title }}</div></td>
                         <td class="nom flex-1"><div class="flex justify-center items-center font-bold">{{ $annonce->user->role == '0' ? 'Responsable:' : ($annonce->user->role  == 1 ? 'Professeur: ' : '   ' ) }} {{ $annonce->user->first_name }} {{ $annonce->user->last_name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
                                 @if (auth()->user()->role == 2)
-                                    <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                    <button title="Voir" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 @endif
 
                                 <button class="id hidden">{{ $annonce->id }}</button>
                                 @if (auth()->user()->role != 2)
                                     @if (auth()->user()->role == 1 && $annonce->user_id == auth()->user()->id)
-                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                        <button data-tooltip-target="tooltip-edit{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
                                             @method('DELETE')
-                                            <button data-tooltip-target="tooltip-delete{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                            <button title="Supprimer" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     @elseif (auth()->user()->role == 1 && $annonce->user_id != auth()->user()->id)
-                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button title="Voir" class="openModalView2 text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                     @endif
                                 
 
                                     @if (auth()->user()->role == 0)
-                                        <button data-tooltip-target="tooltip-view{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                        <button data-tooltip-target="tooltip-edit{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                        <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                        <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                         <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" class="m-0 p-0">
                                             @csrf
                                             @method('DELETE')
-                                            <button data-tooltip-target="tooltip-delete{{$annonce->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                            <button title="Supprimer" value="{{ $annonce->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     @endif
                                 @else

@@ -18,9 +18,6 @@ class AnnonceController extends Controller
 {
     public function index (Request $request) {
 
-        auth()->user()->annonces = 0;
-        auth()->user()->save();
-
         $loup = null;
         
         function min ($string) {
@@ -161,6 +158,10 @@ class AnnonceController extends Controller
                 $loup = 667;
             }
         }
+
+        auth()->user()->annonces = 0;
+        auth()->user()->annonce_viewed = now();
+        auth()->user()->save();
         
         
         return view('authed.annonces', [

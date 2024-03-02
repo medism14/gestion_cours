@@ -99,27 +99,17 @@
                 <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0" onsubmit="return submitFunction()">
                     @csrf
                     <input type="hidden" name="users" value="{{ json_encode($allUsers) }}">
-                    <button id="download" data-tooltip-target="tooltip-download" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
-                
-                    <div id="tooltip-download" role="tooltip" class="absolute invisible z-10 inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-md opacity-0 tooltip dark:bg-gray-700">
-                        Télécharger
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
+                    <button id="download" title="Télécharger" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
                 </form>
 
                 <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data" onsubmit="return submitFunction()">
                     @csrf
                     <input id="importInput" name="fichier" type="file" class="hidden">
-                    <button title="Importer" id="import" data-tooltip-target="tooltip-import" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
-
-                    <div id="tooltip-import" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Importer
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
+                    <button title="Importer" title="Importer" id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
                 </form>
             </div>
             <div class="flex-1 flex justify-end">
-                <button title="Ajouter" id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+                <button title="Ajouter" id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.65rem] lg:text-sm">
@@ -137,23 +127,6 @@
             </thead>
             <tbody>
                 @foreach ($users as $user)
-
-                    <!-- Toutes les tooltips -->
-                    <div id="tooltip-view{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Voir
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
-                    <div id="tooltip-edit{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Modifier
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
-                    <div id="tooltip-delete{{$user->id}}" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Supprimer
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
                     <tr>
                         <td class="informations w-full hidden">
                             <div class="flex items-center tdDivs">
@@ -174,14 +147,14 @@
                         </div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center font-bold tdDivs">
-                                <button data-tooltip-target="tooltip-view{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm text-xs rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                <button title="Voir" class="openModalView text-blue-600 p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm text-xs rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 
                                 <button class="id hidden">{{ $user->id }}</button>
-                                <button data-tooltip-target="tooltip-edit{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                 <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('users.delete', ['id' => $user->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button data-tooltip-target="tooltip-delete{{$user->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $user->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                    <button title="Supprimer" value="{{ $user->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
                         </td>

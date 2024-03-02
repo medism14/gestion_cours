@@ -1,7 +1,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
         
 
         <title>@yield('title')</title>
@@ -265,13 +265,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-
-        <!-- tooltip pour add -->
-        <div id="tooltip-add" role="tooltip" class="bg-gray-900 dark:bg-gray-700 text-white invisible transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-            Ajouter
-            <div class="tooltip-arrow" data-popper-arrow></div>
         </div>
 
     <script>

@@ -21,9 +21,6 @@ class ResourceController extends Controller
 {
     public function index (Request $request) {
 
-        auth()->user()->notifs = 0;
-        auth()->user()->save();
-
         $user_id = auth()->user()->id;
 
         function manip($type, $string) {
@@ -43,6 +40,12 @@ class ResourceController extends Controller
 
             $loup = 667;
         }
+
+        if ($request->input('nouvelleRessource')) {
+            $resources = Resource::where('updated_at', '>', auth()->user()->notif_viewed)->paginate(5);
+
+            $loup = 667;
+        }   
 
         if ($request->input('searchNotif')) {
             $id = $request->input('searchNotif');
@@ -135,7 +138,7 @@ class ResourceController extends Controller
             $loup = 667;
         } 
         
-        if (!$request->input('searchNotif') && !$request->input('search') && !$request->input('moduleList')) {
+        if (!$request->input('searchNotif') && !$request->input('search') && !$request->input('moduleList') && !$request->input('nouvelleRessource')) {
             $loup = null;
 
             if (auth()->user()->role == 1) {
@@ -153,6 +156,10 @@ class ResourceController extends Controller
             }
 
         }
+
+        auth()->user()->notifs = 0;
+        auth()->user()->notif_viewed = now();
+        auth()->user()->save();
 
         if (auth()->user()->role == 2) {
 

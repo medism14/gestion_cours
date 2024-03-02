@@ -57,7 +57,7 @@
     <!-- Tableau -->
     <div id="table-div" class="block w-full">
         <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" data-tooltip-target="tooltip-add" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+            <button id="openModalAdd" title="Ajouter" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
         </div>
         <table id="tablesector" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
             <thead>
@@ -68,34 +68,17 @@
             </thead>
             <tbody>
                 @foreach ($sectors as $sector)
-
-                    <!-- Toutes les tooltips -->
-                    <div id="tooltip-view{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Voir
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
-                    <div id="tooltip-edit{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Modifier
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
-                    <div id="tooltip-delete{{$sector->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Supprimer
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
                     <tr>
                         <td class="nom"><div class="flex justify-center items-center font-bold">{{ $sector->name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
-                                <button data-tooltip-target="tooltip-view{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
+                                <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
                                 <button class="id hidden">{{ $sector->id }}</button>
-                                <button data-tooltip-target="tooltip-edit{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
+                                <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
                                 <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="m-0 p-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button data-tooltip-target="tooltip-delete{{$sector->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" value="{{ $sector->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                    <button title="Supprimer" value="{{ $sector->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </div>
                         </td>

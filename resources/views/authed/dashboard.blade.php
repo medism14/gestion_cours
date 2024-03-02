@@ -76,7 +76,7 @@
                 flex flex-col">
                 <h1 class="border-b-2 
                 pt-5 pb-5
-                text-center rounded-lg">Ressource disponibles</h1>
+                text-center rounded-lg">Ressources disponibles</h1>
                 <p class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ $ressourcesDisponibles }}</p>
                 <div class="flex-1 flex items-end justify-end">
                     <form action="{{ route('resources.index') }}" method="post" class="m-0 p-0">
@@ -101,7 +101,7 @@
                     <div class="flex-1 flex items-end justify-end">
                         <form action="{{ route('resources.index') }}" method="post" class="m-0 p-0">
                             @csrf
-                            <button type="submit" value="nombreProfesseurs" name="nombreProfesseurs" class="p-1 text-xs md:text-base text-white">Voir plus <i class="fa fa-arrow-circle-right" aria-hidden="true"></i></button>
+                            <button type="submit" value="nouvelleRessource" name="nouvelleRessource" class="p-1 text-xs md:text-base text-white">Voir plus <i class="fa fa-arrow-circle-right" aria-hidden="true"></i></button>
                         </form>
                     </div>
                 </div>

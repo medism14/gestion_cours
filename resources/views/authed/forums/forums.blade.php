@@ -66,17 +66,11 @@
             <tbody>
                 @foreach ($levels as $level)
 
-                    <!-- Toutes les tooltips -->
-                    <div id="tooltip-view{{$level->id}}" role="tooltip" class="invisible bg-gray-900 dark:bg-gray-700 text-white transition-opacity opacity-0 px-3 py-2 text-sm font-medium rounded-lg tooltip">
-                        Voir
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
-
                     <tr>
                         <td class="nom"><div class="flex justify-center items-center font-bold">{{ $level->sector->name }}: {{ $level->name }}</div></td>
                         <td class="actions">
                             <div class="flex justify-center items-center">
-                                <a data-tooltip-target="tooltip-view{{$level->id}}" data-tooltip-trigger="hover" data-tooltip-trigger="touchstart" href="{{ route('forums.forum', ['level_id' => $level->id]) }}" type="submit" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></a>
+                                <a title="Voir" href="{{ route('forums.forum', ['level_id' => $level->id]) }}" type="submit" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></a>
                             </div>
                         </td>
                     </tr>
