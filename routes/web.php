@@ -47,6 +47,7 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
         Route::match(['get', 'post'], '/', [ResourceController::class, 'index'])->name('index');
         Route::get('/getResource/{id}', [ResourceController::class , 'getResource'])->name('getResource');
         Route::post('/download/{id}', [ResourceController::class, 'download'])->name('download');
+        Route::get('/ressourceDisponible/{userId}', [ResourceController::class, 'ressourceDisponible'])->name('ressourceDisponible');
     });
 
     ########################
@@ -58,7 +59,7 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
         Route::match(['get', 'post'], '/addMsgForum/{level_id}', [ForumController::class, 'addMsgForum'])->name('addMsgForum');
         Route::post('/viewMsgForum/{user_id}', [ForumController::class, 'viewMsgForum'])->name('viewMsgForum');
         Route::delete('/suppAllMsg/{level_id}', [ForumController::class, 'suppAllMsg'])->name('suppAllMsg');
-        Route::get('changerVariablePHP/{forumId}', [ForumController::class, 'changerVariablePHP'])->name('changerVariablePHP');
+        Route::get('/messagesNonLus/{levelId}', [ForumController::class, 'messagesNonLus'])->name('messagesNonLus');
     });
 
     ########################

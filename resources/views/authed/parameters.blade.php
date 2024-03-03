@@ -73,6 +73,9 @@
 
 @section('scripts')
     <script>
+        function positionnementTooltip () {
+            
+        }
         const mdp = document.getElementById('mdp');
         const mdp_confirmation = document.getElementById('mdp_confirmation');
 

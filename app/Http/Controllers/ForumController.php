@@ -156,11 +156,6 @@ class ForumController extends Controller
         return redirect()->back();
     }
 
-    public function changerVariablePHP(Request $request, $forumId) {
-        $forum = $forumId;
-        return response()->json(['message' => 'Variable PHP changée avec succès']);
-    }
-
     public function suppForum (Request $request, $id) {
         $forum = Forum::find($id);
 
@@ -225,5 +220,17 @@ class ForumController extends Controller
 
 
 
+    }
+
+    public function messagesNonLus (Request $request, $levelId) {
+        
+        $message = UsersMessage::where('user_id', auth()->user()->id)->get();
+        $messages = 0;
+
+        foreach ($message as $m) {
+            $messages += $m->message;
+        }
+
+        return response()->json($messages, 200);
     }
 }

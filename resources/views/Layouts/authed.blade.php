@@ -12,7 +12,13 @@
         <link rel="icon" href="{{ asset('images/papaRounded.png') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+        <script>
+            // Redéfinir toutes les fonctions de la console pour qu'elles ne fassent rien
+            console.warn = function() {};
+        </script>
         <script src="https://cdn.tailwindcss.com"></script>
+
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script src="https://js.pusher.com/7.2.0/pusher.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -77,7 +83,7 @@
                     </div>
                     <!-- SideBar Title -->
                     <div class="block p-5 rounded-lg text-white text-xl text-center">
-                        <a href="{{ route('dashboard') }}" class="border-b-2">Espace de Travail Numérique</a>
+                        <a href="{{ route('dashboard') }}" class="border-b-2">Espace Numérique d'Enseignement</a>
                     </div>
 
                     <hr class="mb-4 rounded border-4 border-gray-400"></hr>
@@ -810,7 +816,6 @@
         annonce.annonces_relations.forEach((relation) => {
             if (relation.user_id == actualUser.id) {
                 trouver = true;
-                annonce_relation = relation;
             }
         });
 
@@ -1025,10 +1030,9 @@
 
     channelNotif.bind('notif-refresh', async function (data) {
         let resource = data.resource;
+
         let actualUserId = {{ auth()->user()->id }};
         let type = data.type;
-
-        let trouver = false
 
         const response = await fetch(`/getUserInfos/${actualUserId}`);
         
@@ -1036,119 +1040,116 @@
 
         actualUser.levels_users.forEach((level) => {
             if (resource.module.level_id == level.level_id) {
-                trouver = true;
-            }
-        });
+                //Supprimer les valeurs déjà existantes
+                let notifValue = Array.from(document.getElementsByClassName('notifValue'));
+                if (notifValue) {
+                    notifValue.forEach((notif) => {
+                        notif.remove();
+                    });
+                }
 
-        if (trouver) {
+                //Pour les notifications et le supprimer
+                let aucuneNotif = document.getElementById('aucuneNotif');
+                if (aucuneNotif) {
+                    aucuneNotif.remove();
+                }
+                
+                //Récupérer le id pour l'utiliser dans le fetch
+                let id = {{ auth()->user()->id }};
 
-            //Supprimer les valeurs déjà existantes
-            let notifValue = Array.from(document.getElementsByClassName('notifValue'));
-            if (notifValue) {
-                notifValue.forEach((notif) => {
-                    notif.remove();
-                });
-            }
+                fetch(`/getUserNotifs/${id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        data.forEach(async (notif) => {
+                            let responseOfNowDate = await fetch('/nowDate');
+                            let now = await responseOfNowDate.json();
 
-            //Pour les notifications et le supprimer
-            let aucuneNotif = document.getElementById('aucuneNotif');
-            if (aucuneNotif) {
-                aucuneNotif.remove();
-            }
-            
-            //Récupérer le id pour l'utiliser dans le fetch
-            let id = {{ auth()->user()->id }};
+                            let responseOfCreatedDate = await fetch(`getNotifCreatedTime/${notif.id}`);
+                            let created_at = await responseOfCreatedDate.json();
 
-            fetch(`/getUserNotifs/${id}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    data.forEach(async (notif) => {
-                        let responseOfNowDate = await fetch('/nowDate');
-                        let now = await responseOfNowDate.json();
+                            let finalDate;
 
-                        let responseOfCreatedDate = await fetch(`getNotifCreatedTime/${notif.id}`);
-                        let created_at = await responseOfCreatedDate.json();
+                            now = new Date(now);
+                            created_at = new Date(created_at);
 
-                        let finalDate;
+                            let differenceEnMilli = now - created_at;
 
-                        now = new Date(now);
-                        created_at = new Date(created_at);
+                            let diffJour = Math.floor(differenceEnMilli / (1000*60*60*24));
 
-                        let differenceEnMilli = now - created_at;
+                            if (diffJour == 0) {
+                                finalDate = 'Aujourd\'hui';
+                            } else if (diffJour == 1) {
+                                finalDate = 'Hier';
+                            } else if (diffJour == 2) {
+                                finalDate = 'Avant-hier';
+                            } else {
+                                finalDate = `Il y'a ${diffJour} jours`;
+                            }
 
-                        let diffJour = Math.floor(differenceEnMilli / (1000*60*60*24));
+                            notifList.innerHTML += `
+                                <div class="notifValue flex space-x-2 md:space-x-4 p-2 text-xs md:text-base border-b-2">
+                                    <div class="flex notifs justify-center flex-col items-center">
+                                        <span class="">Module:</span>
+                                        <span class="underline">${notif.resource.module.name}</span>
+                                        <span class="">Date:</span>
+                                        <span class="underline">${finalDate}</span>
+                                    </div>
+                                    <div class="flex notifs justify-end items-center">
+                                        <form action="{{ route('resources.index') }}" method="POST" class="m-0 p-0">
+                                            @csrf
+                                            <input name="searchNotif" id="searchNotif" type="text" class="hidden" value="${notif.resource.id}">
+                                            <button type="submit" class="bg-yellow-600 px-2 py-1 rounded-lg shadow-md shadow-gray-600 transition-all duration-300 hover:bg-yellow-700">Y accéder</button>
+                                        </form>
+                                        </div>
+                                </div>
+                            `;
+                        })
 
-                        if (diffJour == 0) {
-                            finalDate = 'Aujourd\'hui';
-                        } else if (diffJour == 1) {
-                            finalDate = 'Hier';
-                        } else if (diffJour == 2) {
-                            finalDate = 'Avant-hier';
+                        if (data.length == 0) {
+                            allDeleteNotif.classList.add('hidden');
+                            notifResource.classList.remove('border-r-2');
+
+                            notifList.innerHTML += `
+                                <span id="aucuneNotif" class="text-center text-xs md:text-base">Aucune notification</span>
+                            `;
                         } else {
-                            finalDate = `Il y'a ${diffJour} jours`;
+                            notifResource.classList.add('border-r-2');
+                            allDeleteNotif.classList.remove('hidden');
                         }
 
-                        notifList.innerHTML += `
-                            <div class="notifValue flex space-x-2 md:space-x-4 p-2 text-xs md:text-base border-b-2">
-                                <div class="flex notifs justify-center flex-col items-center">
-                                    <span class="">Module:</span>
-                                    <span class="underline">${notif.resource.module.name}</span>
-                                    <span class="">Date:</span>
-                                    <span class="underline">${finalDate}</span>
-                                </div>
-                                <div class="flex notifs justify-end items-center">
-                                    <form action="{{ route('resources.index') }}" method="POST" class="m-0 p-0">
-                                        @csrf
-                                        <input name="searchNotif" id="searchNotif" type="text" class="hidden" value="${notif.resource.id}">
-                                        <button type="submit" class="bg-yellow-600 px-2 py-1 rounded-lg shadow-md shadow-gray-600 transition-all duration-300 hover:bg-yellow-700">Y accéder</button>
-                                    </form>
-                                    </div>
-                            </div>
-                        `;
                     })
+                    .catch(error => {
+                        console.error('Error: ' + error);
+                });
 
-                    if (data.length == 0) {
-                        allDeleteNotif.classList.add('hidden');
-                        notifResource.classList.remove('border-r-2');
+                let nombreNotifSpan = document.getElementById('nombreNotif');
 
-                        notifList.innerHTML += `
-                            <span id="aucuneNotif" class="text-center text-xs md:text-base">Aucune notification</span>
-                        `;
-                    } else {
-                        notifResource.classList.add('border-r-2');
-                        allDeleteNotif.classList.remove('hidden');
-                    }
+                let nombreNotifActuel = parseInt(nombreNotifSpan.textContent);
 
-                })
-                .catch(error => {
-                    console.error('Error: ' + error);
-            });
-
-            let nombreNotifActuel = parseInt(nombreNotif.textContent);
-
-            switch (type) {
-                case 'add': 
-                    nombreNotif.innerHTML = nombreNotifActuel + 1;
-                break;
+                switch (type) {
+                    case 'add': 
+                        nombreNotifSpan.innerHTML = '' + parseInt(nombreNotifActuel + 1);
+                    break;
+                        
+                    case 'edit':
+                        if (nombreNotifActuel == 0) {
+                            nombreNotifSpan.innerHTML = '' + nombreNotifActuel + 1;
+                        }
+                    break;
                     
-                case 'edit':
-                    if (nombreNotifActuel == 0) {
-                        nombreNotif.innerHTML = nombreNotifActuel + 1;
-                    }
-                break;
-                
-                case 'delete':
-                    if (nombreNotifActuel > 0) {
-                        nombreNotif.innerHTML = nombreNotifActuel - 1;
-                    }
-                break;
+                    case 'delete':
+                        if (nombreNotifActuel > 0) {
+                            nombreNotifSpan.innerHTML = '' + nombreNotifActuel - 1;
+                        }
+                    break;
+                }
             }
-        }
+        });
         
     });
 

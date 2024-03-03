@@ -332,12 +332,12 @@
             }
         });
 
-        channel.bind('forum-delete-message', function (data) {
+        channel.bind('forum-delete-message', async function (data) {
             let forum = data.forum
 
             let level_id_actual = parseInt({{ $level_id }});
 
-            let responseResetMsg = fetch(`/users/resetMsg/${level_id_actual}`);
+            let responseResetMsg = await fetch(`/users/resetMsg/${level_id_actual}`);
 
             const allMsg = Array.from(document.getElementsByClassName('messages'));
 
@@ -350,12 +350,12 @@
             });
         });
 
-        channel.bind('forum-clear', function (data) {
+        channel.bind('forum-clear', async function (data) {
             let level_id_broadcast = parseInt(data.level_id);
 
             let level_id_actual = parseInt({{ $level_id }});
 
-            let responseResetMsg = fetch(`/users/resetMsg/${level_id_actual}`);
+            let responseResetMsg = await fetch(`/users/resetMsg/${level_id_actual}`);
 
             if (level_id_broadcast == level_id_actual) {
                 location.reload();

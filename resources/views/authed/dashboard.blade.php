@@ -77,7 +77,7 @@
                 <h1 class="border-b-2 
                 pt-5 pb-5
                 text-center rounded-lg">Ressources disponibles</h1>
-                <p class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ $ressourcesDisponibles }}</p>
+                <p id="ressourcesDisponibles" class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ $ressourcesDisponibles }}</p>
                 <div class="flex-1 flex items-end justify-end">
                     <form action="{{ route('resources.index') }}" method="post" class="m-0 p-0">
                         @csrf
@@ -97,7 +97,7 @@
                     <h1 class="border-b-2 
                     pt-5 pb-5
                     text-center rounded-lg">Nouvelles Ressources</h1>
-                    <p id="nombreNotif" class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ auth()->user()->notifs }}</p>
+                    <p id="nouvelleRessource" class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ auth()->user()->notifs }}</p>
                     <div class="flex-1 flex items-end justify-end">
                         <form action="{{ route('resources.index') }}" method="post" class="m-0 p-0">
                             @csrf
@@ -115,7 +115,7 @@
                 bg-indigo-900 rounded-lg text-white
                 flex flex-col">
                 <h1 class="border-b-2 pt-5 pb-5 text-center rounded-lg">Messages non lus</h1>
-                <p class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ $messagesNonLus }}</p>
+                <p id="messagesNonLus" class="w-full text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center pt-4">{{ $messagesNonLus }}</p>
                 <div class="flex-1 flex items-end justify-end">
                     <form action="{{ route('forums.index') }}" method="post" class="m-0 p-0">
                         @csrf
@@ -145,4 +145,106 @@
 
     };
 </script>
+
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+
+    
+
+    @if (auth()->user()->role == 2) 
+        const nouvelleRessource = document.getElementById('nouvelleRessource');
+        let notifButtonDash = document.getElementById('notif');
+        notifButtonDash.addEventListener('click', () => {   
+            nouvelleRessource.innerHTML = '0';
+        })
+
+    @endif
+
+    const ressourcesDisponibles = document.getElementById('ressourcesDisponibles');
+    const messagesNonLus = document.getElementById('messagesNonLus');
+
+
+    var pusher = new Pusher('6979301f0eee4d497b90', {
+        cluster: 'eu'
+    });
+
+    var channelNotif = pusher.subscribe('notif-channel');
+
+    channelNotif.bind('notif-refresh', async function (data) {
+        let actualUserId = {{ auth()->user()->id }};
+        let response = await fetch(`/getUserInfos/${actualUserId}`);
+        let actualUser = await response.json();
+
+        let resource = data.resource;
+        let type = data.type;
+
+        actualUser.levels_users.forEach(async (level) => {
+            if (resource.module.level_id == level.level_id) {
+                @if (auth()->user()->role == 2) 
+                    nouvelleRessource.innerHTML = '' + nombreNotif.textContent;
+                @endif
+
+                const responseRessourcesDisponibles = await fetch(`/resources/ressourceDisponible/${actualUserId}`);
+                const dataRessourcesDisponibles = await responseRessourcesDisponibles.json();
+
+                ressourcesDisponibles.innerHTML = '' + dataRessourcesDisponibles;
+            }
+        });
+        
+    });
+
+    var channel = pusher.subscribe('forum-channel');
+        
+    channel.bind('forum-new-message', async function(data) {
+        let actualUserId = {{ auth()->user()->id }};
+        let response = await fetch(`/getUserInfos/${actualUserId}`);
+        let actualUser = await response.json();
+
+        console.log(data);
+
+        actualUser.levels_users.forEach(async (level) => {
+            if (data.forum.level.id == level.level_id) {
+                let levelId = level.level_id;
+                await messagesRefresh(levelId);
+            }
+        });
+    });
+
+    channel.bind('forum-delete-message', async function (data) {
+        let actualUserId = {{ auth()->user()->id }};
+        let response = await fetch(`/getUserInfos/${actualUserId}`);
+        let actualUser = await response.json();
+
+        console.log(data);
+
+        actualUser.levels_users.forEach(async (level) => {
+            if (data.forum.level.id == level.level_id) {
+                let levelId = level.level_id;
+                await messagesRefresh(levelId);
+            }
+        });
+    });
+
+    channel.bind('forum-clear', async function (data) {
+        let actualUserId = {{ auth()->user()->id }};
+        let response = await fetch(`/getUserInfos/${actualUserId}`);
+        let actualUser = await response.json();
+
+        actualUser.levels_users.forEach(async (level) => {
+            if (data.forum.level.id == level.level_id) {
+                let levelId = level.level_id;
+                await messagesRefresh(levelId);
+            }
+        });
+    });
+
+    async function messagesRefresh (levelId) {
+        const responseMessagesNonLus = await fetch(`/forums/messagesNonLus/${levelId}`);
+        const dataMessagesNonLus = await responseMessagesNonLus.json();
+
+        messagesNonLus.innerHTML = '' + dataMessagesNonLus;
+    }
+
+</script>
+
 @endsection

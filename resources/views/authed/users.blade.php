@@ -668,7 +668,7 @@
         addRole.addEventListener('change', () => {
             let divs = Array.from(document.getElementsByClassName('divAdd'));
             
-            if (addRole.value === "1") {
+            if (addRole.value == "1") {
                 rowFiliereAdd.forEach((row) => {
                     row.classList.remove('hidden');
                 });
@@ -688,14 +688,31 @@
                 searchAdd.classList.add('hidden');
                 
                 divs.forEach((div) => {
-                    div.classList.add('hidden');
+                    reputElementsAdd(div);
                 })
             } else {
                 rowFiliereAdd.forEach((row) => {
                     row.classList.add('hidden');
                 })
+
+                divs.forEach((div) => {
+                    reputElementsAdd(div);
+                })
             }
         });
+
+        function reputElementsAdd (row) {
+            let level_id = row.parentNode.parentNode.querySelector('.addId').value;
+            let value = row.parentNode.parentNode.querySelector('.valueSpan').textContent;
+
+            let option = document.createElement('option');
+            option.value = level_id;
+            option.textContent = value;
+                
+            addFiliere.appendChild(option);
+
+            row.remove();
+        }
 
         //Pour les ajuouts des filières pour les profs et admin
         addListBtn.addEventListener('click', () => {
@@ -971,18 +988,28 @@
                 editListBtn.classList.remove('hidden');
                 searchEdit.classList.remove('hidden');
 
-                divs.forEach((div) => {
-                    div.classList.remove('hidden');
-                })
             } else {
                 editListBtn.classList.add('hidden');
                 searchEdit.classList.add('hidden');
 
                 divs.forEach((div) => {
-                    div.classList.add('hidden');
+                    reputElementsEdit(div);
                 })
             }
         });
+
+        function reputElementsEdit (row) {
+                let level_id = row.querySelector('.editId').value;
+                let value = row.querySelector('.valueSpan').textContent;
+
+                let option = document.createElement('option');
+                option.value = level_id;
+                option.textContent = value;
+                    
+                editFiliere.appendChild(option);
+
+                row.remove();
+        }
 
         //Ouverture du modal avec le bouton +
         openModalEdit.forEach((btn) => {

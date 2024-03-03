@@ -10,6 +10,13 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
         <link rel="icon" href="{{ asset('images/papaRounded.png') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <script>
+            // Redéfinir toutes les fonctions de la console pour qu'elles ne fassent rien
+            console.log = function() {};
+            console.warn = function() {};
+            console.error = function() {};
+            console.info = function() {};
+        </script>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
 
@@ -34,8 +41,8 @@
         <!-- Header -->
         <header class="bg-gray-700 flex items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[20px] text-xs sm:text-base">
             <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/papa.png') }}" width="55" height="55"></div>
-            <div id="petitEcran" class="flex-1 flex justify-center"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">ENT</h1></div>
-            <div id="grandEcran" class="flex-1 flex justify-center hidden"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Espace de travail numérique</h1></div>
+            <div id="petitEcran" class="flex-1"><h1 class="w-[100px] text-[0.7rem] md:text-lg font-bold text-gray-100 mx-auto border-gray-100">Espace Numérique d'Enseignement</h1></div>
+            <div id="grandEcran" class="flex-1 flex justify-center hidden"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Espace Numérique d'Enseignement</h1></div>
             <div class="flex-1 flex justify-end">
             <nav class="mr-5">
                 <ul class="list-style-none">
@@ -165,7 +172,7 @@
 
             const petitEcran = document.getElementById('petitEcran');
             const grandEcran = document.getElementById('grandEcran');
-            
+
             window.addEventListener('resize', () => {
                 EntName();
             });
@@ -174,9 +181,15 @@
                 if (mediaQuery.matches) {
                     petitEcran.classList.remove('hidden');
                     grandEcran.classList.add('hidden');
+
+                    userIcon.setAttribute('width', '80');
+                    userIcon.setAttribute('height', '80');
                 } else {
                     petitEcran.classList.add('hidden');
                     grandEcran.classList.remove('hidden');
+
+                    userIcon.setAttribute('width', '120');
+                    userIcon.setAttribute('height', '120');
                 }
             }
             EntName();

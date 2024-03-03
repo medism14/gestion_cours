@@ -473,4 +473,13 @@ class ResourceController extends Controller
             'success' => 'La resource a bien été supprimé'
         ]);
     }
+
+    public function ressourceDisponible (Request $request, $userId) {
+
+        $ressources = Resource::whereHas('module.level.levels_users', function ($query) use ($userId){
+            $query->where('user_id', $userId);
+        })->count();
+
+        return response()->json($ressources, 200);
+    }
 }
