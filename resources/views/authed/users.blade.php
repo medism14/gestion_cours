@@ -674,7 +674,6 @@
                 });
 
                 addListBtn.classList.remove('hidden');
-                searchAdd.classList.remove('hidden');
 
                 divs.forEach((div) => {
                     div.classList.remove('hidden');
@@ -685,7 +684,6 @@
                 });
 
                 addListBtn.classList.add('hidden');
-                searchAdd.classList.add('hidden');
                 
                 divs.forEach((div) => {
                     reputElementsAdd(div);
@@ -986,11 +984,9 @@
 
             if (editRole.value === "0" || editRole.value === "1") {
                 editListBtn.classList.remove('hidden');
-                searchEdit.classList.remove('hidden');
 
             } else {
                 editListBtn.classList.add('hidden');
-                searchEdit.classList.add('hidden');
 
                 divs.forEach((div) => {
                     reputElementsEdit(div);

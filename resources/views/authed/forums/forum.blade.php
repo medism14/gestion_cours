@@ -125,7 +125,7 @@
                     @else
                         <div class="messages flex flex-col justify-start p-2 text-left">
                             <input type="hidden" value="{{ $forum->id }}">
-                            <span class="text-blue-600 flex items-center"><span>{{ $forum->user->role == 0 ? 'Administrateur' : ($forum->user->role == 1 ? 'Professeur' : 'Etudiant') }}: {{ $forum->user->first_name }} {{ $forum->user->last_name }} </span>
+                            <span class="text-blue-600 flex items-center"><span>{{ $forum->user->role == 0 ? 'Administrateur' : ($forum->user->role == 1 ? 'Professeur' : 'Etudiant') }}: {{ $forum->user->first_name }} {{ $forum->user->last_name }}</span>
 
                             @if (auth()->user()->role == 0) 
                                 <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
@@ -258,6 +258,13 @@
                 let userMessageOrigine = forum.user;
                 let actualUser = @json(auth()->user());
                 let message = forum.message;
+                let role;
+
+                if (userMessageOrigine.role == 1) {
+                    role = "Professeur";
+                } else {
+                    role = "Etudiant";
+                }
 
                 //Si l'origine du message est un professeur
                 if (userMessageOrigine.role == 1) {
@@ -267,7 +274,7 @@
                             <div class="messages flex flex-col justify-center p-2 items-end">
                                 <input type="hidden" value="${forumId}">
                                 
-                                <span class="text-red-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+                                <span class="text-red-600 flex items-center"><span>${role}: ${forum.user.first_name} ${forum.user.last_name}</span>
 
                                 @if (auth()->user()->role == 0) 
                                     <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
@@ -283,7 +290,7 @@
                         messagerieContainer.innerHTML += `
                         <div class="messages flex flex-col justify-start p-2">
                             <input type="hidden" value="${forumId}">
-                            <span class="text-red-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+                            <span class="text-red-600 flex items-center"><span>${role}: ${forum.user.first_name} ${forum.user.last_name}</span>
 
                             @if (auth()->user()->role == 0) 
                                 <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
@@ -300,7 +307,7 @@
                         messagerieContainer.innerHTML += `
                             <div class="messages flex flex-col justify-center p-2 items-end">
                                 <input type="hidden" value="${forumId}">
-                                <span class="text-blue-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+                                <span class="text-blue-600 flex items-center"><span>${role}: ${forum.user.first_name} ${forum.user.last_name}</span>
 
                                 @if (auth()->user()->role == 0) 
                                     <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>
@@ -316,7 +323,7 @@
                         messagerieContainer.innerHTML += `
                             <div class="messages flex flex-col justify-start p-2 text-left">
                                 <input type="hidden" value="${forumId}">
-                                <span class="text-blue-600 flex items-center"><span>${forum.user.first_name} ${forum.user.last_name}</span>
+                                <span class="text-blue-600 flex items-center"><span>${role}: ${forum.user.first_name} ${forum.user.last_name}</span>
 
                                 @if (auth()->user()->role == 0) 
                                     <button class="suppMsg ml-2 text-red-600 border-red-600 border-2 p-1 rounded transition-all duration-300 hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></button>

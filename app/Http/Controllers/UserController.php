@@ -234,16 +234,20 @@ class UserController extends Controller
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'addFirstName' => 'required|string|max:255',
-            'addLastName' => 'string|max:255',
+            'addLastName' => 'required|string|max:255',
             'addEmail' => 'required|email|max:255|unique:users,email',
             'addPhone' => 'required|string|max:20',
             'addRole' => 'required|string|max:255'
         ], [
-            'addFirstName.required' => 'Le prenom est requis.',
+            'addFirstName.required' => 'Le prénom est requis.',
+            'addFirstName.string' => 'Le prénom doit être une chaîne de caractères.',
+            'addFirstName.max' => 'Le prénom ne doit pas dépasser :max caractères.',
             'addLastName.required' => 'Le nom est requis.',
-            'addEmail.required' => "L adresse email est requise.",
-            'addEmail.email' => "L adresse email doit être valide.",
-            'addEmail.max' => "L adresse email ne doit pas dépasser :max caractères.",
+            'addLastName.string' => 'Le nom doit être une chaîne de caractères.',
+            'addLastName.max' => 'Le nom ne doit pas dépasser :max caractères.',
+            'addEmail.required' => 'L\'adresse email est requise.',
+            'addEmail.email' => 'L\'adresse email doit être valide.',
+            'addEmail.max' => 'L\'adresse email ne doit pas dépasser :max caractères.',
             'addEmail.unique' => 'Cette adresse email est déjà utilisée.',
             'addPhone.required' => 'Le numéro de téléphone est requis.',
             'addPhone.max' => 'Le numéro de téléphone ne doit pas dépasser :max caractères.',

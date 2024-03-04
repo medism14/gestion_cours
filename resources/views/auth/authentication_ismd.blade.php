@@ -86,8 +86,8 @@
         </div>
 
         <!-- Main Section -->
-            <h1 class="text-center text-2xl bg-[#157D0A] rounded-lg rounded-b-none w-[70%] md:w-[50%] mx-auto mt-[20px] text-white p-5">Authentification</h1>
-            <section class="p-5 w-[70%] md:w-[50%] bg-[#B1DF7C] mx-auto rounded-t-none rounded-lg flex flex-col mb-6">
+            <h1 class="text-center text-2xl bg-[#157D0A] rounded-lg rounded-b-none w-[70%] lg:w-[50%] mx-auto mt-[20px] text-white p-5">Authentification</h1>
+            <section class="p-5 w-[70%] lg:w-[50%] bg-[#B1DF7C] mx-auto rounded-t-none rounded-lg flex flex-col mb-6">
                 <form action="{{ route('login') }}" method="POST" class="m-0 p-0">
                     @csrf
                     <div>

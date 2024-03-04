@@ -42,7 +42,7 @@
         <header class="bg-gray-700 flex items-center rounded border-1 w-[90%] mx-auto mt-1 mb-[20px] text-xs sm:text-base">
             <div class="flex-1 flex justify-start"><img class="ml-5 rounded-full" src="{{ asset('images/papa.png') }}" width="55" height="55"></div>
             <div id="petitEcran" class="flex-1"><h1 class="w-[100px] text-[0.7rem] md:text-lg font-bold text-gray-100 mx-auto border-gray-100">Espace Numérique d'Enseignement</h1></div>
-            <div id="grandEcran" class="flex-1 flex justify-center hidden"><h1 class="text-xs md:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Espace Numérique d'Enseignement</h1></div>
+            <div id="grandEcran" class="flex-1 flex justify-center hidden"><h1 class="text-xs md:text-sm lg:text-lg font-bold text-gray-100 border-gray-100 border-b-2 transition-all duration-500 hover:pb-3">Espace Numérique d'Enseignement</h1></div>
             <div class="flex-1 flex justify-end">
             <nav class="mr-5">
                 <ul class="list-style-none">
@@ -86,8 +86,8 @@
         </div>
 
         <!-- Main Section -->
-            <h1 class="text-center text-2xl bg-gray-700 rounded-lg rounded-b-none w-[70%] md:w-[50%] mx-auto mt-[20px] text-white p-5">Authentification</h1>
-            <section class="p-5 w-[70%] md:w-[50%] bg-[#BACFF0] mx-auto rounded-t-none rounded-lg flex flex-col mb-6">
+            <h1 class="text-center text-2xl bg-gray-700 rounded-lg rounded-b-none w-[70%] lg:w-[50%] mx-auto mt-[20px] text-white p-5">Authentification</h1>
+            <section class="p-5 w-[70%] lg:w-[50%] bg-[#BACFF0] mx-auto rounded-t-none rounded-lg flex flex-col mb-6">
                 <form action="{{ route('login') }}" method="POST" class="m-0 p-0">
                     @csrf
                     <div>
