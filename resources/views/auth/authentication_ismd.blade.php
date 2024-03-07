@@ -95,7 +95,7 @@
                         <div class="flex w-full items-center mt-3">
                             <div class="flex-1 flex flex-col space-y-1 items-center justify-center">
                                 <label for="email" class="font-bold">Email:</label>
-                                <input id="email" name="email" type="text" class="outline-none focus:ring focus:border-blue-100 rounded w-full md:w-[60%] shadow-md p-1">
+                                <input id="email" name="email" type="text" value="{{ isset($_COOKIE["email"]) && $_COOKIE["email"] !== "" ? $_COOKIE["email"] : '' }}" class="outline-none focus:ring focus:border-blue-100 rounded w-full md:w-[60%] shadow-md p-1">
                             </div>
                         </div>  
 
@@ -104,11 +104,17 @@
                             <div class="flex-1 flex flex-col space-y-1 items-center justify-center">
                                 <label class="block text-sm font-bold" for="password">Password: </label>
                                 <div class="flex w-full justify-center mt-1">
-                                    <input id="password" class="outline-none focus:ring focus:border-blue-100 rounded w-full md:w-[60%] shadow-md p-1" name="password" id="password" type="password">
+                                    <input id="password" value="{{ isset($_COOKIE["password"]) && $_COOKIE["password"] !== "" ? $_COOKIE["password"] : '' }}" class="outline-none focus:ring focus:border-blue-100 rounded w-full md:w-[60%] shadow-md p-1" name="password" id="password" type="password">
                                     <button type="button" id="eye" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"><i class="fas fa-eye"></i></button>
                                 </div>
                             </div>
                         </div> 
+
+                        <!-- Column -->
+                        <div class="mt-5 flex-1 flex flex-col space-x-1 items-center justify-start">
+                            <label for="remember">Se souvenir de moi</label>
+                            <input type="checkbox" id="remember" name="remember" class="md:scale-125" @if(isset($_COOKIE["password"]) && $_COOKIE["password"] !== "" ) checked @endif>
+                        </div>
                     </div>
                     
 

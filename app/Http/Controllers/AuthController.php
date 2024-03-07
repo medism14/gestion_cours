@@ -16,6 +16,16 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+
+            //Remember infos
+            if ($request->input('remember')) {
+                setcookie("email", $request->input('email'), time() + 3600*24*30*12*60);
+                setcookie("password", $request->input('password'), time() + 3600*24*30*12*60);
+            } else {
+                setcookie("email", "");
+                setcookie("password", "");
+            }
+
             return redirect('/dashboard');
         } else {
             return redirect()->back()->with([
