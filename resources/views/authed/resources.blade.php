@@ -148,7 +148,11 @@
                             <div class="flex justify-center items-center tdDivs font-bold">
                                 <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0" onsubmit="return submitFunction()">
                                     @csrf
-                                    <button title="Télécharger" type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
+                                    @if (auth()->user()->role == 2) 
+                                        <button title="Télécharger" type="submit" class="Aggrandir downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
+                                    @else 
+                                        <button title="Télécharger" type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
+                                    @endif
                                 </form>
                                 <button class="id hidden">{{ $resource->id }}</button>
                                 @if (auth()->user()->role != 2)  
