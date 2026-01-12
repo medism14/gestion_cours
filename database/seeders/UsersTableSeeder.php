@@ -13,6 +13,9 @@ class UsersTableSeeder extends Seeder
      */
     public function run(): void
     {
+        // Supprimer l'utilisateur s'il existe déjà pour éviter les doublons
+        User::where('email', 'admin@gmail.com')->delete();
+
         User::create([
             'first_name' => 'admin',
             'email' => 'admin@gmail.com',
@@ -20,7 +23,7 @@ class UsersTableSeeder extends Seeder
             'role' => 0,
             'sexe' => 'H',
             'first_connection' => true,
-            'password' => bcrypt('admin'),
+            'password' => bcrypt('admin@123!'),
         ]);
     }
 }

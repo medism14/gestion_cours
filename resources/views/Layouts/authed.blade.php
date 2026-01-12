@@ -110,6 +110,10 @@
                         <a href="{{ route('annonces.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-bullhorn"></i> Annonces</a>
                     </div>
 
+                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
+                        <a href="{{ route('documents.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-file-pdf"></i> Documents</a>
+                    </div>
+
                     <!-- Footer -->
                     <footer class="fixed w-full md:w-[20%] text-center text-white bottom-0 bg-gray-600 hidden">
                         <p>Tout droits reservés ©</p>

@@ -8,6 +8,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\AnnonceController;
+use App\Http\Controllers\DocumentController;
 
 use App\Events\ForumMessage;
 
@@ -86,6 +87,15 @@ Route::middleware(['auth', 'firstConn'])->group(function () {
         Route::delete('/suppAnnonces', [AnnonceController::class, 'suppAnnonces'])->name('suppAnnonces');
     });
 
+    ########################
+    ##Documents (PDF Admin)
+    ########################
+    Route::prefix('/documents')->name('documents.')->group(function () {
+        Route::match(['get', 'post'], '/', [DocumentController::class, 'index'])->name('index');
+        Route::get('/getDocument/{id}', [DocumentController::class, 'getDocument'])->name('getDocument');
+        Route::post('/download/{id}', [DocumentController::class, 'download'])->name('download');
+    });
+
 
     
 });
@@ -136,6 +146,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
     ########################
     Route::prefix('/forums')->name('forums.')->group(function () {
         Route::post('/suppForum/{id}', [ForumController::class, 'suppForum'])->name('suppForum');
+    });
+
+    ########################
+    ##Documents (Admin Only)
+    ########################
+    Route::prefix('/documents')->name('documents.')->group(function () {
+        Route::post('/store', [DocumentController::class, 'store'])->name('store');
+        Route::post('/upload-chunk', [DocumentController::class, 'uploadChunk'])->name('uploadChunk');
+        Route::post('/finalize-upload', [DocumentController::class, 'finalizeUpload'])->name('finalizeUpload');
+        Route::post('/edit', [DocumentController::class, 'edit'])->name('edit');
+        Route::delete('/delete/{id}', [DocumentController::class, 'delete'])->name('delete');
     });
 });
 
