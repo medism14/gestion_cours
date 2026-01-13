@@ -2,96 +2,125 @@
 
 @section('title', 'Filières')
 
-<style>
-    th div{
-        border: 1px solid black;
-        padding: 8px;
-        background-color: rgb(31, 65, 137);
-        color: white;
-    }
-    
-    td div {
-        text-align: center;
-        padding: 5px;
-        height: 40px;
-        background-color: rgb(195, 200, 213);
-    }
-
-    @media screen and (max-width: 768px) {
-        th div {
-            padding: 3px;
-        }
-
-        td div {
-            height: 48px;
-            padding: 1px;
-        }
-    }
-
-</style>
-
 @section('content')
-    <h1 class="text-center md:text-3xl lg: font-bold">Gestion de filières</h1>
-
-    <!-- Barre de recherche -->
-    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('sectors.index') }}" class="p-0 m-0">
-            @csrf
-            <div class="w-full flex justify-center space-x-1 items-center">
-                <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-                <i id="tooltipIcon" class="fas fa-question-circle p-1">
-                </i>
-                <div id="tooltipInfo" class="hidden break-words absolute bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                    Recherche par:
-                    <p class="text-center mt-3">Nom de la filière</p>
-
-                    <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
-                </div>
-            </div>
-            <div class="w-full flex justify-center mt-3">
-                <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-            </div>
-        </form> 
-    </div>
-
-    <!-- Tableau -->
-    <div id="table-div" class="block w-full">
-        <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-            <button id="openModalAdd" title="Ajouter" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
+<div class="section-animate space-y-8 p-4 md:p-8">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Gestion des Filières</h1>
+            <p class="mt-1 text-gray-500">Gérez les départements académiques et leurs différents niveaux d'études.</p>
         </div>
-        <table id="tablesector" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
-            <thead>
-                <tr>
-                    <th id="prenom"><div>Nom</div></th>
-                    <th id="actions"><div>Actions</div></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($sectors as $sector)
-                    <tr>
-                        <td class="nom"><div class="flex justify-center items-center font-bold">{{ $sector->name }}</div></td>
-                        <td class="actions">
-                            <div class="flex justify-center items-center">
-                                <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                <button class="id hidden">{{ $sector->id }}</button>
-                                <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
-                                <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="m-0 p-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button title="Supprimer" value="{{ $sector->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-                @if ($sectors->isEmpty())
-                    <tr>
-                        <td colspan="2"><div class="flex justify-center items-center">La table est vide</div></td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
+        <div class="flex items-center gap-3">
+            <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus-circle mr-2 text-sm"></i>
+                Nouvelle filière
+            </button>
+        </div>
     </div>
+
+    <!-- Stats/Search Container -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 bg-gray-50/20">
+            <form action="{{ route('sectors.index') }}" method="GET" class="max-w-xl">
+                @csrf
+                <div class="flex gap-3">
+                    <div class="relative flex-1 group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input id="search" name="search" type="text" value="{{ request('search') }}"
+                            class="block w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                            placeholder="Rechercher une filière...">
+                        
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="tooltipIcon" class="fa-solid fa-circle-question text-gray-300 hover:text-blue-500 cursor-help transition-colors"></i>
+                            <div id="tooltipInfo" class="hidden absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-[10px] rounded-xl shadow-xl z-50">
+                                <p class="font-bold mb-1 uppercase tracking-wider">Aide à la recherche</p>
+                                <p class="text-gray-400">Saisissez le nom de la filière pour filtrer instantanément la liste.</p>
+                                <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all shadow-sm">
+                        Rechercher
+                    </button>
+                    @if ($loup)
+                        <a href="{{ route('sectors.index') }}" class="p-2.5 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-all" title="Réinitialiser">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table id="tablesector" class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100">
+                        <th class="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Désignation</th>
+                        <th class="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre de Niveaux</th>
+                        <th class="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @foreach ($sectors as $sector)
+                        <tr class="hover:bg-gray-50/30 transition-colors group">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold shadow-inner mr-4">
+                                        <i class="fa-solid fa-building-columns"></i>
+                                    </div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $sector->name }}</div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 text-sm text-gray-500">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                    {{ $sector->levels->count() }} Niveaux
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                <div class="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-all">
+                                    <button title="Voir les détails" class="openModalView p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                    </button>
+                                    <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <form method="POST" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="inline" onsubmit="return confirm('Attention: Supprimer cette filière supprimera également tous les niveaux associés. Continuer ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                    <span class="id hidden">{{ $sector->id }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    @if ($sectors->isEmpty())
+                        <tr>
+                            <td colspan="3" class="px-8 py-20 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fa-solid fa-folder-open text-4xl text-gray-100 mb-4"></i>
+                                    <p class="text-gray-400 font-medium">Aucune filière trouvée.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if ($sectors->hasPages())
+            <div class="px-8 py-4 bg-gray-50/50 border-t border-gray-100">
+                {{ $sectors->links() }}
+            </div>
+        @endif
+    </div>
+</div>
 
     @if ($loup)
     <div class="w-full flex justify-center mt-3">
@@ -99,786 +128,291 @@
     </div>
     @endif
 
-    <!-- Pagination -->
-    <div class="w-full max-w-full mt-5 md:w-[90%] mx-auto flex my-3 justify-center text-sm lg:text-base md:text-sm">
-        <div class="pagination">
-        @if ($sectors->hasPages())
-            <nav>
-                @if ($sectors->onFirstPage())
-                    <span class="p-2 bg-gray-300 m-2 rounded shadow-md">
-                        Precedent
-                    </span>
-                @else
-                    <a href="{{ $sectors->previousPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Precedent
-                    </a>
-                @endif
+    <!-- MODALS -->
+    <!-- Add Modal -->
+    <div id="addModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100">
+                <form method="POST" id="formAddSector" action="{{ route('sectors.store') }}" onsubmit="return submitFunction()">    
+                    @csrf
+                    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <h3 class="text-xl font-black text-gray-900">Nouvelle Filière</h3>
+                        <button type="button" id="closeModalAddTop" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-8 space-y-8">
+                        <!-- Sector Name -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nom de la filière</label>
+                            <input id="addName" name="addName" required type="text" placeholder="ex: Informatique de Gestion"
+                                class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                        </div>
 
-                @if ($sectors->hasMorePages())
-                    <a href="{{ $sectors->nextPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </a>
-                @else
-                    <span class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </span>
-                @endif
-            </nav>
-        @endif
+                        <!-- Levels Management -->
+                        <div class="space-y-4">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Gestion des Niveaux</label>
+                            <div class="flex gap-2">
+                                <input id="addLevel" type="text" placeholder="Ajouter un niveau (ex: L1, Master...)"
+                                    class="flex-1 px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                                <button type="button" id="addLevelBtn" class="px-6 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-sm">
+                                    Ajouter
+                                </button>
+                            </div>
+
+                            <div id="levelList" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                <!-- Levels will be appended here -->
+                            </div>
+                            <input type="hidden" name="addMaxDegree" id="addMaxDegree">
+                        </div>
+                    </div>
+
+                    <div class="p-8 bg-gray-50/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" id="cancelAddButton" class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-700 transition-all">Annuler</button>
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5">
+                            Créer la filière
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- MODALS -->
-    <!-- MODALS -->
-    <!-- MODALS -->
-
-    <!-- ADD MODALS -->
-    <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" id="formAddSector" action="{{ route('sectors.store') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Ajout de filiere</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addName">Nom: </label>
-                        <input id="addName" name="addName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
-                            <label for="addLevel">Niveaux: </label>
-                            <input id="addLevel" name="addLevel" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                        </div>
+    <!-- View Modal -->
+    <div id="viewModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
+                <div class="px-8 py-10">
+                    <div class="flex items-center justify-between mb-8">
                         <div>
-                            <button type="button" id="addLevelBtn" class="p-2 bg-slate-500 text-white rounded-lg transition-all duration-300 ease-in-out ">Ajouter</button>
+                            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Détails de la filière</p>
+                            <h3 id="viewName" class="text-2xl font-black text-gray-900 leading-tight">...</h3>
                         </div>
-                        
+                        <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
                     </div>
-                </div>
 
-                <div id="levelList" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
-                    <input type="text" class="hidden" name="addMaxDegree" id="addMaxDegree">
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelAddButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-            </form>    
-            </div>
-        </div>
-    </div>
-
-    <!-- VIEW MODALS -->
-    <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-            <!-- Close -->
-            <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Vue de filière</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewName">Prenom: </label>
-                        <input id="viewName" readonly name="viewName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Niveaux académiques</p>
+                        <div id="levelListView" class="grid grid-cols-1 gap-2">
+                            <!-- Levels list dynamic -->
+                        </div>
                     </div>
-                </div>
 
-                <!-- Row -->
-                <div id="levelListView" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
-                    <div class="w-full flex space-x-6">
-                        <span class="flex-1 flex justify-end">Identifiant</span>
-                        <span class="flex-1 flex justify-start">Niveaux</span>
+                    <div class="mt-10 flex justify-center">
+                        <button type="button" id="closeModalView" class="px-10 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                            Fermer
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit MODALS -->
-    <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('sectors.edit') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Modification de filiere</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <input type="text" class="hidden" id="editId" name="id">
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                        <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editName">Nom: </label>
-                        <input id="editName" name="editName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100">
+                <form method="POST" action="{{ route('sectors.edit') }}" onsubmit="return submitFunction()">    
+                    @csrf
+                    <input type="hidden" name="id" id="editId">
+                    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <h3 class="text-xl font-black text-gray-900">Modifier la Filière</h3>
+                        <button type="button" id="closeModalEditTop" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
                     </div>
-                </div>
+                    
+                    <div class="p-8 space-y-8">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nom de la filière</label>
+                            <input id="editName" name="editName" required type="text"
+                                class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                        </div>
 
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <div class="flex-1 w-full p-2 flex justify-center flex-col items-center overflow-hidden">
-                            <label for="editLevel">Niveaux: </label>
-                            <input id="editLevel" name="editLevel" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                        <div class="space-y-4">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Niveaux</label>
+                            <div class="flex gap-2">
+                                <input id="editLevel" type="text" placeholder="Ajouter un niveau..."
+                                    class="flex-1 px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                                <button type="button" id="editLevelBtn" class="px-6 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all">
+                                    Ajouter
+                                </button>
+                            </div>
+
+                            <div id="levelListEdit" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                <!-- Dynamic levels -->
+                            </div>
+                            <input type="hidden" name="editMaxDegree" id="editMaxDegree">
                         </div>
-                        <div>
-                            <button type="button" id="editLevelBtn" class="px-2 py-1 bg-slate-500 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-slate-600">Ajouter</button>
-                        </div>
-                        
                     </div>
-                </div>
 
-                <div id="levelListEdit" class="w-full justify-center p-2 m-2 text-center overflow-x-hidden">
-                    <input type="text" class="hidden" name="editMaxDegree" id="editMaxDegree">
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelEditButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-            </form>    
+                    <div class="p-8 bg-gray-50/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" id="cancelEditButton" class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-700 transition-all">Annuler</button>
+                        <button type="submit" class="px-8 py-3 bg-amber-600 text-white font-bold rounded-2xl hover:bg-amber-700 shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5">
+                            Sauvegarder
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-
-
 @endsection
 
 @section('scripts')
 <script>
+    // Constants & Global state for dynamic level inputs
+    let currentAddDegree = 0;
+    let currentEditDegree = 0;
 
-            //Tooltip manipulation
-            const tooltipIcon = document.getElementById('tooltipIcon');
-            const tooltipInfo = document.getElementById('tooltipInfo');
-            const searchBar = document.getElementById('search');
+    // Toggle Modal
+    function toggleModal(modalId, show = true) {
+        const modal = document.getElementById(modalId);
+        if (show) modal.classList.remove('hidden');
+        else modal.classList.add('hidden');
+    }
 
-            function positionnementTooltip () {
-                let xPosition = tooltipIcon.getBoundingClientRect().x;
-                let yPosition = tooltipIcon.getBoundingClientRect().y + tooltipIcon.getBoundingClientRect().height;
+    // Level Management Factory
+    function createLevelRow(containerId, index, name, prefix) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm group animate-in slide-in-from-right-2 duration-200';
+        div.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="level-index h-6 w-6 bg-gray-100 text-gray-500 rounded text-[10px] flex items-center justify-center font-bold">${index}</span>
+                <input type="hidden" name="${prefix}Degree${index}" value="${index}">
+                <input type="text" name="${prefix}Name${index}" value="${name}" readonly 
+                    class="bg-transparent border-none p-0 text-sm font-semibold text-gray-700 focus:ring-0">
+            </div>
+            <button type="button" class="remove-level p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        `;
+        container.appendChild(div);
 
-                if (mediaQuery.matches) {
-                    xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
+        div.querySelector('.remove-level').addEventListener('click', () => {
+            div.remove();
+            reorderLevels(containerId, prefix);
+        });
+    }
+
+    function reorderLevels(containerId, prefix) {
+        const container = document.getElementById(containerId);
+        const rows = container.children;
+        const maxInput = document.getElementById(`${prefix}MaxDegree`);
+        
+        Array.from(rows).forEach((row, idx) => {
+            const newIdx = idx + 1;
+            row.querySelector('.level-index').textContent = newIdx;
+            row.querySelector(`input[name*="Degree"]`).name = `${prefix}Degree${newIdx}`;
+            row.querySelector(`input[name*="Degree"]`).value = newIdx;
+            row.querySelector(`input[name*="Name"]`).name = `${prefix}Name${newIdx}`;
+        });
+        
+        maxInput.value = rows.length;
+        if(prefix === 'add') currentAddDegree = rows.length;
+        else currentEditDegree = rows.length;
+    }
+
+    // Add Sector Handlers
+    document.getElementById('openModalAdd').addEventListener('click', () => toggleModal('addModal'));
+    document.getElementById('addLevelBtn').addEventListener('click', () => {
+        const input = document.getElementById('addLevel');
+        if (!input.value.trim()) return;
+        currentAddDegree++;
+        createLevelRow('levelList', currentAddDegree, input.value.trim(), 'add');
+        document.getElementById('addMaxDegree').value = currentAddDegree;
+        input.value = '';
+    });
+
+    // View Sector Handlers
+    document.querySelectorAll('.openModalView').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.closest('tr').querySelector('.id').textContent;
+            try {
+                const res = await fetch(`/sectors/getSector/${id}`);
+                const data = await res.json();
+                document.getElementById('viewName').textContent = data.name;
+                const container = document.getElementById('levelListView');
+                container.innerHTML = '';
+                data.levels.forEach(l => {
+                    const d = document.createElement('div');
+                    d.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-xl';
+                    d.innerHTML = `<span class="text-xs font-bold text-gray-400">ID ${l.id}</span><span class="text-sm font-bold text-gray-700">${l.name}</span>`;
+                    container.appendChild(d);
+                });
+                toggleModal('viewModal');
+            } catch(e) { console.error(e); }
+        });
+    });
+
+    // Edit Sector Handlers
+    document.querySelectorAll('.openModalEdit').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.closest('tr').querySelector('.id').textContent;
+            try {
+                const res = await fetch(`/sectors/getSector/${id}`);
+                const data = await res.json();
+                document.getElementById('editId').value = data.id;
+                document.getElementById('editName').value = data.name;
+                const container = document.getElementById('levelListEdit');
+                container.innerHTML = '';
+                currentEditDegree = 0;
+                data.levels.forEach(l => {
+                    currentEditDegree++;
+                    createLevelRow('levelListEdit', currentEditDegree, l.name, 'edit');
+                });
+                document.getElementById('editMaxDegree').value = currentEditDegree;
+                toggleModal('editModal');
+            } catch(e) { console.error(e); }
+        });
+    });
+
+    document.getElementById('editLevelBtn').addEventListener('click', () => {
+        const input = document.getElementById('editLevel');
+        if (!input.value.trim()) return;
+        currentEditDegree++;
+        createLevelRow('levelListEdit', currentEditDegree, input.value.trim(), 'edit');
+        document.getElementById('editMaxDegree').value = currentEditDegree;
+        input.value = '';
+    });
+
+    // Close buttons logic
+    ['addModal', 'viewModal', 'editModal'].forEach(id => {
+        document.querySelectorAll(`#${id} [id*="closeModal"], #${id} [id*="cancel"]`).forEach(b => {
+            b.addEventListener('click', () => {
+                toggleModal(id, false);
+                if(id === 'addModal') {
+                    document.getElementById('levelList').innerHTML = '';
+                    currentAddDegree = 0;
                 }
-                
-                tooltipInfo.classList.add(`left-[${xPosition}px]`);
-                tooltipInfo.classList.add(`top-[${yPosition}px]`);
-            }
-
-            positionnementTooltip();
-
-            tooltipIcon.addEventListener('mouseenter', function () {
-                tooltipInfo.classList.remove('hidden');
-            }); 
-
-            tooltipIcon.addEventListener('mouseleave', function () {
-                tooltipInfo.classList.add('hidden');
-            });
-
-            if (mediaQuery.matches) {
-                tooltipIcon.addEventListener('click', function () {
-                    tooltipInfo.classList.toggle('hidden');
-                }); 
-            }
-            
-            window.addEventListener('resize', () => {
-                positionnementTooltip();
-            });
-        //
-
-    //MODALS MANIPULATIONS
-
-    //////////////////////////
-    //ADD MODALS
-    //////////////////////////
-    /////////////////////////////////Ouverture et Fermeture du modal
-    const closeModalAdd = document.getElementById('closeModalAdd');
-    const openModalAdd = document.getElementById('openModalAdd');
-    const addModal = document.getElementById('addModal');
-
-    const saveAddButton = document.getElementById('saveAddButton');
-    const cancelAddButton = document.getElementById('cancelAddButton');
-
-    const addName = document.getElementById('addName');
-    const addLevel = document.getElementById('addLevel');
-    const addLevelBtn = document.getElementById('addLevelBtn');
-    const levelList = document.getElementById('levelList');
-
-    const formAddSector = document.getElementById('formAddSector');
-
-    var jAdd = 1;
-
-    //Pour l'entrée addLevel
-    addLevel.addEventListener('keydown', (event) => {
-        if (event.keyCode == 13) {
-            event.preventDefault();
-            let level = addLevel.value;
-            addLevel.value = '';
-
-            if (level == '') {
-                return false;
-            }
-
-            let input = document.createElement('input');
-            let span = document.createElement('span');
-            let input_nombreI = document.createElement('input');
-            let i = document.createElement('i');
-
-            let div1 = document.createElement('div');
-            let div2 = document.createElement('div');
-            let div3 = document.createElement('div');
-
-            let divGenerale = document.createElement('div');
-
-            divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
-
-            div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-            div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-            div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevel');
-
-            i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
-
-
-            input_nombreI.value = jAdd;
-            input_nombreI.setAttribute('name', 'addDegree' + jAdd);
-            input_nombreI.classList.add('hidden', 'inputDegreeLevel');
-
-            input.value = level;
-            input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
-            input.setAttribute('name', 'addName' + jAdd)
-            input.setAttribute('readonly', true);
-
-            span.appendChild(i);
-
-            div1.appendChild(input);
-            div2.appendChild(span);
-            div3.textContent = jAdd;
-
-            divGenerale.appendChild(input_nombreI);
-            divGenerale.appendChild(div3);
-            divGenerale.appendChild(div1);
-            divGenerale.appendChild(div2);
-
-            levelList.appendChild(divGenerale);
-
-            addMaxDegree.value = jAdd;
-
-            jAdd++;
-            }
-    });
-
-    function resetValuesAddModal() {
-
-        window.location.reload();
-
-    }
-
-    //Fermeture modal en haut à droite
-    closeModalAdd.addEventListener('click', () => {
-        resetValuesAddModal();
-    });
-
-    //Fermeture modal en appuyant sur le bouton annuler
-    cancelAddButton.addEventListener('click', () => {
-        resetValuesAddModal();
-    });
-
-    //Ouverture du modal avec le bouton +
-    openModalAdd.addEventListener('click', () => {
-        addModal.classList.remove('hidden');
-    });
-    
-    const addMaxDegree = document.getElementById('addMaxDegree');
-
-    addLevelBtn.addEventListener('click', () => {
-        let level = addLevel.value;
-        addLevel.value = '';
-
-        let input = document.createElement('input');
-        let span = document.createElement('span');
-        let input_nombreI = document.createElement('input');
-        let i = document.createElement('i');
-
-        let div1 = document.createElement('div');
-        let div2 = document.createElement('div');
-        let div3 = document.createElement('div');
-
-        let divGenerale = document.createElement('div');
-
-        divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
-
-        div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-        div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-        div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevel');
-
-        i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElement');
-
-
-        input_nombreI.value = jAdd;
-        input_nombreI.setAttribute('name', 'addDegree' + jAdd);
-        input_nombreI.classList.add('hidden', 'inputDegreeLevel');
-
-        input.value = level;
-        input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevel');
-        input.setAttribute('name', 'addName' + jAdd)
-        input.setAttribute('readonly', true);
-
-        span.appendChild(i);
-
-        div1.appendChild(input);
-        div2.appendChild(span);
-        div3.textContent = jAdd;
-
-        divGenerale.appendChild(input_nombreI);
-        divGenerale.appendChild(div3);
-        divGenerale.appendChild(div1);
-        divGenerale.appendChild(div2);
-
-        levelList.appendChild(divGenerale);
-
-        addMaxDegree.value = jAdd;
-
-        jAdd++;
-    });
-    
-    levelList.addEventListener('click', (event) => {
-        let item = event.target;
-
-        if (item.classList.contains('removeElement')) {
-            let row = item.parentNode.parentNode.parentNode;
-
-            row.remove();
-
-            ordinateDegreeAndName();
-        }
-    });
-
-    function ordinateDegreeAndName () {
-
-        const inputNameLevels = Array.from(document.getElementsByClassName('inputNameLevel'));
-        const inputDegreeLevels = Array.from(document.getElementsByClassName('inputDegreeLevel'));
-        const divDegreeLevels = Array.from(document.getElementsByClassName('divDegreeLevel'));
-
-        addMaxDegree.value = inputNameLevels.length;
-
-        jAdd = 1
-
-        inputNameLevels.forEach((inputNameLevel) => {
-            inputNameLevel.removeAttribute('name');
-            inputNameLevel.setAttribute('name', 'addName' + jAdd);
-            inputNameLevel.value = inputNameLevel.value;
-            jAdd++;
-        });
-
-        jAdd = 1;
-
-        inputDegreeLevels.forEach((inputDegreeLevel) => {
-            inputDegreeLevel.removeAttribute('name');
-            inputDegreeLevel.setAttribute('name', 'addDegree' + jAdd);
-            inputDegreeLevel.value = jAdd;
-            jAdd++;
-        });
-        
-        jAdd = 1;
-
-        divDegreeLevels.forEach((divDegreeLevel) => {
-            divDegreeLevel.textContent = jAdd;
-            jAdd++;
-        });
-
-    }
-
-
-
-    //////////////////////////
-    //VIEW MODALS
-    //////////////////////////
-    const closeModalView = document.getElementById('closeModalView');
-    const openModalView = Array.from(document.getElementsByClassName('openModalView'));
-    const viewModal = document.getElementById('viewModal');
-
-    const saveViewButton = document.getElementById('saveViewButton');
-    const cancelViewButton = document.getElementById('cancelViewButton');
-
-    const viewName = document.getElementById('viewName');
-    const viewLevel = document.getElementById('viewLevel');
-    const viewLevelBtn = document.getElementById('viewLevelBtn');
-    const levelListView = document.getElementById('levelListView');
-
-    var j = 1;
-
-    function resetValuesViewModal() {
-        viewModal.classList.add('hidden');
-
-        viewName.value = '';
-
-        const removeElementView = Array.from(document.getElementsByClassName('removeElementView'));
-        
-        removeElementView.forEach((element, index) => {
-            let row = element;
-            row.remove();
-        })
-
-        j = 1;
-        window.location.reload();
-
-    }
-
-    //Fermeture modal en haut à droite
-    closeModalView.addEventListener('click', () => {
-        resetValuesViewModal();
-    });
-
-    //Ouverture du modal avec le bouton +
-    openModalView.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            id = parseInt(btn.parentNode.querySelector('.id').textContent);
-
-            fetch('/sectors/getSector/' + id)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network resonse was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                
-                viewName.value = data.name;
-
-                levels = data.levels;
-                
-                levels.forEach((level) => {
-
-                    levelListView.innerHTML += `
-                        <div class="w-full flex space-x-6">
-                            <span class="flex-1 flex justify-end">${level.id}</span>
-                            <span class="flex-1 flex justify-start">${level.name}</span>
-                        </div>
-                    `;
-
-                })
-
-                viewModal.classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error)
             });
         });
     });
 
+    // Tooltip logic
+    const tIcon = document.getElementById('tooltipIcon');
+    const tInfo = document.getElementById('tooltipInfo');
+    tIcon?.addEventListener('mouseenter', () => tInfo.classList.remove('hidden'));
+    tIcon?.addEventListener('mouseleave', () => tInfo.classList.add('hidden'));
 
-
-    //////////////////////////
-    //EDIT MODALS
-    //////////////////////////
-    const closeModalEdit = document.getElementById('closeModalEdit');
-    const openModalEdit = Array.from(document.getElementsByClassName('openModalEdit'));
-    const editModal = document.getElementById('editModal');
-
-    const saveEditButton = document.getElementById('saveEditButton');
-    const cancelEditButton = document.getElementById('cancelEditButton');
-
-    const editId = document.getElementById('editId');
-
-    const editName = document.getElementById('editName');
-    const editLevel = document.getElementById('editLevel');
-    const editLevelBtn = document.getElementById('editLevelBtn');
-    const levelListEdit = document.getElementById('levelListEdit');
-    const editMaxDegree = document.getElementById('editMaxDegree');
-
-    
-
-    var jEdit = 1;
-
-
-    function resetValuesEditModal() {
-        editModal.classList.add('hidden');
-
-        editName.value = '';
-        editLevel.value = '';
-
-        const removeElementEdit = Array.from(document.getElementsByClassName('removeElementEdit'));
-        
-        removeElementEdit.forEach((element, index) => {
-            let row = element.parentNode.parentNode.parentNode;
-
-            row.remove();
-
-        })
-
-        window.location.reload();
-
-        jEdit = 1;
-
+    // Prevent double submission
+    let formIsSubmitting = false;
+    function submitFunction() {
+        if (formIsSubmitting) return false;
+        formIsSubmitting = true;
+        return true;
     }
-
-    //Fermeture modal en haut à droite
-    closeModalEdit.addEventListener('click', () => {
-        resetValuesEditModal();
-    });
-
-    //Fermeture modal en appuyant sur le bouton annuler
-    cancelEditButton.addEventListener('click', () => {
-        resetValuesEditModal();
-    });
-
-
-    //Ouverture du modal avec le bouton +
-    openModalEdit.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            id = parseInt(btn.parentNode.querySelector('.id').textContent);
-
-            fetch('/sectors/getSector/' + id)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network resonse was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                
-                editId.value = data.id;
-
-                editName.value = data.name;
-
-                levels = data.levels;
-                
-                levels.forEach((l) => {
-
-                    let level = l.name;
-                    
-                    editLevel.value = '';
-
-                    let input = document.createElement('input');
-                    let span = document.createElement('span');
-                    let input_nombreI = document.createElement('input');
-                    let i = document.createElement('i');
-
-                    let div1 = document.createElement('div');
-                    let div2 = document.createElement('div');
-                    let div3 = document.createElement('div');
-
-                    let divGenerale = document.createElement('div');
-
-                    divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
-
-                    div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-                    div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-                    div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevelEdit');
-
-                    i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
-
-                    input_nombreI.value = jEdit;
-                    input_nombreI.setAttribute('name', 'editDegree' + jEdit);
-                    input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
-
-                    input.value = level;
-                    input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
-                    input.setAttribute('name', 'editName' + jEdit)
-                    input.setAttribute('readonly', true);
-
-                    span.appendChild(i);
-
-                    div1.appendChild(input);
-                    div2.appendChild(span);
-                    div3.textContent = jEdit;
-
-                    divGenerale.appendChild(input_nombreI);
-                    divGenerale.appendChild(div3);
-                    divGenerale.appendChild(div1);
-                    divGenerale.appendChild(div2);
-
-                    levelListEdit.appendChild(divGenerale);
-
-                    editMaxDegree.value = jEdit;
-
-                    j++;
-
-                    ordinateDegreeAndNameEdit();
-
-                })
-
-                editModal.classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error)
-            });
-        });
-    });
-    
-
-    editLevelBtn.addEventListener('click', () => {
-        
-        let level = editLevel.value;
-        editLevel.value = '';
-
-        let input = document.createElement('input');
-        let span = document.createElement('span');
-        let input_nombreI = document.createElement('input');
-        let i = document.createElement('i');
-
-        let div1 = document.createElement('div');
-        let div2 = document.createElement('div');
-        let div3 = document.createElement('div');
-
-        let divGenerale = document.createElement('div');
-
-        divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
-
-        div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-        div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-        div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevelEdit');
-
-        i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
-
-        input_nombreI.value = jEdit;
-        input_nombreI.setAttribute('name', 'editDegree' + jEdit);
-        input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
-
-        input.value = level;
-        input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
-        input.setAttribute('name', 'editName' + jEdit)
-        input.setAttribute('readonly', true);
-
-        span.appendChild(i);
-
-        div1.appendChild(input);
-        div2.appendChild(span);
-        div3.textContent = jEdit;
-
-        divGenerale.appendChild(input_nombreI);
-        divGenerale.appendChild(div3);
-        divGenerale.appendChild(div1);
-        divGenerale.appendChild(div2);
-
-        levelListEdit.appendChild(divGenerale);
-
-        editMaxDegree.value = jEdit;
-
-        ordinateDegreeAndNameEdit();
-
-        jEdit++;
-    });
-    
-
-    levelListEdit.addEventListener('click', (event) => {
-        let item = event.target;
-
-        if (item.classList.contains('removeElementEdit')) {
-            let row = item.parentNode.parentNode.parentNode;
-            row.remove();
-
-            ordinateDegreeAndNameEdit();
-        }
-    });
-
-    function ordinateDegreeAndNameEdit () {
-        const inputNameLevels = Array.from(document.getElementsByClassName('inputNameLevelEdit'));
-        const inputDegreeLevels = Array.from(document.getElementsByClassName('inputDegreeLevelEdit'));
-        const divDegreeLevelsEdit = Array.from(document.getElementsByClassName('divDegreeLevelEdit'));
-
-        jEdit = 1;
-
-        editMaxDegree.value = inputNameLevels.length;
-
-        inputNameLevels.forEach((inputNameLevel) => {
-            inputNameLevel.setAttribute('name', 'editName' + jEdit);
-            jEdit++;
-        });
-
-        jEdit = 1;
-
-        inputDegreeLevels.forEach((inputDegreeLevel) => {
-            inputDegreeLevel.setAttribute('name', 'editDegree' + jEdit);
-            inputDegreeLevel.value = jEdit;
-            jEdit++;
-        });
-        
-        jEdit = 1;
-
-        divDegreeLevelsEdit.forEach((divDegreeLevel) => {
-            divDegreeLevel.textContent = jEdit;
-            jEdit++;
-        });
-
-    }
-
-    //Pour l'entrée editLevel
-    editLevel.addEventListener('keydown', (event) => {
-        if (event.keyCode == 13) {
-            event.preventDefault();
-            let level = editLevel.value;
-            editLevel.value = '';
-
-            if (level == '') {
-                return false;
-            }
-
-            let input = document.createElement('input');
-            let span = document.createElement('span');
-            let input_nombreI = document.createElement('input');
-            let i = document.createElement('i');
-
-            let div1 = document.createElement('div');
-            let div2 = document.createElement('div');
-            let div3 = document.createElement('div');
-
-            let divGenerale = document.createElement('div');
-
-            divGenerale.classList.add('w-full', 'flex', 'justify-center', 'm-2', 'text-center', 'block');
-
-            div1.classList.add('flex-1', 'flex', 'justify-center','items-center');
-            div2.classList.add('flex-1', 'flex', 'justify-start','items-center');
-            div3.classList.add('flex-1', 'flex', 'justify-end','items-center', 'divDegreeLevelEdit');
-
-            i.classList.add('fas', 'fa-times', 'text-red-600', 'text-xl', 'cursor-pointer', 'removeElementEdit');
-
-            input_nombreI.value = jEdit;
-            input_nombreI.setAttribute('name', 'editDegree' + jEdit);
-            input_nombreI.classList.add('hidden', 'inputDegreeLevelEdit');
-
-            input.value = level;
-            input.classList.add('p-1', 'bg-transparent', 'overflow-x-auto', 'text-center', 'inputNameLevelEdit');
-            input.setAttribute('name', 'editName' + jEdit)
-            input.setAttribute('readonly', true);
-
-            span.appendChild(i);
-
-            div1.appendChild(input);
-            div2.appendChild(span);
-            div3.textContent = jEdit;
-
-            divGenerale.appendChild(input_nombreI);
-            divGenerale.appendChild(div3);
-            divGenerale.appendChild(div1);
-            divGenerale.appendChild(div2);
-
-            levelListEdit.appendChild(divGenerale);
-
-            editMaxDegree.value = jEdit;
-
-            ordinateDegreeAndNameEdit();
-
-            jEdit++;
+</script>
+@endsection
         }
     });
 

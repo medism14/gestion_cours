@@ -1,91 +1,126 @@
 @extends('Layouts.authed')
 
-@section('title', 'Parametrage')
+@section('title', 'Paramètres du compte')
 
 @section('content')
-    <section class="flex flex-col">
-        <div class="bg-pink-800 mx-auto p-5 w-[80%] md:w-[70%] text-center rounded-b-none rounded-lg text-gray-100">
-            Paramétrer ton compte
-        </div>
-        <div class="p-5 mb-3 bg-gray-600 w-[80%] md:w-[70%] pb-10 mx-auto rounded-t-none rounded-lg">
-            <form method="POST" action="{{ route('parameters') }}" class="m-0 p-0" onsubmit="return password_check()">
-            @csrf
-            @if (auth()->user()->role == 0)
-            <!-- Row -->
-            <div class="md:flex w-full mb-5">
-                <!-- Column -->
-                <div class="flex-1 text-center md:mr-5">
-                    <label for="prenom" class="text-white">Prenom: </label>
-                    <input id="prenom" name="prenom" type="text" value="{{ $user->first_name }}" class="p-2 outline-none rounded-lg text-md w-full shadow-lg mb-4 md:mb-0">
-                </div>
-                <!-- Column -->
-                <div class="flex-1 text-center">
-                    <label for="nom" class="text-white">Nom: </label>
-                    <input id="nom" name="nom" type="text" value="{{ $user->last_name }}" class="p-2 outline-none rounded-lg text-md w-full shadow-lg">
-                </div>
-            </div>
+<div class="section-animate max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+    <!-- Header -->
+    <div class="text-center md:text-left">
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Paramètres du compte</h1>
+        <p class="mt-2 text-gray-500">Gérez vos informations personnelles et la sécurité de votre accès.</p>
+    </div>
 
-            <!-- Row -->
-            <div class="md:flex w-full mb-5">
-                <!-- Column -->
-                <div class="flex-1 text-center md:mr-5">
-                    <label for="email" class="text-white">Email: </label>
-                    <input id="email" name="email" type="email" value="{{ $user->email }}" class="p-2 outline-none rounded-lg text-md w-full shadow-lg mb-4 md:mb-0">
+    <!-- Main Card -->
+    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+        <form method="POST" action="{{ route('parameters') }}" onsubmit="return password_check()" class="divide-y divide-gray-50">
+            @csrf
+            
+            @if (auth()->user()->role == 0)
+            <!-- Personal Info Section -->
+            <div class="p-8 md:p-12 space-y-8">
+                <div class="flex items-center gap-4">
+                    <div class="h-10 w-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">Informations Personnelles</h2>
+                        <p class="text-xs text-gray-400 font-medium">Vos coordonnées d'identité et de contact.</p>
+                    </div>
                 </div>
-                <!-- Column -->
-                <div class="flex-1 text-center">
-                    <label for="phone" class="text-white">Phone: </label>
-                    <input id="phone" name="phone" type="number" value="{{ $user->phone }}" class="p-2 outline-none rounded-lg text-md w-full shadow-lg">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="prenom" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Prénom</label>
+                        <input id="prenom" name="prenom" type="text" value="{{ $user->first_name }}" 
+                            class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="nom" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nom</label>
+                        <input id="nom" name="nom" type="text" value="{{ $user->last_name }}" 
+                            class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="email" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email professionnel</label>
+                        <input id="email" name="email" type="email" value="{{ $user->email }}" 
+                            class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="phone" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Téléphone</label>
+                        <input id="phone" name="phone" type="text" value="{{ $user->phone }}" 
+                            class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                    </div>
                 </div>
             </div>
             @endif
 
-            <!-- Row -->
-            <div class="md:flex w-full mb-10">
-                <!-- Column -->
-                <div class="flex-1 text-center md:mr-5">
-                    <label for="mdp" class="text-white">Mot de passe: </label>
-                    <input id="mdp" name="mdp" type="password" class="p-2 outline-none rounded-lg text-md w-full shadow-lg mb-4 md:mb-0">
+            <!-- Security Section -->
+            <div class="p-8 md:p-12 space-y-8 bg-gray-50/30">
+                <div class="flex items-center gap-4">
+                    <div class="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">Sécurité</h2>
+                        <p class="text-xs text-gray-400 font-medium">Laissez vide pour conserver votre mot de passe actuel.</p>
+                    </div>
                 </div>
-                <!-- Column -->
-                <div class="flex-1 text-center">
-                    <label for="mdp_confirmation" class="text-white">Confirmation mot de passe: </label>
-                    <input id="mdp_confirmation" name="mdp_confirmation" type="password" class="p-2 outline-none rounded-lg text-md w-full shadow-lg">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="mdp" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nouveau mot de passe</label>
+                        <div class="relative group">
+                            <input id="mdp" name="mdp" type="password" placeholder="••••••••"
+                                class="block w-full px-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-amber-500 transition-all text-sm font-semibold">
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-300">
+                                <i class="fa-solid fa-lock text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="mdp_confirmation" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Confirmation</label>
+                        <div class="relative group">
+                            <input id="mdp_confirmation" name="mdp_confirmation" type="password" placeholder="••••••••"
+                                class="block w-full px-4 py-3 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-amber-500 transition-all text-sm font-semibold">
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-300">
+                                <i class="fa-solid fa-check-double text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Row -->
-            <div class="md:flex w-full">
-                <!-- Column -->
-                <div class="flex-1 text-center md:mr-5 md:mb-0 mb-3 ">
-                    <button class="bg-green-500 text-white px-4 py-2 rounded-lg transition-all hover:bg-green-600">Confirmer</button>
-                </div>
-                <!-- Column -->
-                <div class="flex-1 text-center">
-                    <button class="bg-red-500 text-white px-4 py-2 rounded-lg transition-all hover:bg-red-600">Annuler</button>
-                </div>
+            <!-- Actions -->
+            <div class="p-8 md:p-10 bg-gray-50/50 flex flex-col md:flex-row items-center justify-center gap-4">
+                <button type="submit" class="w-full md:w-auto px-12 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-xl hover:shadow-gray-200 transform hover:-translate-y-1">
+                    Enregistrer les modifications
+                </button>
+                <a href="{{ url()->previous() }}" class="w-full md:w-auto px-10 py-4 bg-white text-gray-500 font-bold rounded-2xl hover:bg-gray-100 text-center transition-all border border-gray-200">
+                    Annuler
+                </a>
             </div>
-            </form>
-        </div>
-    </section>
-    
+        </form>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
-    <script>
-        function positionnementTooltip () {
-            
-        }
-        const mdp = document.getElementById('mdp');
-        const mdp_confirmation = document.getElementById('mdp_confirmation');
+<script>
+    const mdp = document.getElementById('mdp');
+    const mdp_confirmation = document.getElementById('mdp_confirmation');
 
-        function password_check() {
-            if (mdp.value != mdp_confirmation.value) {
-                alert("Les mots de passe ne correspondent pas");
-                return false;
-            } else {
-                return submitFunction();
-            }
+    function password_check() {
+        if (mdp.value && mdp.value !== mdp_confirmation.value) {
+            alert("Les mots de passe ne correspondent pas");
+            return false;
         }
-    </script>
-@endsection 
+        return submitFunction();
+    }
+
+    let formIsSubmitting = false;
+    function submitFunction() {
+        if (formIsSubmitting) return false;
+        formIsSubmitting = true;
+        return true;
+    }
+</script>
+@endsection

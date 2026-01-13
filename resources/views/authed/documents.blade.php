@@ -1,569 +1,346 @@
 @extends('Layouts.authed')
 
-@section('title', 'Documents')
-
-<style>
-    th div{
-        border: 1px solid black;
-        padding: 8px;
-        background-color: rgb(31, 65, 137);
-        color: white;
-    }
-    
-    td div {
-        text-align: center;
-        padding: 5px;
-        background-color: rgb(195, 200, 213);
-    }
-
-    body {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    @media screen and (max-width: 768px) {
-        th div {
-            padding: 3px;
-        }
-
-        td div {
-            padding: 1px;
-        }
-    }
-
-    .progress-bar {
-        height: 20px;
-        background-color: #e0e0e0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .progress-bar-fill {
-        height: 100%;
-        background-color: #4CAF50;
-        transition: width 0.3s ease-in-out;
-    }
-
-</style>
+@section('title', 'Bibliothèques')
 
 @section('content')
-    <h1 class="text-center md:text-3xl lg: font-bold">Documents PDF</h1>
-
-    <!-- Barre de recherche -->
-    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('documents.index') }}" class="p-0 m-0" method="POST">
-            @csrf
-            <div class="w-full flex justify-center space-x-1 items-center">
-                <input id="search" placeholder="Rechercher un document..." name="search" type="text" class="text-[0.7rem] lg:text-sm border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-            </div>
-            <div class="w-full flex justify-center mt-3">
-                <button type="submit" class="text-[0.7rem] lg:text-sm p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-            </div>
-        </form> 
-    </div>
-
-    <!-- Tableau -->
-    <div id="table-div" class="block w-full">
+<div class="section-animate space-y-8 p-4 md:p-8">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Bibliothèques numériques</h1>
+            <p class="mt-1 text-gray-500">Gérez et accédez à l'ensemble des documents PDF de l'établissement.</p>
+        </div>
         @if (auth()->user()->role == 0)  
-            <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" title="Ajouter un document" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
-            </div>
+            <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus mr-2 text-sm"></i>
+                Ajouter une bibliothèque
+            </button>
         @endif
-        <table id="tableDocument" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
-            <thead>
-                <tr>
-                    <th class="hidden" id="informations"><div>Informations</div></th>
-                    <th id="titre"><div>Titre</div></th>
-                    <th id="nomFichier"><div>Nom du fichier</div></th>
-                    <th id="taille"><div>Taille</div></th>
-                    <th id="visibilite"><div>Visibilité</div></th>
-                    <th id="date"><div>Date</div></th>
-                    <th id="actions"><div>Actions</div></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($documents as $document)
-                    @php
-                        $date = explode(' ', $document->created_at)[0];
-                        $visibilityLabel = match($document->visibility) {
-                            'all' => 'Tous',
-                            'teachers' => 'Professeurs',
-                            'students' => 'Étudiants',
-                        };
-                    @endphp
-                    <tr>
-                        <td class="informations w-full hidden">
-                            <div class="flex justify-center items-start flex-col tdDivs">
-                                <span class="font-bold">Titre: {{ $document->title }}</span>
-                                <span>Fichier: {{ $document->filename }}</span>
-                                <span>Taille: {{ $document->formatted_file_size }}</span>
-                                <span>Visibilité: {{ $visibilityLabel }}</span>
-                                <span>Date: {{ $date }}</span>
-                            </div>
-                        </td>
-                        <td class="titre"><div class="flex justify-center items-center tdDivs font-bold">{{ $document->title }}</div></td>
-                        <td class="nomFichier"><div class="flex justify-center items-center tdDivs">{{ $document->filename }}</div></td>
-                        <td class="taille"><div class="flex justify-center items-center tdDivs">{{ $document->formatted_file_size }}</div></td>
-                        <td class="visibilite"><div class="flex justify-center items-center tdDivs">{{ $visibilityLabel }}</div></td>
-                        <td class="date"><div class="flex justify-center items-center tdDivs">{{ $date }}</div></td>
-                        <td class="actions">
-                            <div class="flex justify-center items-center tdDivs font-bold">
-                                <form method="post" action="{{ route('documents.download', ['id' => $document->id]) }}" class="m-0 p-0">
-                                    @csrf
-                                    <button title="Télécharger" type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
-                                </form>
-                                <button class="id hidden">{{ $document->id }}</button>
-                                <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                @if (auth()->user()->role == 0)  
-                                    <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
-                                    <form method="POST" onsubmit="return confirm('Vous êtes sûr de votre choix ?')" action="{{ route('documents.delete', ['id' => $document->id]) }}" class="m-0 p-0">
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <form action="{{ route('documents.index') }}" method="POST" class="flex flex-col sm:flex-row gap-3">
+            @csrf
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                </div>
+                <input id="search" name="search" type="text" value="{{ request('search') }}"
+                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Rechercher par titre ou nom de fichier...">
+            </div>
+            <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all">
+                Rechercher
+            </button>
+            @if(request('search') || $loup)
+                <a href="{{ route('documents.index') }}" class="px-6 py-2.5 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-all text-center">
+                    Effacer
+                </a>
+            @endif
+        </form>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100">
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Titre</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Fichier</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Taille</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Visibilité</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Date</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @forelse ($documents as $document)
+                        @php
+                            $visibilityLabel = match($document->visibility) {
+                                'all' => 'Tous',
+                                'teachers' => 'Professeurs',
+                                'students' => 'Étudiants',
+                            };
+                            $visibilityClass = match($document->visibility) {
+                                'all' => 'bg-blue-50 text-blue-600',
+                                'teachers' => 'bg-emerald-50 text-emerald-600',
+                                'students' => 'bg-purple-50 text-purple-600',
+                            };
+                        @endphp
+                        <tr class="hover:bg-gray-50/50 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 bg-red-50 text-red-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fa-solid fa-file-pdf text-lg"></i>
+                                    </div>
+                                    <div class="font-semibold text-gray-900">{{ $document->title }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell text-sm text-gray-500 italic max-w-xs truncate">
+                                {{ $document->filename }}
+                            </td>
+                            <td class="px-6 py-4 hidden lg:table-cell text-sm text-gray-500">
+                                {{ $document->formatted_file_size }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $visibilityClass }}">
+                                    {{ $visibilityLabel }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 hidden xl:table-cell text-sm text-gray-500">
+                                {{ $document->created_at->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 text-right space-x-2">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <form method="post" action="{{ route('documents.download', $document->id) }}" class="inline">
                                         @csrf
-                                        @method('DELETE')
-                                        <button title="Supprimer" value="{{ $document->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        <button title="Télécharger" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                            <i class="fa-solid fa-download"></i>
+                                        </button>
                                     </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-                @if ($documents->isEmpty())
-                    <tr>
-                        <td id="changeTaille" colspan="6"><div class="flex justify-center items-center">Aucun document disponible</div></td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-
-    @if ($loup)
-    <div class="w-full flex justify-center mt-3">
-        <a href="/documents" class="bg-orange-400 text-white px-2 py-1 rounded-lg">Revenir</a>
-    </div>
-    @endif
-
-    <!-- Pagination -->
-    <div class="w-full max-w-full mt-5 md:w-[90%] mx-auto flex my-3 justify-center text-sm lg:text-base md:text-sm">
-        <div class="pagination">
+                                    <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-id="{{ $document->id }}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    @if (auth()->user()->role == 0)  
+                                        <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $document->id }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <form method="POST" action="{{ route('documents.delete', $document->id) }}" class="inline" onsubmit="return confirm('Voulez-vous vraiment supprimer cette bibliothèque ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <span class="id hidden">{{ $document->id }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">
+                                Aucun document trouvé dans la bibliothèque.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
         @if ($documents->hasPages())
-            <nav>
-                @if ($documents->onFirstPage())
-                    <span class="p-2 bg-gray-300 m-2 rounded shadow-md">
-                        Précédent
-                    </span>
-                @else
-                    <a href="{{ $documents->previousPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Précédent
-                    </a>
-                @endif
-
-                @if ($documents->hasMorePages())
-                    <a href="{{ $documents->nextPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </a>
-                @else
-                    <span class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </span>
-                @endif
-            </nav>
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100 italic">
+                {{ $documents->links() }}
+            </div>
         @endif
-        </div>
     </div>
+</div>
 
-    <!-- MODALS -->
+<!-- MODALS -->
+
+<!-- ADD/EDIT MODAL TEMPLATE (Used via JS or common classes) -->
+<div id="documentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"></div>
     
-    @if (auth()->user()->role == 0)  
-    <!-- ADD MODAL -->
-    <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="m-0 p-0" id="addForm">    
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Ajouter une bibliothèque</h3>
+            <button class="closeModal text-gray-400 hover:text-gray-600 p-1.5 hover:bg-white rounded-lg transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Form Area -->
+        <form id="documentForm" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
             @csrf
-            <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Ajout de document PDF</div>
-                
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full justify-center md:space-x-2">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addFile">Fichier PDF (max 50 Mo): </label>
-                        <input id="addFile" name="addFile" type="file" accept=".pdf" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                        <div id="uploadProgress" class="hidden w-full mt-2">
-                            <div class="progress-bar">
-                                <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
-                            </div>
-                            <p id="progressText" class="text-center text-sm mt-1">0%</p>
-                        </div>
+            <input type="hidden" id="docId" name="id">
+            
+            <div class="space-y-1">
+                <label for="docFile" class="block text-sm font-semibold text-gray-700">Fichier PDF <span id="fileRequired" class="text-red-500">*</span></label>
+                <div class="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 transition-colors bg-gray-50 group cursor-pointer relative">
+                    <input id="docFile" name="addFile" type="file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <div class="text-center group-hover:scale-105 transition-transform duration-200">
+                        <i class="fa-solid fa-file-arrow-up text-3xl text-gray-400 group-hover:text-blue-500 mb-2"></i>
+                        <p id="fileNameDisplay" class="text-xs text-gray-500 font-medium italic truncate max-w-[200px]">Cliquez ou glissez un fichier (Max 50Mo)</p>
                     </div>
                 </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addTitle">Titre: </label>
-                        <input name="addTitle" id="addTitle" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" required>
+                <!-- Progress Area -->
+                <div id="uploadProgress" class="hidden mt-4 space-y-2">
+                    <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div id="progressBarFill" class="h-full bg-blue-600 transition-all duration-300" style="width: 0%"></div>
                     </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addVisibility">Visible par: </label>
-                        <select name="addVisibility" id="addVisibility" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="all">Tous (Profs + Étudiants)</option>
-                            <option value="teachers">Professeurs uniquement</option>
-                            <option value="students">Étudiants uniquement</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="w-full p-2 flex justify-center items-center overflow-hidden">
-                    <div class="w-full md:w-3/4 flex justify-center flex-col">
-                        <label for="addDescription" class="text-center">Description (optionnel): </label>
-                        <textarea name="addDescription" id="addDescription" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" cols="5" rows="3"></textarea>
-                    </div>
+                    <p id="progressText" class="text-center text-[10px] font-bold text-blue-600 uppercase tracking-widest">0%</p>
                 </div>
             </div>
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelAddButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
+
+            <div class="space-y-1">
+                <label for="docTitle" class="block text-sm font-semibold text-gray-700">Titre de la bibliothèque</label>
+                <input name="addTitle" id="docTitle" type="text" required
+                    class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
             </div>
-        </form>    
-        </div>
+
+            <div class="space-y-1">
+                <label for="docVisibility" class="block text-sm font-semibold text-gray-700">Qui peut voir ce document ?</label>
+                <select name="addVisibility" id="docVisibility" class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    <option value="all">Tout le monde</option>
+                    <option value="teachers">Professeurs uniquement</option>
+                    <option value="students">Étudiants uniquement</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label for="docDescription" class="block text-sm font-semibold text-gray-700">Description (Optionnel)</label>
+                <textarea name="addDescription" id="docDescription" rows="3"
+                    class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"></textarea>
+            </div>
+
+            <div class="pt-4 flex items-center justify-end space-x-3">
+                <button type="button" class="closeModal px-6 py-2.5 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-all">
+                    Annuler
+                </button>
+                <button type="submit" id="submitBtn" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
     </div>
-    @endif
+</div>
 
-    <!-- VIEW MODAL -->
-    <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-            <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Détails du document</div>
-                
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewTitle">Titre: </label>
-                        <input id="viewTitle" readonly name="viewTitle" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewFilename">Nom du fichier: </label>
-                        <input id="viewFilename" readonly name="viewFilename" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewSize">Taille: </label>
-                        <input id="viewSize" readonly name="viewSize" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewVisibility">Visible par: </label>
-                        <input id="viewVisibility" readonly name="viewVisibility" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewAdmin">Posté par: </label>
-                        <input id="viewAdmin" readonly name="viewAdmin" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewDate">Date: </label>
-                        <input id="viewDate" readonly name="viewDate" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-none md:w-1/5"></div>
-                    <div class="w-full md:w-3/5 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewDescription">Description: </label>
-                        <textarea name="viewDescription" id="viewDescription" readonly cols="30" rows="5" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent"></textarea>
-                    </div>
-                    <div class="w-none md:w-1/5"></div>
-                </div>
+<!-- VIEW MODAL (Simplified analytical view) -->
+<div id="viewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all p-8 text-center">
+        <button class="closeViewModal absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        
+        <div class="mx-auto h-20 w-20 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-3xl mb-4">
+            <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        
+        <h2 id="viewTitle" class="text-2xl font-bold text-gray-900 mb-2 truncate px-4"></h2>
+        <p id="viewDescription" class="text-gray-500 text-sm mb-6 line-clamp-3 italic bg-gray-50 p-4 rounded-xl"></p>
+        
+        <div class="grid grid-cols-2 gap-4 text-left border-t border-gray-100 pt-6">
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Taille</p>
+                <p id="viewSize" class="text-sm font-semibold text-gray-700"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Visibilité</p>
+                <p id="viewVisibility" class="text-sm font-semibold text-gray-700"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Posté par</p>
+                <p id="viewAdmin" class="text-sm font-semibold text-gray-700 truncate"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date</p>
+                <p id="viewDate" class="text-sm font-semibold text-gray-700"></p>
             </div>
         </div>
-    </div>
-
-    @if (auth()->user()->role == 0) 
-    <!-- EDIT MODAL -->
-    <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('documents.edit') }}" enctype="multipart/form-data" class="m-0 p-0">    
-            @csrf
-            <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Modification du document</div>
-                
-            <input type="text" class="hidden" id="editId" name="id">
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full justify-center md:space-x-2">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editFile">Nouveau fichier (optionnel): </label>
-                        <input id="editFile" name="editFile" type="file" accept=".pdf" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                        <span>Fichier actuel: <span id="actualFile"></span></span>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editTitle">Titre: </label>
-                        <input name="editTitle" id="editTitle" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" required>
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editVisibility">Visible par: </label>
-                        <select name="editVisibility" id="editVisibility" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="all">Tous (Profs + Étudiants)</option>
-                            <option value="teachers">Professeurs uniquement</option>
-                            <option value="students">Étudiants uniquement</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="w-full p-2 flex justify-center items-center overflow-hidden">
-                    <div class="w-full md:w-3/4 flex justify-center flex-col">
-                        <label for="editDescription" class="text-center">Description: </label>
-                        <textarea name="editDescription" id="editDescription" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" cols="5" rows="3"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelEditButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-        </form>    
+        
+        <div class="mt-8">
+            <a id="viewDownloadLink" href="#" class="w-full flex items-center justify-center py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-download mr-2"></i>
+                Télécharger maintenant
+            </a>
         </div>
     </div>
-    @endif
+</div>
 
 @endsection
 
 @section('scripts')
 <script>
-
-    //////////////////////////
-    //VIEW MODAL
-    //////////////////////////
-    const closeModalView = document.getElementById('closeModalView');
-    const openModalView = Array.from(document.getElementsByClassName('openModalView'));
+    const documentModal = document.getElementById('documentModal');
     const viewModal = document.getElementById('viewModal');
+    const documentForm = document.getElementById('documentForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const docFile = document.getElementById('docFile');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileRequired = document.getElementById('fileRequired');
 
-    const viewTitle = document.getElementById('viewTitle');
-    const viewFilename = document.getElementById('viewFilename');
-    const viewSize = document.getElementById('viewSize');
-    const viewVisibility = document.getElementById('viewVisibility');
-    const viewAdmin = document.getElementById('viewAdmin');
-    const viewDate = document.getElementById('viewDate');
-    const viewDescription = document.getElementById('viewDescription');
+    // Display filename on selection
+    docFile.onchange = e => {
+        const file = e.target.files[0];
+        if (file) fileNameDisplay.innerText = file.name;
+    };
 
-    function resetValuesViewModal() {
-        viewModal.classList.add('hidden');
-    }
-    
-    closeModalView.addEventListener('click', () => {
-        resetValuesViewModal();
+    // Close Modals
+    document.querySelectorAll('.closeModal').forEach(btn => {
+        btn.onclick = () => documentModal.classList.add('hidden');
     });
+    document.querySelector('.closeViewModal').onclick = () => viewModal.classList.add('hidden');
 
-    openModalView.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            let id = parseInt(btn.parentNode.querySelector('.id').textContent);
-            fetch('/documents/getDocument/' + id)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                let created_at = data.created_at.split('T')[0];
-                let visibilityText = data.visibility === 'all' ? 'Tous' : 
-                                    (data.visibility === 'teachers' ? 'Professeurs' : 'Étudiants');
-                
-                // Format file size
-                let bytes = data.file_size;
-                let sizeText;
-                if (bytes >= 1048576) {
-                    sizeText = (bytes / 1048576).toFixed(2) + ' Mo';
-                } else if (bytes >= 1024) {
-                    sizeText = (bytes / 1024).toFixed(2) + ' Ko';
-                } else {
-                    sizeText = bytes + ' octets';
-                }
-                
-                viewTitle.value = data.title;
-                viewFilename.value = data.filename;
-                viewSize.value = sizeText;
-                viewVisibility.value = visibilityText;
-                viewAdmin.value = data.user ? data.user.first_name + ' ' + (data.user.last_name || '') : 'Admin';
-                viewDate.value = created_at;
-                viewDescription.value = data.description || 'Aucune description';
+    // Add Modal
+    const openAdd = document.getElementById('openModalAdd');
+    if(openAdd) {
+        openAdd.onclick = () => {
+            modalTitle.innerText = "Ajouter une bibliothèque";
+            documentForm.action = "{{ route('documents.store') }}";
+            documentForm.reset();
+            fileNameDisplay.innerText = "Cliquez ou glissez un fichier (Max 50Mo)";
+            fileRequired.classList.remove('hidden');
+            docFile.required = true;
+            documentModal.classList.remove('hidden');
+        };
+    }
 
+    // View Modal
+    document.querySelectorAll('.openModalView').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id') || btn.parentNode.querySelector('.id').innerText;
+            try {
+                const res = await fetch(`/documents/getDocument/${id}`);
+                const data = await res.json();
+                
+                document.getElementById('viewTitle').innerText = data.title;
+                document.getElementById('viewDescription').innerText = data.description || 'Aucune description fournie.';
+                document.getElementById('viewSize').innerText = formatSize(data.file_size);
+                document.getElementById('viewVisibility').innerText = data.visibility === 'all' ? 'Tous' : (data.visibility === 'teachers' ? 'Profs' : 'Étudiants');
+                document.getElementById('viewAdmin').innerText = data.user.first_name;
+                document.getElementById('viewDate').innerText = new Date(data.created_at).toLocaleDateString();
+                document.getElementById('viewDownloadLink').href = `/documents/download/${id}`;
+                
                 viewModal.classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error)
-            });
-        });
+            } catch (e) { console.error(e); }
+        };
     });
 
-    @if (auth()->user()->role == 0)
-    //////////////////////////
-    //ADD MODAL
-    //////////////////////////
-    const closeModalAdd = document.getElementById('closeModalAdd');
-    const openModalAdd = document.getElementById('openModalAdd');
-    const addModal = document.getElementById('addModal');
-    const cancelAddButton = document.getElementById('cancelAddButton');
-
-    function resetValuesAddModal() {
-        addModal.classList.add('hidden');
-        document.getElementById('addForm').reset();
-    }
-    
-    closeModalAdd.addEventListener('click', () => {
-        resetValuesAddModal();
-    });
-
-    cancelAddButton.addEventListener('click', () => {
-        resetValuesAddModal();
-    });
-
-    openModalAdd.addEventListener('click', () => {
-        addModal.classList.remove('hidden');
-    });
-
-    //////////////////////////
-    //EDIT MODAL
-    //////////////////////////
-    const closeModalEdit = document.getElementById('closeModalEdit');
-    const openModalEdit = Array.from(document.getElementsByClassName('openModalEdit'));
-    const editModal = document.getElementById('editModal');
-    const cancelEditButton = document.getElementById('cancelEditButton');
-    const editId = document.getElementById('editId');
-    const editTitle = document.getElementById('editTitle');
-    const editDescription = document.getElementById('editDescription');
-    const editVisibility = document.getElementById('editVisibility');
-    const actualFile = document.getElementById('actualFile');
-
-    function resetValuesEditModal() {
-        editModal.classList.add('hidden');
-    }
-    
-    closeModalEdit.addEventListener('click', () => {
-        resetValuesEditModal();
-    });
-
-    cancelEditButton.addEventListener('click', () => {
-        resetValuesEditModal();
-    });
-
-    openModalEdit.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            let id = parseInt(btn.parentNode.querySelector('.id').textContent);
-            fetch('/documents/getDocument/' + id)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                editId.value = data.id;
-                editTitle.value = data.title;
-                editDescription.value = data.description || '';
-                actualFile.textContent = data.filename;
+    // Edit Modal
+    document.querySelectorAll('.openModalEdit').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id') || btn.parentNode.querySelector('.id').innerText;
+            try {
+                const res = await fetch(`/documents/getDocument/${id}`);
+                const data = await res.json();
                 
-                // Set visibility dropdown
-                let options = editVisibility.options;
-                for (let i = 0; i < options.length; i++) {
-                    if (options[i].value === data.visibility) {
-                        options[i].selected = true;
-                        break;
-                    }
-                }
-
-                editModal.classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error)
-            });
-        });
+                modalTitle.innerText = "Modifier la bibliothèque";
+                documentForm.action = "{{ route('documents.edit') }}";
+                document.getElementById('docId').value = data.id;
+                document.getElementById('docTitle').value = data.title;
+                document.getElementById('docVisibility').value = data.visibility;
+                document.getElementById('docDescription').value = data.description || '';
+                fileNameDisplay.innerText = `Actuel: ${data.filename}`;
+                fileRequired.classList.add('hidden');
+                docFile.required = false;
+                
+                documentModal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        };
     });
-    @endif
 
-    //////////////////////////
-    //Responsive table
-    //////////////////////////
-    const informations = document.getElementById('informations');
-    const titre = document.getElementById('titre');
-    const nomFichier = document.getElementById('nomFichier');
-    const taille = document.getElementById('taille');
-    const visibilite = document.getElementById('visibilite');
-    const date = document.getElementById('date');
-
-    const c_informations = Array.from(document.getElementsByClassName('informations'));
-    const c_titre = Array.from(document.getElementsByClassName('titre'));
-    const c_nomFichier = Array.from(document.getElementsByClassName('nomFichier'));
-    const c_taille = Array.from(document.getElementsByClassName('taille'));
-    const c_visibilite = Array.from(document.getElementsByClassName('visibilite'));
-    const c_date = Array.from(document.getElementsByClassName('date'));
-
-    const changeTaille = document.getElementById('changeTaille');
-
-    function media_change() {
-        if (mediaQuery.matches) {
-            informations.classList.remove('hidden');
-
-            c_informations.forEach((information) => {
-                information.classList.remove('hidden');
-            });
-            
-            titre.classList.add('hidden');
-            nomFichier.classList.add('hidden');
-            taille.classList.add('hidden');
-            visibilite.classList.add('hidden');
-            date.classList.add('hidden');
-
-            c_titre.forEach((t) => t.classList.add('hidden'));
-            c_nomFichier.forEach((n) => n.classList.add('hidden'));
-            c_taille.forEach((t) => t.classList.add('hidden'));
-            c_visibilite.forEach((v) => v.classList.add('hidden'));
-            c_date.forEach((d) => d.classList.add('hidden'));
-
-            if (changeTaille) {
-                changeTaille.setAttribute('colspan', 2);
-            }
-
-        } else {
-            informations.classList.add('hidden');
-
-            c_informations.forEach((information) => {
-                information.classList.add('hidden');
-            });
-
-            titre.classList.remove('hidden');
-            nomFichier.classList.remove('hidden');
-            taille.classList.remove('hidden');
-            visibilite.classList.remove('hidden');
-            date.classList.remove('hidden');
-
-            c_titre.forEach((t) => t.classList.remove('hidden'));
-            c_nomFichier.forEach((n) => n.classList.remove('hidden'));
-            c_taille.forEach((t) => t.classList.remove('hidden'));
-            c_visibilite.forEach((v) => v.classList.remove('hidden'));
-            c_date.forEach((d) => d.classList.remove('hidden'));
-
-            if (changeTaille) {
-                changeTaille.setAttribute('colspan', 6);
-            }
-        }
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 Octet';
+        const k = 1024;
+        const sizes = ['Octets', 'Ko', 'Mo', 'Go'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-
-    media_change();
-
-    window.addEventListener('resize', () => {
-        media_change();
-    });
-
 </script>
 @endsection

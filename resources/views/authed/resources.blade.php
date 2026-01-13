@@ -2,864 +2,349 @@
 
 @section('title', 'Ressources')
 
-<style>
-    th div{
-        border: 1px solid black;
-        padding: 8px;
-        background-color: rgb(31, 65, 137);
-        color: white;
-    }
-    
-    td div {
-        text-align: center;
-        padding: 5px;
-        background-color: rgb(195, 200, 213);
-    }
-
-    body {
-        max-width: 100%;
-        overflow-x: hidden; /* Pour éviter le défilement horizontal */
-    }
-
-    @media screen and (max-width: 768px) {
-        th div {
-            padding: 3px;
-        }
-
-        td div {
-            padding: 1px;
-        }
-    }
-
-</style>
-
 @section('content')
-    <h1 class="text-center md:text-3xl lg: font-bold">Gestion de ressources</h1>
-
-    @if (auth()->user()->role != 2)
-    <!-- Barre de recherche -->
-    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('resources.index') }}" class="p-0 m-0" onsubmit="return submitFunction()">
-            @csrf
-            <div class="w-full flex justify-center space-x-1 items-center">
-                <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-                <i id="tooltipIcon" class="fas fa-question-circle p-1">
-                </i>
-                    <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                        Recherche par:
-                        <p class="text-center mt-3">Section du ressource, Nom du fichier, Nom du module, Nom du filière</p>
-                        
-                        <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
-                    </div>
-            </div>
-            <div class="w-full flex justify-center mt-3">
-                <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-            </div>
-        </form> 
+<div class="section-animate space-y-8 p-4 md:p-8">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Ressources Académiques</h1>
+            <p class="mt-1 text-gray-500">Accédez aux supports de cours, TD, TP et annales de vos modules.</p>
+        </div>
+        @if (auth()->user()->role == 1)  
+            <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus mr-2 text-sm"></i>
+                Nouvelle ressource
+            </button>
+        @endif
     </div>
-    @endif
 
-    @if (auth()->user()->role == 2)
-    <!-- Barre de recherche -->
-    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form id="formModuleList" action="{{ route('resources.index') }}" class="p-0 m-0 inline">
-            @csrf
-            <div class="w-full flex justify-center mb-1">
-                <div class="mr-3 flex flex-col space-y-2 border-r-2 border-gray-900 px-6">
-                    <label for="moduleList" class="text-center">Modules:</label>
-                    @if ($modulesSearch->isEmpty())
-                    <select disabled name="moduleList" id="moduleList" class="outline-none px-3 py-1 rounded-lg text-xs md:text-base focus:ring-2 border-none focus:border-slate-700 shadow-md">
-                        <option class="hidden" value="" selected>Aucun module</option>
-                    </select>
-                    @else
-                    <select name="moduleList" id="moduleList" class="outline-none px-3 py-1 rounded-lg text-xs md:text-base focus:ring-2 border-none focus:border-slate-700 shadow-md">
-                        <option class="hidden" value="" selected>Recherchez un module</option>
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <form action="{{ route('resources.index') }}" method="GET" class="flex flex-col lg:flex-row gap-4">
+            @if (auth()->user()->role == 2)
+                <div class="flex-1 lg:max-w-xs">
+                    <label for="moduleList" class="sr-only">Filtrer par module</label>
+                    <select name="moduleList" id="moduleList" onchange="this.form.submit()"
+                        class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                        <option value="">Tous les modules</option>
                         @foreach ($modulesSearch as $moduleSearch)
-                            <option value="{{ $moduleSearch->id }}">{{ $moduleSearch->name }}</option>
+                            <option value="{{ $moduleSearch->id }}" {{ request('moduleList') == $moduleSearch->id ? 'selected' : '' }}>
+                                {{ $moduleSearch->name }}
+                            </option>
                         @endforeach
                     </select>
-                    @endif
                 </div>
-        </form>     
-                <div class="flex flex-col items-center justify-center px-3">
-                <form action="{{ route('resources.index') }}" class="p-0 m-0 inline">
-                    @csrf
-                    <div class="flex">
-                        <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-                        <div class="px-3">
-                            <i id="tooltipIcon" class="fas fa-question-circle p-1">
-                            </i>
-                                <div id="tooltipInfo" class="hidden absolute break-words bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                                    Recherche par:
-                                    <p class="text-center mt-3">Section du ressource, Nom du fichier, Nom du module</p>
-                                    
-                                    <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+            @endif
+
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                </div>
+                <input id="search" name="search" type="text" value="{{ request('search') }}"
+                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Rechercher par section, fichier, module...">
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 px-8 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all">
+                    Rechercher
+                </button>
+                @if(request('search') || request('moduleList') || $loup)
+                    <a href="{{ route('resources.index') }}" class="px-6 py-2.5 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-all text-center">
+                        Effacer
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100">
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Fichier</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Section</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Module</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Professeur</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden xl:table-cell">Date</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @forelse ($resources as $resource)
+                        <tr class="hover:bg-gray-50/50 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fa-solid fa-file-lines text-lg"></i>
+                                    </div>
+                                    <div class="font-semibold text-gray-900 max-w-[200px] truncate" title="{{ $resource->file->filename }}">
+                                        {{ $resource->file->filename }}
+                                    </div>
                                 </div>
-                        </div>
-                    </div>
-                    <div class="w-full flex justify-center mt-3">
-                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-                    </div>
-                </form> 
-                </div>
-            </div>
-    </div>
-    @endif
-
-    <!-- Tableau -->
-    <div id="table-div" class="block w-full">
-        @if (auth()->user()->role == 1)  
-            <div class="mx-auto w-full max-w-full md:w-[90%] flex justify-end">
-                <button id="openModalAdd" title="Ajouter" class="border-2 text-green-600 border-green-600 transition-all text-[0.7rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
-            </div>
-        @endif
-        <table id="tableResource" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.7rem] lg:text-sm">
-            <thead>
-                <tr>
-                    <th class="hidden" id="informations"><div>Informations</div></th>
-                    <th id="nomFichier"><div>Nom du fichier</div></th>
-                    <th id="section"><div>Section</div></th>
-                    <th id="module"><div>Module</div></th>
-                    <th id="date"><div>Date</div></th>
-                    <th id="actions"><div>Actions</div></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($resources as $resource)
-
-                    @php
-                        $date = explode(' ', $resource->created_at)[0];
-                    @endphp
-                    <tr>
-                        <td class="informations w-full hidden">
-                            <div class="flex justify-center items-start flex-col tdDivs">
-                                <span class="font-bold">Nom: {{ $resource->file->filename }}</span>
-                                <span>Section: {{ $resource->section }}</span>
-                                <span>Prof: {{ $resource->module->user->first_name }} {{ $resource->module->user->last_name }}</span>
-                                <span>Module: {{ $resource->module->name }}</span>
-                                <span>Date: {{ $date }}</span>
-                            </div>
-                        </td>
-                        <td class="nomFichier"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->file->filename }}</div></td>
-                        <td class="section"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->section }}</div></td>
-                        <td class="module"><div class="flex justify-center items-center tdDivs font-bold">{{ $resource->module->name }}</div></td>
-                        <td class="date"><div class="flex justify-center items-center tdDivs font-bold">{{ $date }}</div></td>
-                        <td class="actions">
-                            <div class="flex justify-center items-center tdDivs font-bold">
-                                <form method="post" action="{{ route('resources.download', ['id' => $resource->id]) }}" class="m-0 p-0" onsubmit="return submitFunction()">
-                                    @csrf
-                                    @if (auth()->user()->role == 2) 
-                                        <button title="Télécharger" type="submit" class="Aggrandir downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
-                                    @else 
-                                        <button title="Télécharger" type="submit" class="downLoad text-green-600 text-xs p-2 border-2 border-green-600 text-[0.7rem] lg:text-sm rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-green-600 hover:text-white"><i class="fas fa-cloud-download-alt"></i></button>
-                                    @endif
-                                </form>
-                                <button class="id hidden">{{ $resource->id }}</button>
-                                @if (auth()->user()->role != 2)  
-                                <button title="Voir" class="openModalView text-blue-600 text-xs p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                    <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
-                                    <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('resources.delete', ['id' => $resource->id]) }}" class="m-0 p-0">
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider 
+                                    {{ $resource->section == 'cours' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600' }}">
+                                    {{ $resource->section }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell text-sm font-medium text-gray-700">
+                                {{ $resource->module->name }}
+                            </td>
+                            <td class="px-6 py-4 hidden lg:table-cell text-sm text-gray-500">
+                                {{ $resource->module->user->first_name }} {{ $resource->module->user->last_name }}
+                            </td>
+                            <td class="px-6 py-4 hidden xl:table-cell text-sm text-gray-500">
+                                {{ $resource->created_at->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <form method="post" action="{{ route('resources.download', $resource->id) }}" class="inline">
                                         @csrf
-                                        @method('DELETE')
-                                        <button title="Supprimer" value="{{ $resource->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
+                                        <button title="Télécharger" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                            <i class="fa-solid fa-download"></i>
+                                        </button>
                                     </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-                @if ($resources->isEmpty())
-                    <tr>
-                        <td id="changeTaille" colspan="4"><div class="flex justify-center items-center">La table est vide</div></td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-
-    @if ($loup)
-    <div class="w-full flex justify-center mt-3">
-        <a href="/resources" class="bg-orange-400 text-white px-2 py-1 rounded-lg">Revenir</a>
-    </div>
-    @endif
-
-    <!-- Pagination -->
-    <div class="w-full max-w-full mt-5 md:w-[90%] mx-auto flex my-3 justify-center text-sm lg:text-base md:text-sm">
-        <div class="pagination">
+                                    @if (auth()->user()->role != 2)
+                                        <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-id="{{ $resource->id }}">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                        <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $resource->id }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <form method="POST" action="{{ route('resources.delete', $resource->id) }}" class="inline" onsubmit="return confirm('Supprimer cette ressource ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 italic font-medium">
+                                Aucune ressource trouvée.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
         @if ($resources->hasPages())
-            <nav>
-                @if ($resources->onFirstPage())
-                    <span class="p-2 bg-gray-300 m-2 rounded shadow-md">
-                        Precedent
-                    </span>
-                @else
-                    <a href="{{ $resources->previousPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Precedent
-                    </a>
-                @endif
-
-                @if ($resources->hasMorePages())
-                    <a href="{{ $resources->nextPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </a>
-                @else
-                    <span class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </span>
-                @endif
-            </nav>
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                {{ $resources->links() }}
+            </div>
         @endif
-        </div>
     </div>
+</div>
 
-    <!-- MODALS -->
-    <!-- MODALS -->
-    <!-- MODALS -->
+<!-- MODALS -->
 
-    @if (auth()->user()->role != 2)  
-    <!-- ADD MODALS -->
-    <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('resources.store') }}" enctype="multipart/form-data" class="m-0 p-0" onsubmit="return submitFunction()">    
+<!-- ADD/EDIT MODAL -->
+<div id="resourceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"></div>
+    
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Nouvelle ressource</h3>
+            <button class="closeModal text-gray-400 hover:text-gray-600 p-1.5 hover:bg-white rounded-lg transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form id="resourceForm" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
             @csrf
-            <!-- Close -->
-            <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Ajout de ressource</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full justify-center md:space-x-2">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addFile">Fichier: </label>
-                        <input id="addFile" name="addFile" type="file" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addDescription">Description: </label>
-                        <textarea name="addDescription" id="addDescription" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" cols="5" rows="3"></textarea>
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addSection">Section: </label>
-                        <select name="addSection" id="addSection" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="td">TD</option>
-                            <option value="tp">TP</option>
-                            <option value="cours">COURS</option>
-                            <option value="annales">Annales</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="w-full p-2 flex justify-center items-center overflow-hidden">
-                    <div class="w-full sm:w-1/2 mx-auto flex justify-center flex-col">
-                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
-                        <label for="addModule" class="text-center">Modules: </label>
-                        <select id="addModule" name="addModule" {{ ($modules->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            @if ($modules->isEmpty()) 
-                                <option value="" disabled>Aucune valeur</option>
-                            @else        
-                                @foreach ($modules as $module)
-                                        <option value="{{ $module->id }}">{{ $module->level->sector->name }}: {{ $module->level->name }} ({{ $module->name }})</option>
-                                @endforeach
-                            @endif
-                        </select>
+            <input type="hidden" id="resId" name="id">
+            
+            <div class="space-y-1">
+                <label for="resFile" class="block text-sm font-semibold text-gray-700 font-bold">Le fichier <span id="fileRequired" class="text-red-500">*</span></label>
+                <div class="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 transition-colors bg-gray-50 cursor-pointer relative group">
+                    <input id="resFile" name="addFile" type="file" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <div class="text-center group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 group-hover:text-blue-500 mb-2"></i>
+                        <p id="fileNameDisplay" class="text-xs text-gray-500 font-medium italic truncate max-w-[250px]">Cliquez pour sélectionner un fichier</p>
                     </div>
                 </div>
             </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelAddButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label for="resSection" class="block text-sm font-semibold text-gray-700">Section</label>
+                    <select name="addSection" id="resSection" class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                        <option value="td">TD</option>
+                        <option value="tp">TP</option>
+                        <option value="cours">COURS</option>
+                        <option value="annales">Annales</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label for="resModule" class="block text-sm font-semibold text-gray-700">Module</label>
+                    <select name="addModule" id="resModule" class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                        @foreach ($modules as $module)
+                            <option value="{{ $module->id }}">{{ $module->name }} ({{ $module->level->name }})</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
-        </form>    
-        </div>
+
+            <div class="space-y-1">
+                <label for="resDescription" class="block text-sm font-semibold text-gray-700">Description</label>
+                <textarea name="addDescription" id="resDescription" rows="3"
+                    class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    placeholder="Détails sur le contenu de la ressource..."></textarea>
+            </div>
+
+            <div class="pt-4 flex items-center justify-end space-x-3">
+                <button type="button" class="closeModal px-6 py-2.5 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-all">
+                    Annuler
+                </button>
+                <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                    Enregistrer la ressource
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    @endif
-    <!-- VIEW MODALS -->
-    <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-            <!-- Close -->
-            <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Vue ressource</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewModule">Module: </label>
-                        <input id="viewModule" readonly name="viewModule" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewFiliere">Filière: </label>
-                        <input id="viewFiliere" readonly name="viewFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewResource">Nom du ressouce: </label>
-                        <input id="viewResource" readonly name="viewResource" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewProf">Professeur: </label>
-                        <input id="viewProf" readonly name="viewProf" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewSection">Section: </label>
-                        <input id="viewSection" readonly name="viewSection" type="email" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewDate">Date de mise en ligne: </label>
-                        <input id="viewDate" readonly name="viewDate" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-none md:w-1/5"></div>
-                    <div class="w-full md:w-3/5 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewDescription">Description: </label>
-                        <textarea name="viewDescription" id="viewDescription" cols="30" rows="10" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent"></textarea>
-                    </div>
-                    <div class="w-none md:w-1/5"></div>
-                </div>
+<!-- VIEW MODAL -->
+<div id="viewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all p-8 text-center">
+        <button class="closeViewModal absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        
+        <div class="mx-auto h-20 w-20 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-3xl mb-4">
+            <i class="fa-solid fa-file-invoice"></i>
+        </div>
+        
+        <h2 id="viewResource" class="text-2xl font-bold text-gray-900 mb-2 truncate px-4"></h2>
+        <p id="viewDescription" class="text-gray-500 text-sm mb-6 line-clamp-3 italic bg-gray-50 p-4 rounded-xl"></p>
+        
+        <div class="grid grid-cols-2 gap-4 text-left border-t border-gray-100 pt-6">
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Section</p>
+                <p id="viewSection" class="text-sm font-semibold text-gray-700 uppercase"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Module</p>
+                <p id="viewModuleDetail" class="text-sm font-semibold text-gray-700 truncate"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Professeur</p>
+                <p id="viewProf" class="text-sm font-semibold text-gray-700 truncate"></p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date</p>
+                <p id="viewDate" class="text-sm font-semibold text-gray-700"></p>
             </div>
         </div>
     </div>
-    @if (auth()->user()->role != 2) 
-    <!-- EDIT MODALS -->
-    <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center h-screen overflow-y-auto">
-        <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('resources.edit') }}" enctype="multipart/form-data" class="m-0 p-0" onsubmit="return submitFunction()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Modification de ressource</div>
-                
-            <!-- Corps -->
-            <input type="text" class="hidden" id="editId" name="id">
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full justify-center md:space-x-2">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editFile">Fichier: </label>
-                        <input id="editFile" name="editFile" type="file" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                        <span>Fichier actuel: <span id="actualFile"></span></span>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editDescription">Description: </label>
-                        <textarea name="editDescription" id="editDescription" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent" cols="5" rows="3"></textarea>
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editSection">Section: </label>
-                        <select name="editSection" id="editSection" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="td" class="sectionLists">TD</option>
-                            <option value="tp" class="sectionLists">TP</option>
-                            <option value="cours" class="sectionLists">COURS</option>
-                            <option value="annales" class="sectionLists">Annales</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="w-full p-2 flex justify-center items-center overflow-hidden">
-                    <div class="w-full sm:w-1/2 mx-auto flex justify-center flex-col">
-                        <input type="text" id="searchEdit" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
-                        <label for="editModule" class="text-center">Modules: </label>
-                        <select id="editModule" name="editModule" {{ ($modules->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            @if ($modules->isEmpty()) 
-                                <option value="" disabled>Aucune valeur</option>
-                            @else        
-                                @foreach ($modules as $module)
-                                        <option value="{{ $module->id }}" class="modulesLists">{{ $module->level->sector->name }}: {{ $module->level->name }} ({{ $module->name }})</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelEditButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-        </form>    
-        </div>
-    </div>
-    @endif
+</div>
 
 @endsection
 
 @section('scripts')
 <script>
-
-    //Changer le initial scale de cette page
-        // if (mediaQuery.matches) {
-        //     // Sélectionner la balise meta viewport
-        //     let viewScale = document.querySelector('meta[name="viewport"]');
-        //     // Modifier son contenu avec les attributs souhaités
-        //     viewScale.setAttribute('content', 'width=device-width, initial-scale=0.75');
-        // }
-    //
-
-            @if (auth()->user()->role == 2)
-            //Changement de module
-                const moduleList = document.getElementById('moduleList');
-                const formModuleList = document.getElementById('formModuleList');
-
-                moduleList.addEventListener('change', (event) => {
-                    if (moduleList.value != '') {
-                        formModuleList.submit();
-                    }
-                });
-
-            //
-            @endif
-
-            //Tooltip manipulation
-            const tooltipIcon = document.getElementById('tooltipIcon');
-            const tooltipInfo = document.getElementById('tooltipInfo');
-            const searchBar = document.getElementById('search');
-
-            function positionnementTooltip () {
-                let xPosition = tooltipIcon.getBoundingClientRect().x;
-                let yPosition = tooltipIcon.getBoundingClientRect().y + tooltipIcon.getBoundingClientRect().height;
-
-                if (mediaQuery.matches) {
-                    xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
-                }
-                
-                tooltipInfo.classList.add(`left-[${xPosition}px]`);
-                tooltipInfo.classList.add(`top-[${yPosition}px]`);
-            }
-
-            positionnementTooltip();
-
-            tooltipIcon.addEventListener('mouseenter', function () {
-                tooltipInfo.classList.remove('hidden');
-            }); 
-
-            tooltipIcon.addEventListener('mouseleave', function () {
-                tooltipInfo.classList.add('hidden');
-            });
-
-            if (mediaQuery.matches) {
-                tooltipIcon.addEventListener('click', function () {
-                    tooltipInfo.classList.toggle('hidden');
-                }); 
-            }
-            
-            window.addEventListener('resize', () => {
-                positionnementTooltip();
-            });
-        //
-
-    //MODALS MANIPULATIONS
-    @if (auth()->user()->role == 1)  
-        //////////////////////////
-        //ADD MODALS
-        //////////////////////////
-        /////////////////////////////////Ouverture et Fermeture du modal
-        const closeModalAdd = document.getElementById('closeModalAdd');
-        const openModalAdd = document.getElementById('openModalAdd');
-        const addModal = document.getElementById('addModal');
-
-        const saveAddButton = document.getElementById('saveAddButton');
-        const cancelAddButton = document.getElementById('cancelAddButton');
-
-        const addDescription = document.getElementById('addDescription');
-        const addSection = document.getElementById('addSection');
-
-        const addModule = document.getElementById('addModule');
-
-        var searchAdd = document.getElementById('searchAdd');
-
-        //Faire une recherche dynamique
-        searchAdd.addEventListener('input', (event) => {
-            value = event.target.value;
-            remettreNormalAdd();
-            if (value != '') {
-                rechercherAdd(value);
-            } 
-        });
-
-        function remettreNormalAdd () {
-            const options = Array.from(addModule.options);
-
-            options.forEach((option) => {
-                option.disabled = false;
-                option.selected = true;
-                option.classList.remove('hidden');
-            });
-        }
-
-        function rechercherAdd (value) {
-            const options = Array.from(addModule.options);
-            let countDesactivated = 0;
-
-            options.forEach((option) => {
-                if (RegExp('^' + value, 'i').test(option.textContent)) {
-
-                } else {
-                    countDesactivated++;
-                    option.disabled = true;
-                    option.classList.add('hidden');
-                    option.selected = false;
-                }
-            });
-        }
-
-        function resetValuesAddModal() {
-            addModal.classList.add('hidden');
-
-            window.location.reload();
-
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalAdd.addEventListener('click', () => {
-            resetValuesAddModal();
-        });
-
-        //Fermeture modal en appuyant sur le bouton annuler
-        cancelAddButton.addEventListener('click', () => {
-            resetValuesAddModal();
-        })
-
-        //Ouverture du modal avec le bouton +
-        openModalAdd.addEventListener('click', () => {
-            addModal.classList.remove('hidden');
-        });
-
-    @endif
-
-        //////////////////////////
-        //VIEW MODALS
-        //////////////////////////
-        const closeModalView = document.getElementById('closeModalView');
-        const openModalView = Array.from(document.getElementsByClassName('openModalView'));
-        const viewModal = document.getElementById('viewModal');
-
-        const viewModule = document.getElementById('viewModule');
-        const viewFiliere = document.getElementById('viewFiliere');
-        const viewResource = document.getElementById('viewResource');
-        const viewProf = document.getElementById('viewProf');
-        const viewSection = document.getElementById('viewSection');
-        const viewDate = document.getElementById('viewDate');
-        const viewDescription = document.getElementById('viewDescription');
-
-        function resetValuesViewModal() {
-            viewModal.classList.add('hidden');
-            window.location.reload();
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalView.addEventListener('click', () => {
-            resetValuesViewModal();
-        });
-        
-
-        //Ouverture du modal avec le bouton +
-        openModalView.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                id = parseInt(btn.parentNode.querySelector('.id').textContent);
-                fetch('resources/getResource/' + id)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network resonse was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-    
-                    let created_at = data.created_at.split('T')[0];
-                    
-                    viewModule.value = data.module.name;
-                    viewFiliere.value = data.module.level.sector.name + ': ' + data.module.level.name;
-                    viewResource.value = data.file.filename;
-                    viewSection.value = data.section;
-                    viewDate.value = created_at;
-                    viewDescription.value = data.description;
-
-                    viewProf.value = data.module.user.first_name + ' ' + data.module.user.last_name;
-
-                    viewModal.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error:', error)
-                });
-            });
-        });
-
-    @if (auth()->user()->role != 2)  
-        //////////////////////////
-        //Edit MODALS
-        //////////////////////////
-        /////////////////////////////////Ouverture et Fermeture du modal
-        const closeModalEdit = document.getElementById('closeModalEdit');
-        const openModalEdit = Array.from(document.getElementsByClassName('openModalEdit'));
-        const editModal = document.getElementById('editModal');
-
-        const saveEditButton = document.getElementById('saveEditButton');
-        const cancelEditButton = document.getElementById('cancelEditButton');
-
-        const editDescription = document.getElementById('editDescription');
-        const editSection = document.getElementById('editSection');
-
-        const editModule = document.getElementById('editModule');
-        const editId = document.getElementById('editId');
-        const actualFile = document.getElementById('actualFile');
-
-        var searchEdit = document.getElementById('searchEdit');
-
-        //Faire une recherche dynamique
-        searchEdit.addEventListener('input', (event) => {
-            value = event.target.value;
-            remettreNormalEdit();
-            if (value != '') {
-                rechercherEdit(value);
-            } 
-        });
-
-        function remettreNormalEdit () {
-            const options = Array.from(editModule.options);
-
-            options.forEach((option) => {
-                option.disabled = false;
-                option.selected = true;
-                option.classList.remove('hidden');
-            });
-        }
-
-        function rechercherEdit (value) {
-            const options = Array.from(editModule.options);
-            let countDesactivated = 0;
-
-            options.forEach((option) => {
-                if (RegExp('^' + value, 'i').test(option.textContent)) {
-
-                } else {
-                    countDesactivated++;
-                    option.disabled = true;
-                    option.classList.add('hidden');
-                    option.selected = false;
-                }
-            });
-
-        }
-
-        function resetValuesEditModal() {
-            addModal.classList.add('hidden');
-
-            window.location.reload();
-
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalEdit.addEventListener('click', () => {
-            resetValuesEditModal();
-        });
-
-        //Fermeture modal en appuyant sur le bouton annuler
-        cancelEditButton.addEventListener('click', () => {
-            resetValuesEditModal();
-        })
-
-        openModalEdit.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                id = parseInt(btn.parentNode.querySelector('.id').textContent);
-                fetch('resources/getResource/' + id)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network resonse was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    editId.value = data.id;
-                    editDescription.value = data.description;
-                    let options_section = Array.from(document.getElementsByClassName('sectionLists'));
-
-                    actualFile.textContent = data.file.filename;
-
-                    options_section.forEach((option) => {
-                        if (data.section == option.value) {
-                            option.selected = true;
-                        }
-                    })
-
-                    let options_module = Array.from(document.getElementsByClassName('modulesLists'));
-
-                    options_module.forEach((option) => {
-                        if (data.module.id == option.value) {
-                            option.selected = true;
-                        }
-                    });
-
-                    editModal.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error:', error)
-                });
-            });
-        });
-    @endif
-
-
-    //////////////////////////
-    //Afficher les niveaux
-    //////////////////////////
-        //LES ID
-        const informations = document.getElementById('informations');
-        const nomFichier = document.getElementById('nomFichier');
-        const section = document.getElementById('section');
-        const modules = document.getElementById('module');
-        const date = document.getElementById('date');
-
-        //Les Class
-        const c_informations = Array.from(document.getElementsByClassName('informations'));
-        const c_nomFichier =  Array.from(document.getElementsByClassName('nomFichier'));
-        const c_section =  Array.from(document.getElementsByClassName('section'));
-        const c_module =  Array.from(document.getElementsByClassName('module'));
-        const c_date =  Array.from(document.getElementsByClassName('date'));
-
-        const changeTaille = document.getElementById('changeTaille');
-        var height;
-
-    function media_change () {
-        // Inférieur à 768px
-        if (mediaQuery.matches) {
-            //ID
-            informations.classList.remove('hidden');
-
-            c_informations.forEach((information) => {
-                information.classList.remove('hidden');
-                height = information.offsetHeight;
-            });
-            
-            nomFichier.classList.add('hidden');
-            section.classList.add('hidden');
-            modules.classList.add('hidden');
-            date.classList.add('hidden');
-
-            c_nomFichier.forEach((nomFichier) => {
-                nomFichier.classList.add('hidden');
-            });
-
-            c_section.forEach((section) => {
-                section.classList.add('hidden');
-            });
-
-            c_module.forEach((m) => {
-                m.classList.add('hidden');
-            });
-
-            c_date.forEach((date) => {
-                date.classList.add('hidden');
-            });
-
-            if (changeTaille) {
-                changeTaille.setAttribute('colspan', 2);
-            }
-
-        // Supérieur à 768px
-        } else {
-            //ID
-            
-            informations.classList.add('hidden');
-
-            c_informations.forEach((information) => {
-                information.classList.add('hidden');
-            });
-
-            nomFichier.classList.remove('hidden');
-            section.classList.remove('hidden');
-            modules.classList.remove('hidden');
-            date.classList.remove('hidden');
-
-            c_nomFichier.forEach((nomFichier) => {
-                nomFichier.classList.remove('hidden');
-                height = nomFichier.offsetHeight;
-            });
-
-            c_section.forEach((section) => {
-                section.classList.remove('hidden');
-            });
-
-            c_module.forEach((m) => {
-                m.classList.remove('hidden');
-            });
-
-            c_date.forEach((date) => {
-                date.classList.remove('hidden');
-            });
-
-            if (changeTaille) {
-                changeTaille.setAttribute('colspan', 5);
-            }
-        }
+    const resourceModal = document.getElementById('resourceModal');
+    const viewModal = document.getElementById('viewModal');
+    const resourceForm = document.getElementById('resourceForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const resFile = document.getElementById('resFile');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileRequired = document.getElementById('fileRequired');
+
+    resFile.onchange = e => {
+        const file = e.target.files[0];
+        if (file) fileNameDisplay.innerText = file.name;
+    };
+
+    document.querySelectorAll('.closeModal').forEach(btn => btn.onclick = () => resourceModal.classList.add('hidden'));
+    document.querySelector('.closeViewModal').onclick = () => viewModal.classList.add('hidden');
+
+    // Add Modal logic
+    const openAdd = document.getElementById('openModalAdd');
+    if(openAdd) {
+        openAdd.onclick = () => {
+            modalTitle.innerText = "Nouvelle ressource";
+            resourceForm.action = "{{ route('resources.store') }}";
+            resourceForm.reset();
+            fileNameDisplay.innerText = "Cliquez pour sélectionner un fichier";
+            fileRequired.classList.remove('hidden');
+            resFile.required = true;
+            resourceModal.classList.remove('hidden');
+        };
     }
 
-    mediaQuery.addEventListener('change', (event) => {
-        media_change();
+    // View Modal logic
+    document.querySelectorAll('.openModalView').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            try {
+                const res = await fetch(`/resources/getResource/${id}`);
+                const data = await res.json();
+                
+                document.getElementById('viewResource').innerText = data.file.filename;
+                document.getElementById('viewDescription').innerText = data.description || 'Pas de description';
+                document.getElementById('viewSection').innerText = data.section;
+                document.getElementById('viewModuleDetail').innerText = data.module.name;
+                document.getElementById('viewProf').innerText = data.module.user.first_name + ' ' + data.module.user.last_name;
+                document.getElementById('viewDate').innerText = new Date(data.created_at).toLocaleDateString();
+                
+                viewModal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        };
     });
 
-    media_change();
-
-        const tableResource = document.getElementById('tableResource');
-        const toutLesDiv = tableResource.querySelectorAll('.tdDivs');
-        
-        toutLesDiv.forEach((div) => {
-            div.style.minHeight = height + 'px';
-        });
+    // Edit Modal logic
+    document.querySelectorAll('.openModalEdit').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            try {
+                const res = await fetch(`/resources/getResource/${id}`);
+                const data = await res.json();
+                
+                modalTitle.innerText = "Modifier la ressource";
+                resourceForm.action = "{{ route('resources.edit') }}";
+                document.getElementById('resId').value = data.id;
+                document.getElementById('resSection').value = data.section;
+                document.getElementById('resModule').value = data.module_id;
+                document.getElementById('resDescription').value = data.description || '';
+                fileNameDisplay.innerText = `Actuel: ${data.file.filename}`;
+                fileRequired.classList.add('hidden');
+                resFile.required = false;
+                
+                resourceModal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        };
+    });
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
-    var pusher = new Pusher('6979301f0eee4d497b90', {
-        cluster: 'eu'
-    });
-
+    var pusher = new Pusher('6979301f0eee4d497b90', { cluster: 'eu' });
     var channel = pusher.subscribe('resource-channel');
-
     channel.bind('resource-refresh', async function (data) {
         let resource = data.resource;
         let actualUserId = {{ auth()->user()->id }};
-
         const response = await fetch(`/getUserInfos/${actualUserId}`);
-        
         let actualUser = await response.json();
 
         if (actualUser.role == 0) {
-            location.reload()
+            location.reload();
         } else if (actualUser.role == 2) {
             actualUser.levels_users.forEach((level) => {
-                if (resource.module.level_id == level.level_id) {
-                    location.reload();
-                }
+                if (resource.module.level_id == level.level_id) location.reload();
             });
-            
         }
     });
 </script>
-
 @endsection

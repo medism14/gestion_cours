@@ -1,25 +1,30 @@
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
         
+        <title>@yield('title') - ENE ISMD</title>
 
-        <title>@yield('title')</title>
-
-        <!-- Fonts -->
+        <!-- Fonts & Icons -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="icon" href="{{ asset('images/papaRounded.png') }}">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+        <link rel="icon" href="{{ asset('images/ismdIcon.png') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-        <script>
-            // Redéfinir toutes les fonctions de la console pour qu'elles ne fassent rien
-            console.warn = function() {};
-        </script>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                        }
+                    }
+                }
+            }
+        </script>
 
-        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.js" crossorigin="anonymous"></script>
         <script src="https://js.pusher.com/7.2.0/pusher.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
@@ -28,133 +33,139 @@
 
     <style>
         body {
-            font-family: 'figtree', sans-serif;
-            background: rgb(230, 213, 202);
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
 
-        section {
-            min-height: calc(100vh - 150px);
-            display: block;
+        /* Modern Sidebar Scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
         }
 
-        header {
-            min-height: 60px;
+        .section-animate {
+            animation: fadeIn 0.4s ease-out;
         }
 
-        .sidebar-content::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            border-bottom: 2px solid white;
-            transition: 0.3s ease-in-out;
-            width: 0;
-            transform: translateX(-50%);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .sidebar-content:hover::before {
-            width: 120%;
-        }
-
-        .notifs {
-            min-height: 3rem;
-            min-width: 8rem;
-        }
-
-        @media screen and (max-width: 768px) {
-            .notifs {
-            min-width: 6rem;
-        }
-        }
-
-
     </style>
 
-    <body class="bg-gray-200">
+    <body class="bg-gray-50 antialiased">
         <!-- Header -->
         <header class="flex">
             <!-- SideBar -->
             <section id="leftSection" class="block md:w-[20%]">
-                <nav id="sidebar" class="fixed w-none md:w-[20%] bg-gray-800 h-screen">
-                    <div class="absolute m-1 right-0 flex items-center my-auto h-screen text-4xl">
-                        <button id="btn-unDisplay" class="text-white hover:text-gray-300" type="button"><i class="fas fa-angle-left"></i></button>
+                <nav id="sidebar" class="fixed w-none md:w-[20%] bg-gray-900 h-screen shadow-2xl z-40 transition-all duration-300">
+                    <div class="absolute m-1 right-0 flex items-center my-auto h-screen text-2xl">
+                        <button id="btn-unDisplay" class="text-gray-500 hover:text-white transition-colors" type="button"><i class="fas fa-angles-left"></i></button>
                     </div>
+                    
                     <!-- SideBar Title -->
-                    <div class="block p-5 rounded-lg text-white text-xl text-center">
-                        <a href="{{ route('dashboard') }}" class="border-b-2">Espace Numérique d'Enseignement</a>
+                    <div class="p-8 text-center">
+                        <a href="{{ route('dashboard') }}" class="group inline-block">
+                            <h2 class="text-white text-lg font-bold tracking-wider uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent group-hover:from-white group-hover:to-white transition-all duration-300">
+                                ENE ISMD
+                            </h2>
+                            <div class="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300 mx-auto mt-1"></div>
+                        </a>
                     </div>
 
-                    <hr class="mb-4 rounded border-4 border-gray-400"></hr>
+                    <div class="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Navigation</div>
+
                     <!-- SideBar Content -->
-                    @if (auth()->user()->role == 0)
-                        <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                            <a href="{{ route('users.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-users"></i> Utilisateurs</a>
-                        </div>
-                        <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                            <a href="{{ route('sectors.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-stream"></i> Filières</a>
-                        </div>
-                        <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                            <a href="{{ route('modules.index') }}" class="sidebar-content relative pb-2"> <i class="fas fa-book"></i>Modules</a>
-                        </div>
-                    @endif
-                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                        <a href="{{ route('resources.index') }}" class="sidebar-content relative pb-2"> <i class="fa fa-cube"></i> Ressources</a>
-                    </div>
-                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                        <a href="{{ route('forums.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-comments"></i> Forums</a>
-                    </div>
-
-                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                        <a href="{{ route('annonces.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-bullhorn"></i> Annonces</a>
-                    </div>
-
-                    <div class=" text-white p-6 text-center text-xl border-b-2 border-slate-500 w-[80%] mx-auto rounded-lg">
-                        <a href="{{ route('documents.index') }}" class="sidebar-content relative pb-2"><i class="fa fa-file-pdf"></i> Documents</a>
-                    </div>
-
-                    <!-- Footer -->
-                    <footer class="fixed w-full md:w-[20%] text-center text-white bottom-0 bg-gray-600 hidden">
-                        <p>Tout droits reservés ©</p>
-                    </footer>
-                </nav>
-                
-            </section>
-            <!-- Côté Droit -->
-            <section id="rightSection" class="flex-1 md:w-[80%]">
-                <!-- Côté droit navbar -->
-                <nav id="navbar" class="fixed w-full bg-gray-800 text-white flex p-2 md:w-[80%]">
-                    <div id="btn-display" class="hidden absolute fixed text-4xl top-0 left-0 mt-4">
-                        <button class="text-gray-100 hover:text-gray-300" type="button"><i class="fas fa-angle-right"></i></button>
-                    </div>
-                    <div id="divNavbar" class="flex-1 flex items-center">
-                        <span class="flex w-full justify-start ml-5">
-                            <img src="{{ asset('images/papaRounded.png') }}" alt="Logo" width="50" height="50">
-                        </span>
-                        <div class="ml-12 md:ml-24 flex-1 text-center text-base md:text-xl font-bold">
-                        </div> 
-
-                        <div class="flex items-center justify-end">
-                            @if (auth()->user()->role != 0)
-                                <button id="annonce" class="notifClass mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
-                                    <span id="nombreAnnonce" class="text-gray-900 font-bold text-[0.5rem] text-blue-500 font-bold absolute top-0 right-0">{{ auth()->user()->annonces }}</span>
-                                    <i class="fa fa-bullhorn"></i>
-                                </button>
-                            @endif
-                            @if (auth()->user()->role == 2)
-                                <button id="notif" class="annonceClass mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative ">
-                                    <span id="nombreNotif" class="text-gray-900 font-bold text-[0.5rem] text-blue-500 font-bold absolute top-0 right-0">{{ auth()->user()->notifs }}</span>
-                                    <i class="fa fa-bell"></i>
-                                </button>
-                            @endif
-                            <a href="{{ route('parameters') }}" id="user" class="mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative " title="Paramètres">
-                                <i class="fas fa-user"></i>
+                    <div class="space-y-1 px-3">
+                        @if (auth()->user()->role == 0)
+                            <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-white/10 text-white' : '' }}">
+                                <i class="fa-solid fa-users-viewfinder w-5 text-center"></i>
+                                <span class="font-medium">Utilisateurs</span>
                             </a>
-                            <a id="logout" class="mr-2 md:mr-6 border-2 p-2 rounded-lg transition-all duration-300 ease-in-out bg-white text-black hover:bg-gray-400 relative " title="Déconnexion" href="{{ route('logout') }}">
-                                <i class="fas fa-door-open"></i>
-                            </a> 
+                            <a href="{{ route('sectors.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('sectors.*') ? 'bg-white/10 text-white' : '' }}">
+                                <i class="fa-solid fa-layer-group w-5 text-center"></i>
+                                <span class="font-medium">Filières</span>
+                            </a>
+                            <a href="{{ route('modules.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('modules.*') ? 'bg-white/10 text-white' : '' }}">
+                                <i class="fa-solid fa-book-open w-5 text-center"></i>
+                                <span class="font-medium">Modules</span>
+                            </a>
+                        @endif
+                        
+                        <a href="{{ route('resources.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('resources.*') ? 'bg-white/10 text-white' : '' }}">
+                            <i class="fa-solid fa-box-archive w-5 text-center"></i>
+                            <span class="font-medium">Ressources</span>
+                        </a>
+
+                        <a href="{{ route('forums.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('forums.*') ? 'bg-white/10 text-white' : '' }}">
+                            <i class="fa-solid fa-comments-dollar w-5 text-center"></i>
+                            <span class="font-medium">Forums</span>
+                        </a>
+
+                        <a href="{{ route('annonces.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('annonces.*') ? 'bg-white/10 text-white' : '' }}">
+                            <i class="fa-solid fa-bullhorn w-5 text-center"></i>
+                            <span class="font-medium">Annonces</span>
+                        </a>
+
+                        <a href="{{ route('documents.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('documents.*') ? 'bg-white/10 text-white' : '' }}">
+                            <i class="fa-solid fa-book-bookmark w-5 text-center"></i>
+                            <span class="font-medium">Bibliothèques</span>
+                        </a>
+                    </div>
+                </nav>
+            </section>
+
+            <!-- Côté Droit -->
+            <section id="rightSection" class="flex-1 md:w-[80%] min-h-screen">
+                <!-- Côté droit navbar -->
+                <nav id="navbar" class="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 flex p-3 md:w-[80%] z-30 transition-all duration-300">
+                    <div id="btn-display" class="hidden absolute fixed text-2xl top-0 left-0 mt-4 px-2">
+                        <button class="text-gray-400 hover:text-gray-900" type="button"><i class="fas fa-angles-right"></i></button>
+                    </div>
+                    
+                    <div id="divNavbar" class="flex-1 flex items-center justify-between px-4">
+                        <div class="flex items-center">
+                            <img src="{{ asset('images/ismdIcon.png') }}" alt="Logo" class="h-10 w-auto">
+                            <h2 class="ml-4 font-semibold text-gray-800 hidden sm:block">Institut Supérieur de Management</h2>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            @if (auth()->user()->role != 0)
+                                <button id="annonce" class="notifClass p-2.5 rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all relative group">
+                                    <span id="nombreAnnonce" class="absolute top-1 right-1 h-4 min-w-[1rem] flex items-center justify-center px-1 text-[8px] font-bold text-white bg-blue-500 rounded-full ring-2 ring-white">
+                                        {{ auth()->user()->annonces }}
+                                    </span>
+                                    <i class="fa-solid fa-bullhorn"></i>
+                                </button>
+                            @endif
                             
+                            @if (auth()->user()->role == 2)
+                                <button id="notif" class="annonceClass p-2.5 rounded-full bg-gray-50 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all relative group">
+                                    <span id="nombreNotif" class="absolute top-1 right-1 h-4 min-w-[1rem] flex items-center justify-center px-1 text-[8px] font-bold text-white bg-emerald-500 rounded-full ring-2 ring-white">
+                                        {{ auth()->user()->notifs }}
+                                    </span>
+                                    <i class="fa-solid fa-bell"></i>
+                                </button>
+                            @endif
+
+                            <div class="h-8 w-px bg-gray-200 mx-2"></div>
+
+                            <a href="{{ route('parameters') }}" id="user" class="flex items-center space-x-2 p-1.5 pr-3 rounded-full hover:bg-gray-50 transition-all cursor-pointer group">
+                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                    <i class="fas fa-user-gear"></i>
+                                </div>
+                                <span class="hidden md:block text-sm font-medium text-gray-700 capitalize">{{ auth()->user()->first_name }}</span>
+                            </a>
+
+                            <a id="logout" href="{{ route('logout') }}" class="p-2.5 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Déconnexion">
+                                <i class="fa-solid fa-power-off"></i>
+                            </a> 
                         </div>
                     </div>
                     

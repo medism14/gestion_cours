@@ -2,1300 +2,615 @@
 
 @section('title', 'Utilisateurs')
 
-<style>
-    th div{
-        border: 1px solid black;
-        padding: 8px;
-        background-color: rgb(31, 65, 137);
-        color: white;
-    }
-    
-    td div {
-        text-align: center;
-        padding: 5px;
-        background-color: rgb(195, 200, 213);
-    }
-
-    /* Style de l'infobulle */
-.tooltip {
-    visibility: hidden;
-    position: absolute;
-    background-color: #333;
-    color: #fff;
-    padding: 5px;
-    border-radius: 5px;
-    z-index: 1;
-}
-
-/* Style de l'infobulle lorsqu'elle est affichée */
-.tooltip.show {
-    visibility: visible;
-}
-
-
-    @media screen and (max-width: 768px) {
-        th div {
-            padding: 3px;
-        }
-
-        td div {
-            padding: 1px;
-        }
-    }
-
-</style>
-
 @section('content')
-    <h1 class="text-center md:text-3xl lg: font-bold">Gestion d'utilisateurs</h1>
+<div class="section-animate space-y-8 p-4 md:p-8">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Gestion des Utilisateurs</h1>
+            <p class="mt-1 text-gray-500">Administrez les comptes des étudiants, professeurs et responsables.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-user-plus mr-2 text-sm"></i>
+                Ajouter un utilisateur
+            </button>
+        </div>
+    </div>
 
-    <!-- Barre de recherche -->
-    <div class="block w-full mx-auto rounded-lg p-2 py-4 flex justify-center flex-col">
-        <form action="{{ route('users.index') }}" class="p-0 m-0 inline" onsubmit="return confirmFiliere()">
-            @csrf
-            <div class="w-full flex justify-center mb-1">
-                <div class="mr-3 flex flex-col space-y-2 border-r-2 border-gray-900 px-6">
-                    <input type="text" id="searchFiliereInput" placeholder="Selection rapide..." class="outline-none px-3 py-1 rounded-lg focus:ring-2 border-none focus:border-slate-700 shadow-md">
-                    <select name="searchFiliere" id="searchFiliere" class="outline-none px-3 py-1 rounded-lg focus:ring-2 border-none focus:border-slate-700 shadow-md">
-                        @if (!$levels->isEmpty())
-                            <option value="all">Toutes les filières</option>
-                        @endif
-                        @foreach ($levels as $level)
-                            <option value="{{ $level->id }}">{{ $level->sector->name }}: {{ $level->name }}</option>
-                        @endforeach
-                    </select>
-                    <div class="w-full flex justify-center mt-3">
-                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
-                    </div>
+    <!-- Stats Overview (Optional but premium touch) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</p>
+                    <h3 class="text-2xl font-black text-gray-900">{{ count($allUsers) }}</h3>
                 </div>
-                </form> 
-                <div class="flex flex-col items-center justify-center px-3">
-                <form action="{{ route('users.index') }}" class="p-0 m-0 inline">
-                    @csrf
-                    <div class="flex">
-                        <input id="search" placeholder="Ecrivez ici..." name="search" type="text" class="text-[0.7rem] lg:text-sm  border-1 border-gray-900 bg-gray-300 text-black outline-none p-2 rounded h-[2rem]">
-                        <div class="px-3">
-                            <i id="tooltipIcon" class="fas fa-question-circle p-1">
-                            </i>
-                            <div id="tooltipInfo" class="hidden break-words absolute bg-gray-600 z-1 px-3 md:px-5 py-1 md:py-3 text-white right-5 top-0 rounded-lg text-[0.6rem] md:text-sm">
-                                Recherche par:
-                                <p class="text-center mt-3 break-words">Prenom, Nom, Email, Telephone, Role, Nom de la filière</p>
+                <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                <p class="text-start mt-5"><span class="underline">Conseil utile:</span> commencez par écrire le mot recherché et le système recherchera toutes les correspondances avec cette entrée.</p>
+    <!-- Search & Filters Container -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Filter by Level -->
+                <form action="{{ route('users.index') }}" method="GET" class="space-y-4">
+                    @csrf
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fa-solid fa-layer-group text-xs"></i>
+                            </div>
+                            <select name="searchFiliere" id="searchFiliere" 
+                                class="block w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none bg-gray-50/50">
+                                @if (!$levels->isEmpty())
+                                    <option value="all">Toutes les filières</option>
+                                @endif
+                                @foreach ($levels as $level)
+                                    <option value="{{ $level->id }}" {{ request('searchFiliere') == $level->id ? 'selected' : '' }}>
+                                        {{ $level->sector->name }}: {{ $level->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all">
+                            Filtrer
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Global Search -->
+                <form action="{{ route('users.index') }}" method="GET" class="space-y-4">
+                    @csrf
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1 group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </div>
+                            <input id="search" name="search" type="text" value="{{ request('search') }}"
+                                class="block w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50"
+                                placeholder="Nom, Email, Téléphone...">
+                            
+                            <!-- Tooltip replacement: a simple info button -->
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <div class="relative group/tooltip">
+                                    <i class="fa-solid fa-circle-info text-gray-300 hover:text-blue-500 cursor-help transition-colors"></i>
+                                    <div class="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-[10px] rounded-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all shadow-xl z-50">
+                                        <p class="font-bold mb-1 uppercase tracking-wider">Recherche intelligente</p>
+                                        <p class="text-gray-400">Recherchez par prénom, nom, email, téléphone ou filière.</p>
+                                        <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all shadow-sm">
+                            Rechercher
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table Toolbar -->
+        <div class="px-6 py-3 bg-gray-50/50 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <form action="{{ route('users.download') }}" method="POST" class="inline">
+                    @csrf
+                    <input type="hidden" name="users" value="{{ json_encode($allUsers) }}">
+                    <button id="download" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 text-sm font-semibold text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all shadow-sm">
+                        <i class="fa-solid fa-file-export mr-2"></i>
+                        Exporter CSV
+                    </button>
+                </form>
+
+                <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" enctype="multipart/form-data" class="inline">
+                    @csrf
+                    <input id="importInput" name="fichier" type="file" class="hidden" onchange="if(confirm('Importer ce fichier ?')) this.form.submit()">
+                    <button type="button" onclick="document.getElementById('importInput').click()" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 text-sm font-semibold text-blue-600 rounded-xl hover:bg-blue-50 transition-all shadow-sm">
+                        <i class="fa-solid fa-file-import mr-2"></i>
+                        Importer CSV
+                    </button>
+                </form>
+            </div>
+            @if ($loup)
+                <a href="{{ route('users.index') }}" class="text-xs font-bold text-amber-600 hover:underline">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Réinitialiser les filtres
+                </a>
+            @endif
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="overflow-x-auto">
+            <table id="tableUser" class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100">
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identité</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Rôle</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @foreach ($users as $user)
+                        <tr class="hover:bg-gray-50/30 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm">
+                                        {{ strtoupper(substr($user->first_name, 0, 1) . substr($user->last_name, 0, 1)) }}
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-bold text-gray-900">{{ $user->first_name }} {{ $user->last_name }}</div>
+                                        <div class="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">{{ $user->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell">
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-600 font-medium">{{ $user->phone }}</span>
+                                    <span class="text-[10px] text-gray-400">ID: #{{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @php
+                                    $roleLabel = $user->role == 0 ? 'Admin' : ($user->role == 1 ? 'Professeur' : 'Étudiant');
+                                    $roleClass = $user->role == 0 ? 'bg-rose-50 text-rose-600' : ($user->role == 1 ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600');
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider {{ $roleClass }}">
+                                    {{ $roleLabel }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" data-id="{{ $user->id }}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $user->id }}">
+                                        <i class="fa-solid fa-user-pen"></i>
+                                    </button>
+                                    <form method="POST" action="{{ route('users.delete', ['id' => $user->id]) }}" class="inline" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                    <span class="id hidden">{{ $user->id }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    @if ($users->isEmpty())
+                        <tr>
+                            <td colspan="4" class="px-6 py-20 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fa-solid fa-user-slash text-4xl text-gray-200 mb-4"></i>
+                                    <p class="text-gray-400 font-medium">Aucun utilisateur trouvé.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if ($users->hasPages())
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                {{ $users->links() }}
+            </div>
+        @endif
+    </div>
+</div>
+    <!-- MODALS -->
+    <!-- Add Modal -->
+    <div id="addModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100">
+                <form method="POST" action="{{ route('users.store') }}" onsubmit="return submitFunction()">    
+                    @csrf
+                    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <h3 class="text-xl font-black text-gray-900">Nouvel Utilisateur</h3>
+                        <button type="button" id="closeModalAdd" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-8 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Prénom</label>
+                                <input name="addFirstName" required type="text" placeholder="ex: Jean"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nom</label>
+                                <input name="addLastName" required type="text" placeholder="ex: Dupont"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Email professionnel</label>
+                            <input name="addEmail" required type="email" placeholder="jean.dupont@ismd.com"
+                                class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Téléphone</label>
+                                <input name="addPhone" type="text" placeholder="06 12 34 56 78"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Rôle</label>
+                                <select id="addRole" name="addRole" 
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm appearance-none cursor-pointer">
+                                    <option value="2">Étudiant</option>
+                                    <option value="1">Professeur</option>
+                                    <option value="0">Administrateur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="divSelectFiliere" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Filière & Niveau</label>
+                                <button type="button" id="addListBtn" class="px-3 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-lg hover:bg-gray-800 transition-all">
+                                    <i class="fa-solid fa-plus mr-1"></i> Ajouter
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <select id="addFiliere" name="addFiliere" 
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm appearance-none cursor-pointer">
+                                    <option value="">Sélectionnez un niveau...</option>
+                                    @foreach ($levels as $level)
+                                        <option value="{{ $level->id }}">{{ $level->sector->name }}: {{ $level->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
+                            <!-- Selected levels list -->
+                            <div id="addsectorLists" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Dynamic dynamic -->
                             </div>
                         </div>
                     </div>
-                    <div class="w-full flex justify-center mt-3">
-                        <button type="submit" class="text-[0.7rem] lg:text-sm  p-1 border-2 border-blue-600 rounded-lg transition-all duration-300 ease-in-out bg-blue-600 hover:bg-blue-700 text-white">Rechercher</button>
+
+                    <div class="p-8 bg-gray-50/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" id="cancelAddButton" class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-700 transition-all">
+                            Annuler
+                        </button>
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5">
+                            Créer le compte
+                        </button>
                     </div>
-                </form> 
-                </div>
-            </div>
-    </div>
-
-    <!-- Tableau -->
-    <div id="table-div" class="block w-full">
-        <div class="mx-auto w-full max-w-full md:w-[90%] flex space-x-5 justify-end">
-            <div class="flex-1 flex justify-start space-x-1 md:space-x-3">
-                <form action="{{ route('users.download') }}" method="POST" class="p-0 m-0" onsubmit="return submitFunction()">
-                    @csrf
-                    <input type="hidden" name="users" value="{{ json_encode($allUsers) }}">
-                    <button id="download" title="Télécharger" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Exporter <i class="fas fa-upload"></i></button>
                 </form>
-
-                <form id="formImport" action="{{ route('users.importCSV') }}" method="POST" class="p-0 m-0" enctype="multipart/form-data" onsubmit="return submitFunction()">
-                    @csrf
-                    <input id="importInput" name="fichier" type="file" class="hidden">
-                    <button title="Importer" title="Importer" id="import" class="border-2 text-green-700 border-green-700 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-700 hover:text-white p-1 rounded-lg font-bold px-4">Importer <i class="fas fa-download"></i></button>
-                </form>
-            </div>
-            <div class="flex-1 flex justify-end">
-                <button title="Ajouter" id="openModalAdd" class="border-2 text-green-600 border-green-600 transition-all text-[0.65rem] lg:text-sm duration-300 ease-in-out hover:bg-green-600 hover:text-white p-1 rounded-lg font-bold px-4"><i class="fas fa-plus"></i></button>
             </div>
         </div>
-        <table id="tableUser" class="mx-auto p-2 w-full md:w-[90%] whitespace-nowrap text-[0.65rem] lg:text-sm">
-            <thead>
-                <tr>
-                    <th class="hidden" id="informations"><div>Informations</div></th>
-                    <th id="prenom"><div>Prenom</div></th>
-                    <th id="nom"><div>Nom</div></th>
-                    <th id="email"><div>Email</div></th>
-                    <th id="phone"><div>Phone</div></th>
-                    <th id="role"><div>Role</div></th>
-                    <th id="actions"><div>Actions</div></th>
+    </div>
+
+    <!-- View Modal -->
+    <div id="viewModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
+                <div class="px-8 py-10">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="h-24 w-24 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center text-3xl font-black mb-4 shadow-inner ring-4 ring-gray-50">
+                            <span id="viewInitiales">??</span>
+                        </div>
+                        <h3 id="viewFullName" class="text-2xl font-black text-gray-900">Chargement...</h3>
+                        <span id="viewRoleBadge" class="mt-2 px-3 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-widest rounded-full">Rôle</span>
+                    </div>
+
+                    <div class="mt-10 space-y-4">
+                        <div class="flex items-center p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                            <div class="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm mr-4">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email</p>
+                                <p id="viewEmail" class="text-sm font-semibold text-gray-900 underline decoration-blue-200">...</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                            <div class="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm mr-4">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Téléphone</p>
+                                <p id="viewPhone" class="text-sm font-semibold text-gray-900">...</p>
+                            </div>
+                        </div>
+
+                        <div id="viewFiliereContainer" class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+                                <i class="fa-solid fa-graduation-cap mr-2"></i> Filières & Niveaux
+                            </p>
+                            <div id="viewsectorLists" class="grid grid-cols-1 gap-2">
+                                <!-- Dynamic levels -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-center">
+                        <button type="button" id="closeModalView" class="px-10 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-xl hover:shadow-gray-300 transform hover:-translate-y-0.5">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100">
+                <form method="POST" action="{{ route('users.edit') }}" onsubmit="return submitFunction()">    
+                    @csrf
+                    <input type="hidden" name="id" id="editId">
+                    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <h3 class="text-xl font-black text-gray-900">Modifier l'Utilisateur</h3>
+                        <button type="button" id="closeModalEdit" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
                     
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($users as $user)
-                    <tr>
-                        <td class="informations w-full hidden">
-                            <div class="flex items-center tdDivs">
-                                <div class="flex-1">
-                                    <span class="text-start block font-bold w-full text-[0.8rem]">Nom/Prenom: {{ $user->first_name }}, {{ $user->last_name }}</span>
-                                    <span class="text-start block w-full">Email: {{ $user->email }}</span>
-                                    <span class="text-start block w-full">Telephone: {{ $user->phone }}</span>
-                                    <span class="text-start block w-full">Role: {{ $user->role }}</span>
+                    <div class="p-8 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Prénom</label>
+                                <input id="editFirstName" name="editFirstName" required type="text"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nom</label>
+                                <input id="editLastName" name="editLastName" required type="text"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Email professionnel</label>
+                            <input id="editEmail" name="editEmail" required type="email"
+                                class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Téléphone</label>
+                                <input id="editPhone" name="editPhone" type="text"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Rôle</label>
+                                <select id="editRole" name="editRole" 
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold appearance-none cursor-pointer">
+                                    <option value="2">Étudiant</option>
+                                    <option value="1">Professeur</option>
+                                    <option value="0">Administrateur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="divSelectFiliereEdit" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Filières & Niveaux</label>
+                                <button type="button" id="editListBtn" class="px-3 py-1 bg-amber-900 text-white text-[10px] font-bold rounded-lg hover:bg-amber-800 transition-all">
+                                    <i class="fa-solid fa-plus mr-1"></i> Ajouter
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <select id="editFiliere" name="editFiliere" 
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold appearance-none cursor-pointer">
+                                    <option value="">Sélectionnez un niveau...</option>
+                                    @foreach ($levels as $level)
+                                        <option value="{{ $level->id }}" class="editOptions">{{ $level->sector->name }}: {{ $level->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
                                 </div>
                             </div>
-                        </td>
-                        <td class="prenom"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->first_name }}</div></td>
-                        <td class="nom"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->last_name }}</div></td>
-                        <td class="email"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->email }}</div></td>
-                        <td class="phone"><div class="flex justify-center items-center font-bold tdDivs">{{ $user->phone }}</div></td>
-                        <td class="role"><div class="flex justify-center items-center font-bold tdDivs">
-                            {{ $user->role == 0 ? 'Administrateur' : ($user->role == 1 ? 'Professeur' : 'Etudiant' )}}
-                        </div></td>
-                        <td class="actions">
-                            <div class="flex justify-center items-center font-bold tdDivs">
-                                <button title="Voir" class="openModalView text-blue-600 p-2 border-2 border-blue-600 text-[0.7rem] lg:text-sm text-xs rounded-lg ml-3 mr-3 transition-all duration-300 ease-in-out hover:bg-blue-600 hover:text-white"><i class="fas fa-search"></i></button>
-                                
-                                <button class="id hidden">{{ $user->id }}</button>
-                                <button title="Modifier" class="openModalEdit text-slate-600 text-xs p-2 border-2 border-slate-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-slate-600 hover:text-white"><i class="fas fa-pencil-alt"></i></button>
-                                <form method="POST" onsubmit="return confirm('Vous êtes sur de votre choix ?')" action="{{ route('users.delete', ['id' => $user->id]) }}" class="m-0 p-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button title="Supprimer" value="{{ $user->id }}" class="text-red-600 text-xs p-2 border-2 border-red-600 text-[0.7rem] lg:text-sm rounded-lg mr-3 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"><i class="fas fa-trash-alt"></i></button>
-                                </form>
+                            <!-- Selected levels list -->
+                            <div id="editsectorLists" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Dynamic dynamic -->
                             </div>
-                        </td>
-                    </tr>
-                @endforeach
-                @if ($users->isEmpty())
-                    <tr>
-                        <td colspan="6" id="changeTaille"><div class="flex justify-center items-center">La table est vide</div></td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
+                        </div>
+                    </div>
 
-    @if ($loup)
-    <div class="w-full flex justify-center mt-3">
-        <a href="/users" class="bg-orange-400 text-white px-2 py-1 rounded-lg">Revenir</a>
-    </div>
-    @endif
-
-    <!-- Pagination -->
-    <div class="w-full max-w-full mt-5 md:w-[90%] mx-auto flex my-3 justify-center text-sm lg:text-base md:text-sm">
-        <div class="pagination">
-        @if ($users->hasPages())
-            <nav>
-                @if ($users->onFirstPage())
-                    <span class="p-2 bg-gray-300 m-2 rounded shadow-md">
-                        Precedent
-                    </span>
-                @else
-                    <a href="{{ $users->previousPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Precedent
-                    </a>
-                @endif
-
-                @if ($users->hasMorePages())
-                    <a href="{{ $users->nextPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </a>
-                @else
-                    <span class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </span>
-                @endif
-            </nav>
-        @endif
-        </div>
-    </div>
-
-    <!-- MODALS -->
-    <!-- MODALS -->
-    <!-- MODALS -->
-
-    <!-- ADD MODALS -->
-    <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" action="{{ route('users.store') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Ajout d'utilisateur</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addFirstName">Prenom: </label>
-                        <input id="addFirstName" name="addFirstName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
+                    <div class="p-8 bg-gray-50/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                        <button type="button" id="cancelEditButton" class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-700 transition-all">
+                            Annuler
+                        </button>
+                        <button type="submit" class="px-8 py-3 bg-amber-600 text-white font-bold rounded-2xl hover:bg-amber-700 shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5">
+                            Enregistrer les modifications
+                        </button>
                     </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addLastName">Nom: </label>
-                        <input id="addLastName" name="addLastName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addEmail">Email: </label>
-                        <input id="addEmail" name="addEmail" type="email" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addPhone">Phone: </label>
-                        <input id="addPhone" name="addPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addSexe">Sexe: </label>
-                        <select name="addSexe" id="addSexe" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="H">Homme</option>
-                            <option value="F">Femme</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addRole">Role: </label>
-                        <select id="addRole" name="addRole" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="0">Administrateur</option>                         
-                            <option value="1" selected>Professeur</option>                         
-                            <option value="2">Etudiant</option>                         
-                        </select>
-                    </div>
-                    <div class="rowFiliereAdd w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addFiliere">Filière: </label>
-                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
-                        <select id="addFiliere" name="filiereSolo" {{ ($sectors->isEmpty() ? "disabled" : "") }} type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            @if ($sectors->isEmpty()) 
-                                <option value="" disabled>Aucune valeur</option>
-                            @else        
-                                @foreach ($sectors as $sector)
-                                    @foreach ($sector->levels as $level)
-                                        <option value="{{ $level->id }}">{{ $sector->name }}: {{ $level->name }}</option>
-                                    @endforeach
-                                @endforeach
-                            @endif
-                        </select>
-                        <button id="addListBtn" class=" bg-blue-600 text-white px-2 py-1 outline-none rounded-lg" type="button">Ajouter</button>
-                    </div>
-                </div>
-                <div class="rowFiliereAdd md:flex w-full md:space-x-2">
-                    <div id="addsectorLists" class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        
-                    </div>
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelAddButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-        </form>    
-        </div>
-    </div>
-
-    <!-- VIEW MODALS -->
-    <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subViewModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-            <!-- Close -->
-            <div id="closeModalView" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Vue d'utilisateur</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewFirstName">Prenom: </label>
-                        <input id="viewFirstName" readonly name="viewFirstName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewLastName">Nom: </label>
-                        <input id="viewLastName" readonly name="viewLastName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewEmail">Email: </label>
-                        <input id="viewEmail" readonly name="viewEmail" type="email" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewPhone">Phone: </label>
-                        <input id="viewPhone" readonly name="viewPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewSexe">Sexe: </label>
-                        <select name="viewSexe" id="viewSexe" disabled class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="H">Homme</option>
-                            <option value="F">Femme</option>
-                        </select>
-                    </div>
-                </div>
-                    
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="viewRole">Role: </label>
-                        <select id="viewRole" disabled name="viewRole" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="0">Administrateur</option>                         
-                            <option value="1">Professeur</option>                         
-                            <option value="2">Etudiant</option>                         
-                        </select>
-                    </div>
-                </div>
-                <!-- Row -->
-                <div class="flex w-full flex-col justify-center items-center md:space-x-2">
-                    <div id="viewsectorLists" class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <span>Filieres:</span>
-                        
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-
-    <!-- EDIT MODALS -->
-    <div id="editModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subEditModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem] pb-[1rem] md:pb-0">
-        <form method="POST" action="{{ route('users.edit') }}" class="m-0 p-0" onsubmit="return submitFunction()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalEdit" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Modification d'utilisateur</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <input type="text" class="hidden" id="editId" name="id">
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editFirstName">Prenom: </label>
-                        <input id="editFirstName" name="editFirstName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editLastName">Nom: </label>
-                        <input id="editLastName" name="editLastName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editEmail">Email: </label>
-                        <input id="editEmail" name="editEmail" type="email" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editPhone">Phone: </label>
-                        <input id="editPhone" name="editPhone" type="number" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editSexe">Sexe: </label>
-                        <select name="editSexe" id="editSexe" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="H">Homme</option>
-                            <option value="F">Femme</option>
-                        </select>
-                    </div>
-                </div>
-                    
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="editRole">Role: </label>
-                        <select id="editRole" name="editRole" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            <option value="1">Professeur</option>                         
-                            <option value="2">Etudiant</option>                         
-                        </select>
-                    </div>
-                    <div class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        
-                        <label for="editPassword">Mot de passe: </label>
-                        <input id="editPassword" name="editPassword" type="password" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <input type="text" id="searchEdit" placeholder="Recherchez ici..." class="rounded focus:ring-2 outline-none px-2 py-1">
-                        <label for="editFiliere">Filière: </label>
-                        <select id="editFiliere" name="filiereSolo" {{ ($sectors->isEmpty() ? "disabled" : "") }} name="addFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            @if ($sectors->isEmpty()) 
-                                <option value="" disabled>Aucune valeur</option>
-                            @else        
-                                @foreach ($sectors as $sector)
-                                    @foreach ($sector->levels as $level)
-                                        <option value="{{ $level->id }}" class="editOptions">{{ $sector->name }}: {{ $level->name }}</option>
-                                    @endforeach
-                                @endforeach
-                            @endif
-                        </select>
-                        <button id="editListBtn" class=" bg-blue-600 text-white px-2 py-1 outline-none rounded-lg" type="button">Ajouter</button>
-                    </div>
-                </div>
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div id="editsectorLists" class="w-full md:flex-1 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        
-                    </div>
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveEditButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelEditButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-        </form>    
-        </div>
-    </div>
-
 @endsection
 
-@section('scripts')
-    <script>
-        //Recherche des filières
-        
-            function searchFiliereFunction(value) {
-                let options = Array.from(searchFiliere.options);
-                let i = 0;
-                let selected = false;
+<script>
+    // Global functions
+    let formIsSubmitting = false;
+    function submitFunction() {
+        if (formIsSubmitting) return false;
+        formIsSubmitting = true;
+        return true;
+    }
 
-                options.forEach((option) => {
-                    if (!RegExp('^' + value, 'i').test(option.textContent)) {
-                        option.disabled = true;
-                        option.classList.add('hidden');
-                        i++
-                    } else {
-                        if (!selected) {
-                            option.selected = true;
-                            selected = true;
-                        }
-                    }
-                });
+    // Modal management
+    function toggleModal(id, show) {
+        const modal = document.getElementById(id);
+        if (show) modal.classList.remove('hidden');
+        else modal.classList.add('hidden');
+    }
 
-                if (options.length == i) {
-                    searchFiliere.innerHTML += '';
-                }
-            }
+    // --- ADD MODAL LOGIC ---
+    const addRole = document.getElementById('addRole');
+    const addFiliere = document.getElementById('addFiliere');
+    const addListBtn = document.getElementById('addListBtn');
+    const addsectorLists = document.getElementById('addsectorLists');
 
-            const searchFiliere = document.getElementById('searchFiliere');
-            const searchFiliereInput = document.getElementById('searchFiliereInput');
+    addRole.addEventListener('change', () => {
+        const isStudent = addRole.value === "2";
+        addsectorLists.innerHTML = '';
+        if (isStudent) addListBtn.classList.add('hidden');
+        else addListBtn.classList.remove('hidden');
+    });
 
-            searchFiliereInput.addEventListener('input', () => {
-                let options = Array.from(searchFiliere.options);
-                let selected = false;
+    addListBtn.addEventListener('click', () => {
+        if (!addFiliere.value) return;
+        const id = addFiliere.value;
+        const name = addFiliere.options[addFiliere.selectedIndex].text;
+        if (document.getElementById(`level_add_${id}`)) return;
 
-                if (searchFiliereInput.value.length == 0) {
-                    options.forEach((option) => {
-                        option.disabled = false;
-                        option.classList.remove('hidden');
+        const div = document.createElement('div');
+        div.id = `level_add_${id}`;
+        div.className = "flex items-center justify-between p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/50 group/item";
+        div.innerHTML = `
+            <span class="text-xs font-bold text-blue-900">${name}</span>
+            <input type="hidden" name="levelIdAdd${id}" value="${id}">
+            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-blue-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+        addsectorLists.appendChild(div);
+        addFiliere.value = '';
+    });
 
-                        if (!selected) {
-                            option.selected = true;
-                            selected = true;
-                        }
+    document.getElementById('closeModalAdd').onclick = () => toggleModal('addModal', false);
+    document.getElementById('cancelAddButton').onclick = () => toggleModal('addModal', false);
+    document.getElementById('openModalAdd').onclick = () => toggleModal('addModal', true);
 
-                    });
-                } else {
-                    searchFiliereFunction(searchFiliereInput.value);
-                }
-            });
-
-            function confirmFiliere() {
-                let options = Array.from(searchFiliere.options);
-                let i = 0;
-
-                options.forEach((option) => {
-                    if (option.disabled) {
-                        i++
-                    }
-                });
-
-                if (options.length == i) {
-                    alert('Veuillez selectionner une filière');
-                    return false
-                } else {
-                    return true;
-                }
-            }  
-        //
-
-        //Tooltip manipulation
-            let tooltipIcon = document.getElementById('tooltipIcon');
-            const tooltipInfo = document.getElementById('tooltipInfo');
-            const searchBar = document.getElementById('search');
-
-            function positionnementTooltip () {
-                let xPosition = tooltipIcon.getBoundingClientRect().x;
-                let yPosition = tooltipIcon.getBoundingClientRect().y + tooltipIcon.getBoundingClientRect().height;
-
-                if (mediaQuery.matches) {
-                    xPosition = window.innerWidth - tooltipIcon.getBoundingClientRect().x;
-                }
-
-                tooltipInfo.classList.add(`left-[${xPosition}px]`);
-                tooltipInfo.classList.add(`top-[${yPosition}px]`);
-            }
-
-            positionnementTooltip();
-
-            tooltipIcon.addEventListener('mouseenter', function () {
-                tooltipInfo.classList.remove('hidden');
-            }); 
-
-            tooltipIcon.addEventListener('mouseleave', function () {
-                tooltipInfo.classList.add('hidden');
-            });
-
-            if (mediaQuery.matches) {
-                tooltipIcon.addEventListener('click', function () {
-                    tooltipInfo.classList.toggle('hidden');
-                }); 
-            }
-            
-            window.addEventListener('resize', () => {
-                positionnementTooltip();
-            });
-        //
-
-        //MODALS MANIPULATIONS
-
-
-        //Manipulation boutons pour télécharger
-        const importInput = document.getElementById('importInput');
-        const formImport = document.getElementById('formImport');
-        const importBtn = document.getElementById('import');
-
-        importBtn.addEventListener('click', (event) => {
-            event.preventDefault();
-            importInput.click();
-        });
-
-        importInput.addEventListener('change', (event) => {
-            let item = event.target;
-            if (item.files && item.files.length > 0) {
-                submitImport();
-            }
-        });
-
-        function submitImport () {
-            let result = confirm ("Voulez vous vraiment ajouter des utilisateurs avec un fichier excel ?");
-
-            if (result) {
-                formImport.submit();
-            }
-        }
-
-
-        //////////////////////////
-        //ADD MODALS
-        //////////////////////////
-        /////////////////////////////////Ouverture et Fermeture du modal
-        const closeModalAdd = document.getElementById('closeModalAdd');
-        const openModalAdd = document.getElementById('openModalAdd');
-        const addModal = document.getElementById('addModal');
-
-        const saveAddButton = document.getElementById('saveAddButton');
-        const cancelAddButton = document.getElementById('cancelAddButton');
-
-        const addFirstName = document.getElementById('addFirstName');
-        const addLastName = document.getElementById('addLastName');
-        const addEmail = document.getElementById('addEmail');
-        const addPhone = document.getElementById('addPhone');
-        const addRole = document.getElementById('addRole');
-        const addSexe = document.getElementById('addSexe');
-        const addFiliere = document.getElementById('addFiliere');
-        const rowFiliereAdd = Array.from(document.getElementsByClassName('rowFiliereAdd'));
-
-        const addsectorLists = document.getElementById('addsectorLists');
-        const addListBtn = document.getElementById('addListBtn');
-
-        var searchAdd = document.getElementById('searchAdd');
-
-        //Faire une recherche dynamique
-        searchAdd.addEventListener('input', (event) => {
-            value = event.target.value;
-            remettreNormalAdd();
-            if (value != '') {
-                rechercherAdd(value);
-            } 
-        });
-
-        function remettreNormalAdd () {
-            const options = Array.from(addFiliere.options);
-
-            options.forEach((option) => {
-                option.disabled = false;
-                option.selected = true;
-                option.classList.remove('hidden');
-            });
-        }
-
-        function rechercherAdd (value) {
-            const options = Array.from(addFiliere.options);
-            let countDesactivated = 0;
-
-            options.forEach((option) => {
-                if (RegExp('^' + value, 'i').test(option.textContent)) {
-
-                } else {
-                    countDesactivated++;
-                    option.disabled = true;
-                    option.classList.add('hidden');
-                    option.selected = false;
-                }
-            });
-
-        }
-
-        //Pour le changement de rôlé si changé alors redemerrage
-        addRole.addEventListener('change', () => {
-            let divs = Array.from(document.getElementsByClassName('divAdd'));
-            
-            if (addRole.value == "1") {
-                rowFiliereAdd.forEach((row) => {
-                    row.classList.remove('hidden');
-                });
-
-                addListBtn.classList.remove('hidden');
-
-                divs.forEach((div) => {
-                    div.classList.remove('hidden');
-                })
-            } else if (addRole.value == "2") {
-                rowFiliereAdd.forEach((row) => {
-                    row.classList.remove('hidden');
-                });
-
-                addListBtn.classList.add('hidden');
+    // --- VIEW MODAL LOGIC ---
+    document.querySelectorAll('.openModalView').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.dataset.id;
+            try {
+                const res = await fetch(`/users/getUser/${id}`);
+                const user = await res.json();
                 
-                divs.forEach((div) => {
-                    reputElementsAdd(div);
-                })
-            } else {
-                rowFiliereAdd.forEach((row) => {
-                    row.classList.add('hidden');
-                })
-
-                divs.forEach((div) => {
-                    reputElementsAdd(div);
-                })
-            }
-        });
-
-        function reputElementsAdd (row) {
-            let level_id = row.parentNode.parentNode.querySelector('.addId').value;
-            let value = row.parentNode.parentNode.querySelector('.valueSpan').textContent;
-
-            let option = document.createElement('option');
-            option.value = level_id;
-            option.textContent = value;
+                document.getElementById('viewInitiales').textContent = (user.first_name[0] + user.last_name[0]).toUpperCase();
+                document.getElementById('viewFullName').textContent = `${user.first_name} ${user.last_name}`;
+                document.getElementById('viewEmail').textContent = user.email;
+                document.getElementById('viewPhone').textContent = user.phone || 'Non renseigné';
                 
-            addFiliere.appendChild(option);
+                const roles = {0: 'Administrateur', 1: 'Professeur', 2: 'Étudiant'};
+                document.getElementById('viewRoleBadge').textContent = roles[user.role];
 
-            row.remove();
-        }
+                const list = document.getElementById('viewsectorLists');
+                list.innerHTML = '';
+                user.levels_users.forEach(lu => {
+                    const div = document.createElement('div');
+                    div.className = "p-3 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-700 shadow-sm";
+                    div.textContent = `${lu.level.sector.name}: ${lu.level.name}`;
+                    list.appendChild(div);
+                });
+                
+                if (user.levels_users.length === 0) {
+                    list.innerHTML = '<p class="text-xs text-gray-400 italic">Aucune filière assignée</p>';
+                }
 
-        //Pour les ajuouts des filières pour les profs et admin
-        addListBtn.addEventListener('click', () => {
-                if (addFiliere.options.length > 0 && addFiliere.value != '' && (addRole.value === "0" || addRole.value === "1")) {
-                    let level_id = addFiliere.value;
-                    let index = addFiliere.selectedIndex;
-                    let value = addFiliere[index].textContent;
+                toggleModal('viewModal', true);
+            } catch (err) { console.error(err); }
+        };
+    });
+    document.getElementById('closeModalView').onclick = () => toggleModal('viewModal', false);
 
-                    addFiliere.remove(index);
+    // --- EDIT MODAL LOGIC ---
+    const editRole = document.getElementById('editRole');
+    const editFiliere = document.getElementById('editFiliere');
+    const editListBtn = document.getElementById('editListBtn');
+    const editsectorLists = document.getElementById('editsectorLists');
 
-                    let div = document.createElement('div');
-                    div.classList.add('w-full', 'flex', 'divAdd');
+    editRole.addEventListener('change', () => {
+        if (editRole.value === "2") editListBtn.classList.add('hidden');
+        else editListBtn.classList.remove('hidden');
+    });
 
-                    let input = document.createElement('input');
-                    input.classList.add('hidden', 'addId');
-                    input.setAttribute('name', 'levelIdAdd' + level_id)
-                    input.value = level_id;
+    editListBtn.addEventListener('click', () => {
+        if (!editFiliere.value) return;
+        const id = editFiliere.value;
+        const name = editFiliere.options[editFiliere.selectedIndex].text;
+        if (document.getElementById(`level_edit_${id}`)) return;
 
-                    let span1 = document.createElement('span');
-                    span1.classList.add('w-1/3');
+        const div = document.createElement('div');
+        div.id = `level_edit_${id}`;
+        div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
+        div.innerHTML = `
+            <span class="text-xs font-bold text-amber-900">${name}</span>
+            <input type="hidden" name="levelIdEdit${id}" value="${id}">
+            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+        editsectorLists.appendChild(div);
+        editFiliere.value = '';
+    });
 
-                    let span = document.createElement('span');
-                    span.innerHTML = value + '<i class="fas fa-times removedElementAdd cursor-pointer text-red-600 ml-3 text-lg"></i>';
-                    span.classList.add('text-center', 'w-2/3', 'mr-3', 'valueSpan');
+    document.querySelectorAll('.openModalEdit').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.dataset.id;
+            try {
+                const res = await fetch(`/users/getUser/${id}`);
+                const user = await res.json();
+                
+                document.getElementById('editId').value = user.id;
+                document.getElementById('editFirstName').value = user.first_name;
+                document.getElementById('editLastName').value = user.last_name;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editPhone').value = user.phone || '';
+                document.getElementById('editRole').value = user.role;
+                
+                if (user.role == 2) editListBtn.classList.add('hidden');
+                else editListBtn.classList.remove('hidden');
 
-                    let span2 = document.createElement('span');
-                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'text-start', 'w-1/3');
-
-                    let span3 = document.createElement('span');
-                    span3.classList.add('flex-1')
+                editsectorLists.innerHTML = '';
+                user.levels_users.forEach(lu => {
+                    const levelId = lu.level.id;
+                    const levelName = `${lu.level.sector.name}: ${lu.level.name}`;
                     
-                    div.appendChild(input);
-                    div.appendChild(span1);
-                    div.appendChild(span);
-                    div.appendChild(span2);
-
-                    addsectorLists.appendChild(div);
-
-                } else {
-                    alert('C\'est vide');
-                }
-        });
-
-        //Pour les retraits des filières pour les profs et admin
-        addsectorLists.addEventListener('click', (event) => {
-            if (event.target.classList.contains('removedElementAdd')) {
-                let row = event.target.parentNode.parentNode;
-                let level_id = event.target.parentNode.parentNode.querySelector('.addId').value;
-                let value = event.target.parentNode.parentNode.querySelector('.valueSpan').textContent;
-
-                let option = document.createElement('option');
-                option.value = level_id;
-                option.textContent = value;
-                
-                addFiliere.appendChild(option);
-
-                row.remove();
-            }
-        });
-
-        function resetValuesAddModal() {
-            addModal.classList.add('hidden');
-
-            addFirstName.value = '';
-            addLastName.value = '';
-            addEmail.value = '';
-            addPhone.value = '';
-            
-            window.location.reload();
-
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalAdd.addEventListener('click', () => {
-            resetValuesAddModal();
-        });
-
-        //Fermeture modal en appuyant sur le bouton annuler
-        cancelAddButton.addEventListener('click', () => {
-            resetValuesAddModal();
-        })
-
-        //Ouverture du modal avec le bouton +
-        openModalAdd.addEventListener('click', () => {
-            addModal.classList.remove('hidden');
-        });
-
-
-
-        //////////////////////////
-        //VIEW MODALS
-        //////////////////////////
-        const closeModalView = document.getElementById('closeModalView');
-        const openModalView = Array.from(document.getElementsByClassName('openModalView'));
-        const viewModal = document.getElementById('viewModal');
-;
-        const viewFirstName = document.getElementById('viewFirstName');
-        const viewLastName = document.getElementById('viewLastName');
-        const viewEmail = document.getElementById('viewEmail');
-        const viewPhone = document.getElementById('viewPhone');
-        const viewSexe = document.getElementById('viewSexe');
-        const viewRole = document.getElementById('viewRole');
-        const viewFiliere = document.getElementById('viewRole');
-
-        const viewsectorLists = document.getElementById('viewsectorLists');
-
-        function resetValuesViewModal() {
-            viewFirstName.value = '';
-            viewLastName.value = '';
-            viewEmail.value = '';
-            viewPhone.value = '';
-
-            window.location.reload();
-            viewModal.classList.add('hidden');
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalView.addEventListener('click', () => {
-            resetValuesViewModal();
-        });
-        
-
-        //Ouverture du modal avec le bouton +
-        openModalView.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                id = parseInt(btn.parentNode.querySelector('.id').textContent);
-                
-                fetch('users/getUser/' + id)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network resonse was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let first_name = data.first_name;
-                    let last_name = data.last_name;
-                    let email = data.email;
-                    let phone = data.phone;
-                    let role = data.role;
-
-                    let sexes = viewSexe.querySelectorAll('option');
-                    sexes.forEach((sexe) => {
-                        if (sexe.value == data.sexe) {
-                            sexe.selected = true;
-                        }
-                    });
-
-                     viewFirstName.value = first_name;
-                     viewLastName.value = last_name;
-                     viewEmail.value = email;
-                     viewPhone.value = phone;
-                     viewRole.value = role;
-                
-                    
-
-                    let levels = data.levels_users;
-
-                     //Ajout de la liste de niveau
-                    levels.forEach((level) => {
-                        
-                        levelName = level.level.name;
-                        sectorName = level.level.sector.name;
-                        let span = document.createElement('span');
-                        span.textContent = sectorName +': '+ levelName;
-
-                        viewsectorLists.appendChild(span);                          
-                    });
-
-                    if (levels.length === 0) {
-                        let span = document.createElement('span');
-                        span.textContent = 'Aucune filière';
-                        viewsectorLists.appendChild(span);
-                    }
-
-                    viewModal.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error:', error)
-                });
-            });
-        });
-
-
-        //////////////////////////
-        //EDIT MODALS
-        //////////////////////////
-        const closeModalEdit = document.getElementById('closeModalEdit');
-        const openModalEdit = Array.from(document.getElementsByClassName('openModalEdit'));
-        const editModal = document.getElementById('editModal');
-
-        const saveEditButton = document.getElementById('saveEditButton');
-        const cancelEditButton = document.getElementById('cancelEditButton');
-
-        const editId = document.getElementById('editId');
-        const editFirstName = document.getElementById('editFirstName');
-        const editLastName = document.getElementById('editLastName');
-        const editEmail = document.getElementById('editEmail');
-        const editPhone = document.getElementById('editPhone');
-        const editRole = document.getElementById('editRole');
-        const editSexe = document.getElementById('editSexe');
-        const editFiliere = document.getElementById('editFiliere');
-
-        const editsectorLists = document.getElementById('editsectorLists');
-        const editListBtn = document.getElementById('editListBtn');
-
-        var searchEdit = document.getElementById('searchEdit');
-
-        function resetValuesEditModal() {
-            editFirstName.value = '';
-            editLastName.value = '';
-            editEmail.value = '';
-            editPhone.value = '';
-
-            editModal.classList.add('hidden');
-
-            window.location.reload();
-        }
-        
-        //Fermeture modal en haut à droite
-        closeModalEdit.addEventListener('click', () => {
-            resetValuesEditModal();
-        });
-
-        //Fermeture modal en appuyant sur le bouton annuler
-        cancelEditButton.addEventListener('click', () => {
-            resetValuesEditModal();
-        })
-
-        //Faire une recherche dynamique
-        searchEdit.addEventListener('input', (event) => {
-            value = event.target.value;
-            remettreNormalEdit();
-            if (value != '') {
-                rechercherEdit(value);
-            } 
-        });
-
-        function remettreNormalEdit () {
-            const options = Array.from(editFiliere.options);
-
-            options.forEach((option) => {
-                option.disabled = false;
-                option.selected = true;
-                option.classList.remove('hidden');
-            });
-        }
-
-        function rechercherEdit (value) {
-            const options = Array.from(editFiliere.options);
-            let countDesactivated = 0;
-
-            options.forEach((option) => {
-                if (RegExp('^' + value, 'i').test(option.textContent)) {
-
-                } else {
-                    countDesactivated++;
-                    option.disabled = true;
-                    option.classList.add('hidden');
-                    option.selected = false;
-                }
-            });
-
-            if (countDesactivated == options.length) {
-            }
-        }
-
-        //Pour le changement de rôlé si changé alors redemerrage
-        editRole.addEventListener('change', () => {
-            let divs = Array.from(document.getElementsByClassName('divEdit'));
-
-            if (editRole.value === "0" || editRole.value === "1") {
-                editListBtn.classList.remove('hidden');
-
-            } else {
-                editListBtn.classList.add('hidden');
-
-                divs.forEach((div) => {
-                    reputElementsEdit(div);
-                })
-            }
-        });
-
-        function reputElementsEdit (row) {
-                let level_id = row.querySelector('.editId').value;
-                let value = row.querySelector('.valueSpan').textContent;
-
-                let option = document.createElement('option');
-                option.value = level_id;
-                option.textContent = value;
-                    
-                editFiliere.appendChild(option);
-
-                row.remove();
-        }
-
-        //Ouverture du modal avec le bouton +
-        openModalEdit.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                id = parseInt(btn.parentNode.querySelector('.id').textContent);
-                
-                fetch('users/getUser/' + id)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let first_name = data.first_name;
-                    let last_name = data.last_name;
-                    let email = data.email;
-                    let phone = data.phone;
-                    let role = data.role;
-
-                    let sexes = editSexe.querySelectorAll('option');
-                    sexes.forEach((sexe) => {
-                        if (sexe.value == data.sexe) {
-                            sexe.selected = true;
-                        }
-                    });
-
-
-                    if (role == 0) {
-                        editRole.parentNode.remove();
-                        editFiliere.parentNode.remove();
-                    }
-
-                    let options = Array.from(document.getElementsByClassName('editOptions'));
-
-                     editFirstName.value = first_name;
-                     editLastName.value = last_name;
-                     editEmail.value = email;
-                     editPhone.value = phone;
-                     editRole.value = role;
-
-                     let levels = data.levels_users;
-
-                     levels.forEach((level) => {
-                        level = level.level;
-
-                        if (editRole.value == 2) {
-                            options.forEach((option) => {
-                                if (level.id == option.value) {
-                                    option.selected = true;
-                                }
-                            })
-
-                            searchEdit.classList.add('hidden');
-                            editListBtn.classList.add('hidden');
-                        } else {
-                            options.forEach((option) => {
-                                if (level.id == option.value) {
-                                    option.remove();
-                                }
-                            })
-
-                            searchEdit.classList.remove('hidden');
-                            editListBtn.classList.remove('hidden');
-
-                            let level_id = level.id;
-                            let value = level.sector.name + ': ' + level.name;
-
-                            let div = document.createElement('div');
-                            div.classList.add('w-full', 'flex', 'divEdit');
-
-                            let input = document.createElement('input');
-                            input.classList.add('hidden', 'editId');
-                            input.setAttribute('name', 'levelIdEdit' + level_id)
-                            input.value = level_id;
-
-                            let div2 = document.createElement('div');
-                            div2.classList.add('flex', 'justify-center', 'bg-red', 'space-x-3', 'flex-1');
-
-                            let span = document.createElement('span');
-                            span.textContent = value;
-                            span.classList.add('text-end', 'mr-3', 'valueSpan', 'flex', 'justify-end');
-
-                            let span2 = document.createElement('span');
-                            span2.innerHTML = '<i class="fas fa-times removedElementEdit cursor-pointer"></i>';
-                            span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center');
-
-                            let span3 = document.createElement('span');
-                            span3.classList.add('w-1/4');
-
-                            let span4 = document.createElement('span');
-                            span4.classList.add('w-1/4');
-                            
-                            div2.appendChild(span);
-                            div2.appendChild(span2);
-                            div2.appendChild(input);
-                            
-                            div.appendChild(span3);
-                            div.appendChild(div2);
-                            div.appendChild(span4);
-
-                            editsectorLists.appendChild(div);
-                        }
-                     });
-
-                     editId.value = data.id;
-
-                     editModal.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error:', error)
-                });
-            });
-        });
-
-        //Pour les retraits des filières pour les profs et admin
-        editsectorLists.addEventListener('click', (event) => {
-            if (event.target.classList.contains('removedElementEdit')) {
-                let row = event.target.parentNode.parentNode;
-                let level_id = event.target.parentNode.parentNode.querySelector('.editId').value;
-                let value = event.target.parentNode.parentNode.querySelector('.valueSpan').textContent;
-
-                let option = document.createElement('option');
-                option.value = level_id;
-                option.textContent = value;
-                    
-                editFiliere.appendChild(option);
-
-                row.remove();
-            }
-        });
-
-        //Pour les ajuouts des filières pour les profs et admin
-        editListBtn.addEventListener('click', () => {
-            if (editFiliere.options.length > 0 && editFiliere.value != '' && (editRole.value === "0" || editRole.value === "1")) {
-                    let level_id = editFiliere.value;
-                    let index = editFiliere.selectedIndex;
-                    let value = editFiliere[index].textContent;
-
-                    editFiliere.remove(index);
-
-                    let div = document.createElement('div');
-                    div.classList.add('w-full', 'flex', 'divEdit');
-
-                    let input = document.createElement('input');
-                    input.classList.add('hidden', 'editId');
-                    input.setAttribute('name', 'levelIdEdit' + level_id)
-                    input.value = level_id;
-
-                    let div2 = document.createElement('div');
-                    div2.classList.add('flex', 'justify-center', 'bg-red', 'space-x-3', 'flex-1');
-
-                    let span = document.createElement('span');
-                    span.textContent = value;
-                    span.classList.add('text-end', 'mr-3', 'valueSpan', 'flex', 'justify-end');
-
-                    let span2 = document.createElement('span');
-                    span2.innerHTML = '<i class="fas fa-times removedElementEdit cursor-pointer"></i>';
-                    span2.classList.add('text-red-600', 'flex', 'text-lg', 'items-center');
-
-                    let span3 = document.createElement('span');
-                    span3.classList.add('w-1/4');
-
-                    let span4 = document.createElement('span');
-                    span4.classList.add('w-1/4');
-                            
-                    div2.appendChild(span);
-                    div2.appendChild(span2);
-                    div2.appendChild(input);
-                            
-                    div.appendChild(span3);
-                    div.appendChild(div2);
-                    div.appendChild(span4);
-
+                    const div = document.createElement('div');
+                    div.id = `level_edit_${levelId}`;
+                    div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
+                    div.innerHTML = `
+                        <span class="text-xs font-bold text-amber-900">${levelName}</span>
+                        <input type="hidden" name="levelIdEdit${levelId}" value="${levelId}">
+                        <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    `;
                     editsectorLists.appendChild(div);
-            } else {
-                    alert('C\'est vide');
-            }
-        });
-
-
-
-        //LES ID
-        const informations = document.getElementById('informations');
-        const prenom = document.getElementById('prenom');
-        const nom = document.getElementById('nom');
-        const email = document.getElementById('email');
-        const phone = document.getElementById('phone');
-
-        //Les Class
-        const c_informations = Array.from(document.getElementsByClassName('informations'));
-        const c_prenom =  Array.from(document.getElementsByClassName('prenom'));
-        const c_nom =  Array.from(document.getElementsByClassName('nom'));
-        const c_email =  Array.from(document.getElementsByClassName('email'));
-        const c_phone =  Array.from(document.getElementsByClassName('phone'));
-
-        const changeTaille = document.getElementById('changeTaille');
-
-        var height;
-
-
-        function media_change () {
-            // Inférieur à 768px
-            if (mediaQuery.matches) {
-                //ID
-                informations.classList.remove('hidden');
-                prenom.classList.add('hidden');
-                nom.classList.add('hidden');
-                email.classList.add('hidden');
-                phone.classList.add('hidden');
-
-                if (changeTaille) {
-                    changeTaille.setAttribute('colspan', "3");
-                }
-
-                //CLASSES
-                c_informations.forEach((value, index) => {
-                    value.classList.remove('hidden');
-                    height = value.offsetHeight;
                 });
-                c_prenom.forEach((value, index) => {
-                    value.classList.add('hidden');
-                });
-                c_nom.forEach((value, index) => {
-                    value.classList.add('hidden');
-                });
-                c_email.forEach((value, index) => {
-                    value.classList.add('hidden');
-                });
-                c_phone.forEach((value, index) => {
-                    value.classList.add('hidden');
-                });
-            // Supérieur à 768px
-            } else {
-                //ID
-                informations.classList.add('hidden');
-                prenom.classList.remove('hidden');
-                nom.classList.remove('hidden');
-                email.classList.remove('hidden');
-                phone.classList.remove('hidden');
+                toggleModal('editModal', true);
+            } catch (err) { console.error(err); }
+        };
+    });
+    document.getElementById('closeModalEdit').onclick = () => toggleModal('editModal', false);
+    document.getElementById('cancelEditButton').onclick = () => toggleModal('editModal', false);
+</script>
 
-                if (changeTaille) {
-                    changeTaille.setAttribute('colspan', "7");
-                }
-
-                //CLASSES
-                c_informations.forEach((value, index) => {
-                    value.classList.add('hidden');
-                });
-                c_prenom.forEach((value, index) => {
-                    value.classList.remove('hidden');
-                    height = value.offsetHeight;
-                });
-                c_nom.forEach((value, index) => {
-                    value.classList.remove('hidden');
-                });
-                c_email.forEach((value, index) => {
-                    value.classList.remove('hidden');
-                });
-                c_phone.forEach((value, index) => {
-                    value.classList.remove('hidden');
-                });
-            }
-        }
-
-        mediaQuery.addEventListener('change', (event) => {
-            media_change();
-        });
-
-        media_change();
-
-        const tableUser = document.getElementById('tableUser');
-        const toutLesDiv = tableUser.querySelectorAll('.tdDivs');
-        
-        toutLesDiv.forEach((div) => {
-            div.style.minHeight = height + 'px';
-        })
-    </script>
-
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script>
-        var pusher = new Pusher('6979301f0eee4d497b90', {
-            cluster: 'eu'
-        });
-
-        var channel = pusher.subscribe('user-channel');
-
-        channel.bind('user-refresh', async function (data) {
-            location.reload();
-        });
-    </script>
-
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    const pusher = new Pusher('6979301f0eee4d497b90', { cluster: 'eu' });
+    const channel = pusher.subscribe('user-channel');
+    channel.bind('user-refresh', () => location.reload());
+</script>
 @endsection

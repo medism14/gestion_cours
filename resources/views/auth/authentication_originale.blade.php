@@ -119,7 +119,7 @@
                 <!-- Header Section -->
                 <div class="px-8 py-10 pb-6 text-center">
                     <div class="mx-auto h-20 w-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 ring-4 ring-brand-50">
-                        <img src="{{ asset('images/ismdIcon.png') }}" class="h-14 w-14 object-contain" alt="ISMD Logo">
+                        <img src="{{ asset('images/ismd.jpg') }}" class="h-14 w-14 object-contain" alt="ISMD Logo">
                     </div>
                     
                     <h2 class="text-2xl font-bold tracking-tight text-gray-900">
@@ -203,10 +203,6 @@
                     </p>
                 </div>
             </div>
-            
-            <p class="mt-8 text-center text-xs text-gray-400">
-                Protégé par reCAPTCHA et soumis aux règles de confidentialité.
-            </p>
         </div>
     </div>
 
