@@ -17,160 +17,54 @@ use App\Events\AnnonceEdit;
 class AnnonceController extends Controller
 {
     public function index (Request $request) {
+        $user = auth()->user();
+        $query = Annonce::with(['user', 'annonces_relations.level.sector']);
+        $search = $request->input('search');
+        $loup = $search ? 667 : null;
 
-        $loup = null;
-        
-        function min ($string) {
-            return strtolower($string);
-        }
-
-        function maj ($string) {
-            return strtoupper($string);
-        }
-
-        function cap ($string) {
-            return ucfirst($string);
-        }
-
-        if ($request->input('search')) {
-            $search = $request->input('search');
-        }
-        
-        //Si c'est un administrateur
-        if (auth()->user()->role == 0) {
-            $annonces = Annonce::paginate(5);
-        
+        if ($user->role == 0) { // Admin
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', $search . '%')
+                      ->orWhereHas('user', fn($u) => $u->where('first_name', 'like', $search . '%'))
+                      ->orWhereHas('annonces_relations.level.sector', fn($s) => $s->where('name', 'like', $search . '%'));
+                });
+            }
+            $annonces = $query->paginate(5)->withQueryString();
             $levels = Level::all();
-
-            if ($request->input('search')) {
-                $annonces = Annonce::where(function ($query) use ($search) {
-                    $query->whereHas('user', function ($query) use ($search) {
-                        $query->where('first_name', 'like', min($search). '%')
-                              ->orWhere('first_name', 'like', maj($search). '%')
-                              ->orWhere('first_name', 'like', cap($search). '%');
-                    })->orWhereHas('annonces_relations.level.sector', function($query) use ($search) {
-                        $query->where('name', 'like', min($search). '%')
-                              ->orWhere('name', 'like', maj($search). '%')
-                              ->orWhere('name', 'like', cap($search). '%');
-                    })
-                    ->orWhere('title', 'like', min($search). '%')
-                    ->orWhere('title', 'like', maj($search). '%')
-                    ->orWhere('title', 'like', cap($search). '%');
-                })
-                ->paginate(5);
-    
-                $loup = 667;
+        } else if ($user->role == 2) { // Student
+            $query->whereHas('annonces_relations', fn($q) => $q->where('user_id', $user->id));
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', $search . '%')
+                      ->orWhereHas('user', fn($u) => $u->where('first_name', 'like', $search . '%'));
+                });
             }
-        //Si c'est un étudiant
-        } else if (auth()->user()->role == 2) {
-            $annonces = Annonce::whereHas('annonces_relations', function ($query) {
-                $query->where('user_id', auth()->user()->id);
-            })->paginate(5);
-
-            if ($request->input('search')) {
-                
-                //Verification si l'utilisateur est le bon
-                $annonces = Annonce::whereHas('annonces_relations', function($query) use ($search) {
-                    $query->where('user_id', auth()->user()->id);
-                })
-                //Separation des deux
-                ->where(function($query) use ($search){
-                        //On verifie s'il y'a un titre de ce nom
-                        $query->where(function ($query) use ($search) {
-                            $query->where('title', 'like', min($search). '%')
-                            ->orWhere('title', 'like', maj($search). '%')
-                            ->orWhere('title', 'like', cap($search). '%');
-                        })
-                        //On verifie s'il y'a un annonceur de ce nom
-                        ->orWhereHas('user', function ($query) use ($search){
-                            $query->where('first_name', 'like', min($search). '%')
-                            ->orWhere('first_name', 'like', maj($search). '%')
-                            ->orWhere('first_name', 'like', cap($search). '%');
-                        });
-                })
-                ->paginate(5);
-    
-                $loup = 667;
-            }
-
+            $annonces = $query->paginate(5)->withQueryString();
             $levels = null;
-        //Si c'est un professeur
-        }else {
-            $annonces = Annonce::where('user_id', auth()->user()->id)
-            ->orWhereHas('annonces_relations', function ($query) {
-                $query->where('user_id', auth()->user()->id);
-            })->paginate(5);
-        
-            $levels = Level::whereHas('levels_users', function ($query) {
-                $query->where('user_id', auth()->user()->id);
-            })->get();
-
-            if ($request->input('search')) {
-                //Si c'est pas lui qui a posté la requête
-                $annonces = Annonce::where(function ($query) use ($search) {
-                    $query->whereHas('annonces_relations', function ($query) use ($search) {
-                        $query->where('user_id', auth()->user()->id);
-                    })
-                    //Groupement du where pour separer les deux parties
-                    ->where(function ($query) use ($search) {
-                        //On verifie s'il y'a un titre de ce nom
-                        $query->where(function ($query) use ($search) {
-                            $query->where('title', 'like', min($search). '%')
-                            ->orWhere('title', 'like', maj($search). '%')
-                            ->orWhere('title', 'like', cap($search). '%');
-                        })
-                        //On verifie s'il y'a un annonceur de ce nom
-                        ->orWhereHas('user', function ($query) use ($search){
-                            $query->where('first_name', 'like', min($search). '%')
-                            ->orWhere('first_name', 'like', maj($search). '%')
-                            ->orWhere('first_name', 'like', cap($search). '%');
-                        })
-                        //On verifie s'il y'a un filière de ce nom
-                        ->orWhereHas('annonces_relations.level.sector', function($query) use ($search) {
-                            $query->where('name', 'like', min($search). '%')
-                                  ->orWhere('name', 'like', maj($search). '%')
-                                  ->orWhere('name', 'like', cap($search). '%');
-                        });
-                    });
-                })
-                //Si c'est lui qui a posté la requête
-                ->orWhere(function ($query) use ($search) {
-                    //Pour dire que si c'est lui qui a posté
-                    $query->where('user_id', auth()->user()->id)
-                    //Separation des deux parties
-                    ->where(function($query) use ($search){
-                        //Verification pour un titre de ce nom
-                        $query->where(function ($query) use ($search) {
-                            $query->where('title', 'like', min($search). '%')
-                            ->orWhere('title', 'like', maj($search). '%')
-                            ->orWhere('title', 'like', cap($search). '%');
-                        })
-                        //Verification pour un filière de ce nom
-                        ->orWhereHas('annonces_relations.level.sector', function($query) use ($search) {
-                            $query->where('name', 'like', min($search). '%')
-                                  ->orWhere('name', 'like', maj($search). '%')
-                                  ->orWhere('name', 'like', cap($search). '%');
-                        });
-                    });
-                })
-                ->paginate(5);
-    
-                $loup = 667;
+        } else { // Professor
+            $query->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereHas('annonces_relations', fn($ar) => $ar->where('user_id', $user->id));
+            });
+            if ($search) {
+                $query->where(function($q) use ($search, $user) {
+                    $q->where('title', 'like', $search . '%')
+                      ->orWhereHas('user', fn($u) => $u->where('first_name', 'like', $search . '%'))
+                      ->orWhereHas('annonces_relations.level.sector', fn($s) => $s->where('name', 'like', $search . '%'));
+                });
             }
+            $annonces = $query->paginate(5)->withQueryString();
+            $levels = Level::whereHas('levels_users', fn($q) => $q->where('user_id', $user->id))->get();
         }
 
-        auth()->user()->annonces = 0;
-        auth()->user()->annonce_viewed = now();
-        auth()->user()->save();
+        // Avoid redundant saves
+        if ($user->annonces != 0) {
+            $user->update(['annonces' => 0, 'annonce_viewed' => now()]);
+        }
         
-        
-        return view('authed.annonces', [
-            'annonces' => $annonces,
-            'levels' => $levels,
-            'loup' => $loup
-        ]);
+        return view('authed.annonces', compact('annonces', 'levels', 'loup'));
     }
-
     public function store (Request $request) {
         $validator = Validator::make($request->all(), [
             'addTitle' => 'required',
@@ -183,49 +77,25 @@ class AnnonceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $errors = json_decode($validator->errors(), true);
-
-            return redirect()->back()->with([
-                'error' => $errors,
-            ]);
+            return redirect()->back()->with(['error' => json_decode($validator->errors(), true)]);
         }
 
-        //Choix filiere
-        if ($request->input('addFiliere') == 'all') {
-            $choixFilieres = 'all';
-        } else {
-            $choixFilieres = 'partiels';
-        }
+        $choixFilieres = ($request->input('addFiliere') == 'all') ? 'all' : 'partiels';
+        $choixPersonnes = match($request->input('addPersonnes')) {
+            'teachers' => 'teachers',
+            'students' => 'students',
+            default => 'all',
+        };
 
-        //Choix Personnes
-        if ($request->input('addPersonnes') == 'all') {
-            $choixPersonnes = 'all';
-        } else if ($request->input('addPersonnes') == 'teachers') {
-            $choixPersonnes = 'teachers';
-        } else {
-            $choixPersonnes = 'students';
-        }
-
-        //Verification des variables si c'est partiels et rempilssages
+        $filieres = [];
         if ($choixFilieres == 'partiels') {
-            $filieres = array();
-
-            //Recuperer dans un array toutes les filières
             foreach ($request->all() as $index => $value) {
-                if (preg_match("/^addFilieres\w*$/" ,$index)) {
-                    $filieres[] = $value;
-                }
+                if (preg_match("/^addFilieres\w*$/" ,$index)) $filieres[] = $value;
             }
-
-            if (empty($filieres)) {
-                return redirect()->back()->with([
-                    'error' => 'Veuillez saisir des filières'
-                ]);
-            }
+            if (empty($filieres)) return redirect()->back()->with(['error' => 'Veuillez saisir des filières']);
         }
 
-        //Creation de l'annonce
-        $annonce = Annonce::Create([
+        $annonce = Annonce::create([
             'title' => $request->input('addTitle'),
             'content' => $request->input('addContenu'),
             'choix_filieres' => $choixFilieres,
@@ -234,129 +104,33 @@ class AnnonceController extends Controller
             'user_id' => auth()->user()->id,
         ]);
 
-        //Toutes les filières
-        if ($request->input('addFiliere') == 'all') {
-            $levels = Level::all();
+        $targetLevels = ($choixFilieres == 'all') ? Level::all() : Level::whereIn('id', $filieres)->get();
+        $targetRole = match($choixPersonnes) { 'teachers' => 1, 'students' => 2, default => null };
 
-            foreach ($levels as $level) {
-                //Type d'utilisateur selectionné
-                switch ($request->input('addPersonnes')) {
-                    case 'all':
-                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->get();
+        foreach ($targetLevels as $level) {
+            $userQuery = User::whereHas('levels_users', fn($q) => $q->where('level_id', $level->id));
+            if ($targetRole !== null) $userQuery->where('role', $targetRole);
+            $userIds = $userQuery->pluck('id');
 
-                        break;
-                    
-                    case 'teachers':
-                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 1)->get();
-
-                        break;
-                    
-                    case 'students':
-                        $usersOnAllFiliereStore = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 2)->get();
-
-                        break;
-                }
-
-                //Après avoir eu les utilisateurs selectionnés
-                foreach ($usersOnAllFiliereStore as $user) {
-                    $annonceExistanteOnAllFiliereStore = false;
-
-                    foreach ($user->annonces_relations as $relation) {
-                        if ($relation->annonce->id == $annonce->id) {
-                            $annonceExistanteOnAllFiliereStore = true;
-                        }
-                    }
-
-                    if (!$annonceExistanteOnAllFiliereStore) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-    
-                        $user->annonces++;
-                        $user->save();
-                    }
-                }
+            if ($userIds->isNotEmpty()) {
+                User::whereIn('id', $userIds)->increment('annonces');
+                $relations = $userIds->map(fn($uid) => [
+                    'annonce_id' => $annonce->id, 'level_id' => $level->id, 'user_id' => $uid,
+                    'created_at' => now(), 'updated_at' => now()
+                ])->toArray();
+                AnnoncesRelation::insert($relations);
             }
-        //Certains filières
-        } else {
-            //Boucle pour soumettre les annonces aux utilisateurs
-            foreach ($filieres as $id) {
-                $level = Level::find($id);
-                
-                //Type d'utilisateur selectionné
-                switch ($request->input('addPersonnes')) {
-                    case 'all':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->get();
-
-                        break;
-                    
-                    case 'teachers':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 1)->get();
-
-                        break;
-                    
-                    case 'students':
-                        $users = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 2)->get();
-
-                        break;
-                }
-
-                //Après avoir eu les utilisateurs selectionnés
-                foreach ($users as $user) {
-                    $annonceExistante = false;
-
-                    foreach ($user->annonces_relations as $relation) {
-                        if ($relation->annonce->id == $annonce->id) {
-                            $annonceExistante = true;
-                        }
-                    }
-
-                    if (!$annonceExistante) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-        
-                        $user->annonces++;
-                        $user->save();
-                    }
-                }
-            }
-
-
         }
 
-        $annonce = Annonce::with('annonces_relations')->find($annonce->id);
-        $type = 'add';
-
-        event(new AnnonceRefresh($annonce, $type));
-
-        return redirect()->back()->with([
-            'success' => "L'annnoce a bien été posté",
-        ]);
+        $annonce->load('annonces_relations');
+        event(new AnnonceRefresh($annonce, 'add'));
+        return redirect()->back()->with(['success' => "L'annonce a bien été postée"]);
     }
 
     public function edit (Request $request) {
         $id = $request->input('id');
-        $annonce = Annonce::with('annonces_relations')->find($id);
+        $annonce = Annonce::with('annonces_relations.user')->find($id);
         
-        $oldAnnoncesRelations = $annonce->annonces_relations;
-
         $validator = Validator::make($request->all(), [
             'editTitle' => 'required',
             'editDateExpiration' => 'required',
@@ -368,427 +142,117 @@ class AnnonceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $errors = json_decode($validator->errors(), true);
-
-            return redirect()->back()->with([
-                'error' => $errors,
-            ]);
+            return redirect()->back()->with(['error' => json_decode($validator->errors(), true)]);
         }
 
-        //Choix filiere
-        if ($request->input('editFiliere') == 'all') {
-            $choixFilieres = 'all';
-        } else {
-            $choixFilieres = 'partiels';
+        $choixFilieres = ($request->input('editFiliere') == 'all') ? 'all' : 'partiels';
+        $choixPersonnes = match($request->input('editPersonnes')) {
+            'teachers' => 'teachers',
+            'students' => 'students',
+            default => 'all',
+        };
+
+        // Reduc viewed counts before deleting old relations
+        $usersToDecrement = $annonce->annonces_relations->filter(fn($r) => $r->user->annonce_viewed < $r->updated_at && $r->user->annonce_viewed > 0)->pluck('user_id');
+        if ($usersToDecrement->isNotEmpty()) {
+            User::whereIn('id', $usersToDecrement)->decrement('annonces');
         }
 
-        //Choix Personnes
-        if ($request->input('editPersonnes') == 'all') {
-            $choixPersonnes = 'all';
-        } else if ($request->input('editPersonnes') == 'teachers') {
-            $choixPersonnes = 'teachers';
-        } else {
-            $choixPersonnes = 'students';
+        $annonce->annonces_relations()->delete();
+
+        $annonce->update([
+            'title' => $request->input('editTitle'),
+            'date_expiration' => $request->input('editDateExpiration'),
+            'content' => $request->input('editContenu'),
+            'choix_filieres' => $choixFilieres,
+            'choix_personnes' => $choixPersonnes,
+        ]);
+
+        $filieres = [];
+        if ($choixFilieres == 'partiels') {
+            foreach ($request->all() as $index => $value) {
+                if (preg_match("/^editFilieres\w*$/" ,$index)) $filieres[] = $value;
+            }
+            if (empty($filieres)) return redirect()->back()->with(['error' => 'Veuillez saisir des filières']);
         }
 
+        $targetLevels = ($choixFilieres == 'all') ? Level::all() : Level::whereIn('id', $filieres)->get();
+        $targetRole = match($choixPersonnes) { 'teachers' => 1, 'students' => 2, default => null };
 
-        //Modification de l'annonce
-        $annonce->title = $request->input('editTitle');
-        $annonce->date_expiration = $request->input('editDateExpiration');
-        $annonce->content = $request->input('editContenu');
+        foreach ($targetLevels as $level) {
+            $userQuery = User::whereHas('levels_users', fn($q) => $q->where('level_id', $level->id));
+            if ($targetRole !== null) $userQuery->where('role', $targetRole);
+            $userIds = $userQuery->pluck('id');
 
-        //Si la personne changent de choix de filière
-        if ($choixFilieres != $annonce->choix_filieres) {
-            $annonce->choix_filieres = $choixFilieres;
-
-            //On commence par reduire le nombre d'annonce vue
-            foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
-                    $relation->user->annonces--;
-                    $relation->user->save();
-                }
-            }
-
-            //On supprime toutes les relations avec les utilisateurs
-            $annonce->annonces_relations()->delete();
-
-            //Si le choix de filière se porte sur toutes les filières
-            if ($choixFilieres == 'all') {
-                
-                $levels = Level::all();
-
-                foreach ($levels as $level) {
-                    switch ($request->input('editPersonnes')) {
-                        case 'all':
-                            $usersChoixFilieresAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->get();
-                
-                            break;
-                                
-                        case 'teachers':
-                            $usersChoixFilieresAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 1)->get();
-                
-                            break;
-                                
-                        case 'students':
-                            $usersChoixFilieresAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 2)->get();
-                
-                            break;
-                    }
-
-                    foreach ($usersChoixFilieresAll as $user) {
-                        $annonceExistante = false;
-
-                        foreach ($user->annonces_relations as $relation) {
-                            if ($relation->annonce->id == $annonce->id) {
-                                $annonceExistante = true;
-                            }
-                        }
-
-                        if (!$annonceExistante) {
-                            AnnoncesRelation::Create([
-                                'annonce_id' => $annonce->id,
-                                'level_id' => $level->id,
-                                'user_id' => $user->id,
-                            ]);
-        
-                            $user->annonces++;
-                            $user->save();
-                        }
-                    }
-                }
-                
-            //Si le choix de filière se porte sur certains filières
-            } else {
-                $filieres = [];
-
-                //Recuperer dans un array toutes les filières
-                foreach ($request->all() as $index => $value) {
-                    if (preg_match("/^editFilieres\w*$/" ,$index)) {
-                        $filieres[] = $value;
-                    }
-                }
-
-                //Retourner une erreur si la filière est vide
-                if (empty($filieres)) {
-                    return redirect()->back()->with([
-                        'error' => 'Veuillez saisir des filières'
-                    ]);
-                }
-
-                //On va enregistrer les informations pour chaque utilisateur dans la filiere
-                foreach ($filieres as $filiere) {
-                    $level = Level::find($filiere);
-
-                    switch ($request->input('editPersonnes')) {
-                        case 'all':
-                            $usersChoixFiliereNotAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->get();
-                
-                            break;
-                                
-                        case 'teachers':
-                            $usersChoixFiliereNotAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 1)->get();
-                
-                            break;
-                                
-                        case 'students':
-                            $usersChoixFiliereNotAll = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 2)->get();
-                
-                            break;
-                    }
-                    foreach ($usersChoixFiliereNotAll as $user) {
-                        $annonceExistante = false;
-                    
-                        foreach ($user->annonces_relations as $relation) {
-                            if ($relation->annonce->id == $annonce->id) {
-                                $annonceExistante = true;
-                            }
-                        }
-
-                        if (!$annonceExistante) {
-                            AnnoncesRelation::Create([
-                                'annonce_id' => $annonce->id,
-                                'level_id' => $level->id,
-                                'user_id' => $user->id,
-                            ]);
-            
-                            $user->annonces++;
-                            $user->save();
-                        }
-                    }
-                }
-            }
-
-        //S'il reste dans le même choix de filiere mais on verifie si les filiere ont changé
-        } else {
-            //On commence par reduire le nombre d'annonce vue
-            foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
-                    $relation->user->annonces--;
-                    $relation->user->save();
-                }
-            }
-
-            //On supprime toutes les relations avec les utilisateurs
-            $annonce->annonces_relations()->delete();
-
-            if ($choixFilieres != 'all') {
-                //Les filière que l'ont vient de récupérer
-                $filieres = array();
-                //Recuperer dans un array toutes les filières
-                foreach ($request->all() as $index => $value) {
-                    if (preg_match("/^editFilieres\w*$/" ,$index)) {
-                        $filieres[] = $value;
-                    }
-                }
-                //Retourner une erreur si la filière est vide
-                if (empty($filieres)) {
-                    return redirect()->back()->with([
-                        'error' => 'Veuillez saisir des filières'
-                    ]);
-                }
-
-                foreach ($filieres as $filiere) {
-                    $level = Level::find($filiere);
-
-                    switch ($request->input('editPersonnes')) {
-                        case 'all':
-                            $userChoixFilieresElse = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->get();
-                
-                            break;
-                                
-                        case 'teachers':
-                            $userChoixFilieresElse = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 1)->get();
-                
-                            break;
-                                
-                        case 'students':
-                            $userChoixFilieresElse = User::whereHas('levels_users', function ($query) use ($level) {
-                                $query->where('level_id', $level->id);
-                            })->where('role', 2)->get();
-                
-                            break;
-                    }
-
-                    foreach ($userChoixFilieresElse as $user) {
-                        $annonceExistante = false;
-                        
-                        foreach ($user->annonces_relations as $relation) {
-                            if ($relation->annonce->id == $annonce->id) {
-                                $annonceExistante = true;
-                            }
-                        }
-
-                        if (!$annonceExistante) {
-                            AnnoncesRelation::Create([
-                                'annonce_id' => $annonce->id,
-                                'level_id' => $level->id,
-                                'user_id' => $user->id,
-                            ]);
-        
-                            $user->annonces++;
-                            $user->save();
-                        }
-                    }
-                }
-            }
-
-        }
-
-        //Si la personne changent de choix de personnes
-        if ($choixPersonnes != $annonce->choix_personnes) {
-            $annonce->choix_personnes = $choixPersonnes;
-
-            //Recuperation des filières où les étudiants étaient
-            $filieres = Level::whereHas('annonces_relations', function ($query) use ($annonce) {
-                $query->where('annonce_id', $annonce->id);
-            })->get();
-
-            //Reduction du nombre d'annonce pour les utilisateurs
-            foreach ($annonce->annonces_relations as $relation) {
-                if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
-                    $relation->user->annonces--;
-                    $relation->user->save();
-                }
-            }
-
-            //Suppression de tout les annonces à laquelles ils sont liés
-            $annonce->annonces_relations()->delete();
-
-            //Ajout d'annonce aux utilisateurs des filières recup
-            foreach ($filieres as $level) {
-                //Verification des utilisteurs concernés
-                switch ($request->input('editPersonnes')) {
-                    case 'all':
-                        $usersChoixPersonnes = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->get();
-
-                        break;
-                            
-                    case 'teachers':
-                        $usersChoixPersonnes = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 1)->get();
-            
-                        break;
-                            
-                    case 'students':
-                        $usersChoixPersonnes = User::whereHas('levels_users', function ($query) use ($level) {
-                            $query->where('level_id', $level->id);
-                        })->where('role', 2)->get();
-            
-                        break;
-                    
-                    default:
-                        break;
-                }
-
-                //Ajout des annonces aux utilisateurs
-                foreach ($usersChoixPersonnes as $user) {
-                    $annonceExistante = false;
-                    
-                    foreach ($user->annonces_relations as $relation) {
-                        if ($relation->annonce->id == $annonce->id) {
-                            $annonceExistante = true;
-                        }
-                    }
-
-                    if (!$annonceExistante) {
-                        AnnoncesRelation::Create([
-                            'annonce_id' => $annonce->id,
-                            'level_id' => $level->id,
-                            'user_id' => $user->id,
-                        ]);
-        
-                        $user->annonces++;
-                        $user->save();
-                    }
-                }
+            if ($userIds->isNotEmpty()) {
+                User::whereIn('id', $userIds)->increment('annonces');
+                $relations = $userIds->map(fn($uid) => [
+                    'annonce_id' => $annonce->id, 'level_id' => $level->id, 'user_id' => $uid,
+                    'created_at' => now(), 'updated_at' => now()
+                ])->toArray();
+                AnnoncesRelation::insert($relations);
             }
         }
-
-        $annonce->save();
 
         $newAnnonce = Annonce::with('annonces_relations')->find($annonce->id);
-
         event(new AnnonceRefresh($newAnnonce, 'edit'));
 
-        return redirect()->back()->with([
-            'success' => "L'annnoce a bien été modifié",
-        ]);
+        return redirect()->back()->with(['success' => "L'annonce a bien été modifiée"]);
     }
 
     public function getAnnonces () {
         $annonces = AnnoncesRelation::where('user_id', auth()->user()->id)->where('notif', 'oui')->with('annonce')->orderBy('created_at', 'desc')->get();
-
-        if ($annonces->isEmpty()) {
-            $annonces = [];
-        }
-
-        return response()->json($annonces, 200);
+        return response()->json($annonces ?: [], 200);
     }
 
     public function getAnnonce ($id) {
-        $annonce = AnnoncesRelation::where('id', $id)->with('user')->with('annonce.user')->first();
-
+        $annonce = AnnoncesRelation::where('id', $id)->with(['user', 'annonce.user'])->first();
         return response()->json($annonce, 200);
     }
 
     public function getAnnonceRelation ($id) {
-        $annonce = Annonce::where('id', $id)->with('annonces_relations.user')->with('annonces_relations.level')->with('user')->first();
-        
-        $filieres = Level::whereHas('annonces_relations', function ($query) use ($annonce) {
-            $query->where('annonce_id', $annonce->id);
-        })->with('sector')->get();
+        $annonce = Annonce::where('id', $id)->with(['annonces_relations.user', 'annonces_relations.level', 'user'])->first();
+        $filieres = Level::whereHas('annonces_relations', fn($q) => $q->where('annonce_id', $id))->with('sector')->get();
 
-        if ($annonce->choix_filieres != 'all' && empty($filieres)) {
-            $annonce->choix_filieres == 'all';
-            $annonce->save();
+        if ($annonce->choix_filieres != 'all' && $filieres->isEmpty()) {
+            $annonce->update(['choix_filieres' => 'all']);
         }
 
-        return response()->json([
-            'annonce' => $annonce,
-            'filieres' => $filieres,
-        ], 200);
+        return response()->json(['annonce' => $annonce, 'filieres' => $filieres], 200);
     }
 
     public function getAnnonceCreatedTime ($id) {
         $annonce = AnnoncesRelation::find($id);
-
-        $date = $annonce->updated_at->toDateString();
-
-        return response()->json($date, 200);
+        return response()->json($annonce ? $annonce->updated_at->toDateString() : null, 200);
     }
 
     public function delete (Request $request, $id) {
-        $annonce = Annonce::find($id);
+        $annonce = Annonce::with('annonces_relations.user')->find($id);
+        if (!$annonce) return redirect()->back()->with(['error' => 'Annonce non trouvée']);
 
-
-        foreach ($annonce->annonces_relations as $relation) {
-            if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
-                $relation->user->annonces--;
-                $relation->user->save();
-            }
+        $usersToDecrement = $annonce->annonces_relations->filter(fn($r) => $r->user->annonce_viewed < $r->updated_at && $r->user->annonce_viewed > 0)->pluck('user_id');
+        if ($usersToDecrement->isNotEmpty()) {
+            User::whereIn('id', $usersToDecrement)->decrement('annonces');
         }
 
-        $annonce = Annonce::with('annonces_relations')->find($annonce->id);
-        $type = 'delete';
-
-        event(new AnnonceRefresh($annonce, $type));
-
+        event(new AnnonceRefresh($annonce, 'delete'));
         $annonce->delete();
 
-        return redirect()->back()->with([
-            'success' => "L'annonce a bien été supprimé"
-        ]);
+        return redirect()->back()->with(['success' => "L'annonce a bien été supprimée"]);
     }
 
     public function resetAnnonces () {
-        auth()->user()->annonces = 0;
-        auth()->user()->annonce_viewed = now();
-        auth()->user()->save();
-        
+        auth()->user()->update(['annonces' => 0, 'annonce_viewed' => now()]);
         return response()->json(200);
     }
 
     public function suppAnnonces () {
-        $annonces = AnnoncesRelation::where('user_id', auth()->user()->id)->get();
-
-        foreach ($annonces as $annonce) {
-            $annonce->notif = 'non';
-            $annonce->save();
-        }
-
-        return redirect()->back()->with([
-            'success' => 'Les annonces ont bien été supprimés'
-        ]);
+        AnnoncesRelation::where('user_id', auth()->user()->id)->update(['notif' => 'non']);
+        return redirect()->back()->with(['success' => 'Les annonces ont bien été supprimées']);
     }
 
     public function deleteRelation ($id) {
-        $annonce = AnnoncesRelation::where('user_id', auth()->user()->id)->whereHas('annonce', function ($query) use ($id) {
-            $query->where('id', $id);
-        })->first();
-
-        $annonce->delete();
-
-        return redirect()->back()->with([
-            'success' => 'Cette annonce a bien été supprimé pour vous'
-        ]);
+        AnnoncesRelation::where('user_id', auth()->user()->id)->where('annonce_id', $id)->delete();
+        return redirect()->back()->with(['success' => 'Cette annonce a bien été supprimée pour vous']);
     }
 }

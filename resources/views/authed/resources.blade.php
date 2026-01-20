@@ -100,26 +100,26 @@
                             <td class="px-6 py-4 hidden xl:table-cell text-sm text-gray-500">
                                 {{ $resource->created_at->format('d/m/Y') }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end space-x-1">
-                                    <form method="post" action="{{ route('resources.download', $resource->id) }}" class="inline">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <form method="post" action="{{ route('resources.download', $resource->id) }}" class="contents">
                                         @csrf
-                                        <button title="Télécharger" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                                            <i class="fa-solid fa-download"></i>
+                                        <button title="Télécharger" class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                            <i class="fa-solid fa-download text-sm"></i>
                                         </button>
                                     </form>
                                     @if (auth()->user()->role != 2)
-                                        <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-id="{{ $resource->id }}">
-                                            <i class="fa-solid fa-eye"></i>
+                                        <button title="Voir les détails" class="openModalView p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm" data-id="{{ $resource->id }}">
+                                            <i class="fa-solid fa-eye text-sm"></i>
                                         </button>
-                                        <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $resource->id }}">
-                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        <button title="Modifier" class="openModalEdit p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-xl transition-all shadow-sm" data-id="{{ $resource->id }}">
+                                            <i class="fa-solid fa-pen-to-square text-sm"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('resources.delete', $resource->id) }}" class="inline" onsubmit="return confirm('Supprimer cette ressource ?')">
+                                        <form method="POST" action="{{ route('resources.delete', $resource->id) }}" class="contents" onsubmit="return confirm('Supprimer cette ressource ?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                                <i class="fa-solid fa-trash-can"></i>
+                                            <button title="Supprimer" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                                <i class="fa-solid fa-trash-can text-sm"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -254,78 +254,83 @@
 
 @section('scripts')
 <script>
-    const resourceModal = document.getElementById('resourceModal');
-    const viewModal = document.getElementById('viewModal');
-    const resourceForm = document.getElementById('resourceForm');
-    const modalTitle = document.getElementById('modalTitle');
-    const resFile = document.getElementById('resFile');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const fileRequired = document.getElementById('fileRequired');
+    (function() {
+        const resourceModal = document.getElementById('resourceModal');
+        const viewModal = document.getElementById('viewModal');
+        const resourceForm = document.getElementById('resourceForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const resFile = document.getElementById('resFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileRequired = document.getElementById('fileRequired');
 
-    resFile.onchange = e => {
-        const file = e.target.files[0];
-        if (file) fileNameDisplay.innerText = file.name;
-    };
+        if (resFile) {
+            resFile.onchange = e => {
+                const file = e.target.files[0];
+                if (file) fileNameDisplay.innerText = file.name;
+            };
+        }
 
-    document.querySelectorAll('.closeModal').forEach(btn => btn.onclick = () => resourceModal.classList.add('hidden'));
-    document.querySelector('.closeViewModal').onclick = () => viewModal.classList.add('hidden');
+        document.querySelectorAll('.closeModal').forEach(btn => btn.onclick = () => resourceModal.classList.add('hidden'));
+        const closeViewModal = document.querySelector('.closeViewModal');
+        if (closeViewModal) closeViewModal.onclick = () => viewModal.classList.add('hidden');
 
-    // Add Modal logic
-    const openAdd = document.getElementById('openModalAdd');
-    if(openAdd) {
-        openAdd.onclick = () => {
-            modalTitle.innerText = "Nouvelle ressource";
-            resourceForm.action = "{{ route('resources.store') }}";
-            resourceForm.reset();
-            fileNameDisplay.innerText = "Cliquez pour sélectionner un fichier";
-            fileRequired.classList.remove('hidden');
-            resFile.required = true;
-            resourceModal.classList.remove('hidden');
-        };
-    }
-
-    // View Modal logic
-    document.querySelectorAll('.openModalView').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.getAttribute('data-id');
-            try {
-                const res = await fetch(`/resources/getResource/${id}`);
-                const data = await res.json();
-                
-                document.getElementById('viewResource').innerText = data.file.filename;
-                document.getElementById('viewDescription').innerText = data.description || 'Pas de description';
-                document.getElementById('viewSection').innerText = data.section;
-                document.getElementById('viewModuleDetail').innerText = data.module.name;
-                document.getElementById('viewProf').innerText = data.module.user.first_name + ' ' + data.module.user.last_name;
-                document.getElementById('viewDate').innerText = new Date(data.created_at).toLocaleDateString();
-                
-                viewModal.classList.remove('hidden');
-            } catch (e) { console.error(e); }
-        };
-    });
-
-    // Edit Modal logic
-    document.querySelectorAll('.openModalEdit').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.getAttribute('data-id');
-            try {
-                const res = await fetch(`/resources/getResource/${id}`);
-                const data = await res.json();
-                
-                modalTitle.innerText = "Modifier la ressource";
-                resourceForm.action = "{{ route('resources.edit') }}";
-                document.getElementById('resId').value = data.id;
-                document.getElementById('resSection').value = data.section;
-                document.getElementById('resModule').value = data.module_id;
-                document.getElementById('resDescription').value = data.description || '';
-                fileNameDisplay.innerText = `Actuel: ${data.file.filename}`;
-                fileRequired.classList.add('hidden');
-                resFile.required = false;
-                
+        // Add Modal logic
+        const openAdd = document.getElementById('openModalAdd');
+        if(openAdd) {
+            openAdd.onclick = () => {
+                modalTitle.innerText = "Nouvelle ressource";
+                resourceForm.action = "{{ route('resources.store') }}";
+                resourceForm.reset();
+                fileNameDisplay.innerText = "Cliquez pour sélectionner un fichier";
+                fileRequired.classList.remove('hidden');
+                resFile.required = true;
                 resourceModal.classList.remove('hidden');
-            } catch (e) { console.error(e); }
-        };
-    });
+            };
+        }
+
+        // View Modal logic
+        document.querySelectorAll('.openModalView').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.getAttribute('data-id');
+                try {
+                    const res = await fetch(`/resources/getResource/${id}`);
+                    const data = await res.json();
+                    
+                    document.getElementById('viewResource').innerText = data.file.filename;
+                    document.getElementById('viewDescription').innerText = data.description || 'Pas de description';
+                    document.getElementById('viewSection').innerText = data.section;
+                    document.getElementById('viewModuleDetail').innerText = data.module.name;
+                    document.getElementById('viewProf').innerText = data.module.user.first_name + ' ' + data.module.user.last_name;
+                    document.getElementById('viewDate').innerText = new Date(data.created_at).toLocaleDateString();
+                    
+                    viewModal.classList.remove('hidden');
+                } catch (e) { console.error(e); }
+            };
+        });
+
+        // Edit Modal logic
+        document.querySelectorAll('.openModalEdit').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.getAttribute('data-id');
+                try {
+                    const res = await fetch(`/resources/getResource/${id}`);
+                    const data = await res.json();
+                    
+                    modalTitle.innerText = "Modifier la ressource";
+                    resourceForm.action = "{{ route('resources.edit') }}";
+                    document.getElementById('resId').value = data.id;
+                    document.getElementById('resSection').value = data.section;
+                    document.getElementById('resModule').value = data.module_id;
+                    document.getElementById('resDescription').value = data.description || '';
+                    fileNameDisplay.innerText = `Actuel: ${data.file.filename}`;
+                    fileRequired.classList.add('hidden');
+                    resFile.required = false;
+                    
+                    resourceModal.classList.remove('hidden');
+                } catch (e) { console.error(e); }
+            };
+        });
+    })();
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>

@@ -5,29 +5,31 @@
 @section('content')
 <div class="section-animate flex flex-col h-[calc(100vh-100px)] p-4 md:p-8">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center space-x-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 group">
+        <div class="flex flex-wrap items-center gap-4">
             <a href="{{ route('forums.index') }}" class="h-10 w-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-gray-900 transition-all shadow-sm">
                 <i class="fa-solid fa-chevron-left"></i>
             </a>
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900 leading-none">Forum {{ $levels->find($level_id)->name ?? '' }}</h1>
-                <p class="text-sm text-emerald-500 font-medium mt-1 flex items-center">
-                    <span class="h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-                    En direct
+            <div class="space-y-1">
+                <h1 class="text-2xl font-bold text-gray-900 leading-tight">Forum {{ $levels->find($level_id)->name ?? '' }}</h1>
+                <p class="text-xs text-emerald-500 font-bold uppercase tracking-widest flex items-center">
+                    <span class="h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                    Conversation en direct
                 </p>
             </div>
-        </div>
 
-        @if (auth()->user()->role == 0)
-            <form method="POST" action="{{ route('forums.suppAllMsg', ['level_id' => $level_id]) }}" onsubmit="return confirm('Vider tout le forum ?')">
-                @method('DELETE')
-                @csrf
-                <button class="px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl border border-red-100 hover:bg-red-600 hover:text-white transition-all shadow-sm">
-                    Vider le forum
-                </button>
-            </form>
-        @endif
+            @if (auth()->user()->role == 0)
+                <div class="h-8 w-px bg-gray-200 mx-2 hidden md:block"></div>
+                <form method="POST" action="{{ route('forums.suppAllMsg', ['level_id' => $level_id]) }}" onsubmit="return confirm('Vider tout le forum ?')" class="contents">
+                    @method('DELETE')
+                    @csrf
+                    <button class="px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl border border-rose-100/50 hover:bg-rose-600 hover:text-white transition-all shadow-sm flex items-center gap-2 text-sm group/btn">
+                        <i class="fa-solid fa-broom group-hover/btn:rotate-12 transition-transform"></i>
+                        Vider le forum
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
 
     <!-- Chat Container -->

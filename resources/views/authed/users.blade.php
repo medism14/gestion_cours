@@ -78,11 +78,11 @@
                             <!-- Tooltip replacement: a simple info button -->
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
                                 <div class="relative group/tooltip">
-                                    <i class="fa-solid fa-circle-info text-gray-300 hover:text-blue-500 cursor-help transition-colors"></i>
-                                    <div class="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-900 text-white text-[10px] rounded-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all shadow-xl z-50">
-                                        <p class="font-bold mb-1 uppercase tracking-wider">Recherche intelligente</p>
-                                        <p class="text-gray-400">Recherchez par prénom, nom, email, téléphone ou filière.</p>
-                                        <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                                    <i class="fa-solid fa-circle-question text-gray-300 hover:text-blue-500 cursor-help transition-colors text-sm"></i>
+                                    <div class="pointer-events-none absolute bottom-full right-0 mb-3 w-56 p-3 bg-gray-900 text-white text-[10px] rounded-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 shadow-2xl z-[100] transform group-hover/tooltip:translate-y-0 translate-y-1">
+                                        <p class="font-bold mb-1.5 text-blue-400 uppercase tracking-wider text-[9px]">Recherche intelligente</p>
+                                        <p class="text-gray-300 leading-relaxed">Recherchez par prénom, nom, email, téléphone ou filière.</p>
+                                        <div class="absolute -bottom-2 right-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-gray-900"></div>
                                     </div>
                                 </div>
                             </div>
@@ -163,22 +163,21 @@
                                     {{ $roleLabel }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" data-id="{{ $user->id }}">
-                                        <i class="fa-solid fa-eye"></i>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button title="Voir les détails" class="openModalView p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm" data-id="{{ $user->id }}">
+                                        <i class="fa-solid fa-eye text-sm"></i>
                                     </button>
-                                    <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $user->id }}">
-                                        <i class="fa-solid fa-user-pen"></i>
+                                    <button title="Modifier" class="openModalEdit p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-xl transition-all shadow-sm" data-id="{{ $user->id }}">
+                                        <i class="fa-solid fa-user-pen text-sm"></i>
                                     </button>
-                                    <form method="POST" action="{{ route('users.delete', ['id' => $user->id]) }}" class="inline" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                    <form method="POST" action="{{ route('users.delete', ['id' => $user->id]) }}" class="contents" onsubmit="return confirm('Supprimer cet utilisateur ?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                            <i class="fa-solid fa-trash-can"></i>
+                                        <button title="Supprimer" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                            <i class="fa-solid fa-trash-can text-sm"></i>
                                         </button>
                                     </form>
-                                    <span class="id hidden">{{ $user->id }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -204,10 +203,12 @@
             </div>
         @endif
     </div>
-</div>
+@endsection
+
+@section('modals')
     <!-- MODALS -->
     <!-- Add Modal -->
-    <div id="addModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+    <div id="addModal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -298,7 +299,7 @@
     </div>
 
     <!-- View Modal -->
-    <div id="viewModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+    <div id="viewModal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
@@ -354,7 +355,7 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
+    <div id="editModal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
@@ -446,165 +447,172 @@
     </div>
 @endsection
 
+@section('scripts')
 <script>
-    // Global functions
-    let formIsSubmitting = false;
-    function submitFunction() {
-        if (formIsSubmitting) return false;
-        formIsSubmitting = true;
-        return true;
-    }
+    (function() {
+        // Modal management
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
 
-    // Modal management
-    function toggleModal(id, show) {
-        const modal = document.getElementById(id);
-        if (show) modal.classList.remove('hidden');
-        else modal.classList.add('hidden');
-    }
+        // --- ADD MODAL LOGIC ---
+        const addRole = document.getElementById('addRole');
+        const addFiliere = document.getElementById('addFiliere');
+        const addListBtn = document.getElementById('addListBtn');
+        const addsectorLists = document.getElementById('addsectorLists');
 
-    // --- ADD MODAL LOGIC ---
-    const addRole = document.getElementById('addRole');
-    const addFiliere = document.getElementById('addFiliere');
-    const addListBtn = document.getElementById('addListBtn');
-    const addsectorLists = document.getElementById('addsectorLists');
-
-    addRole.addEventListener('change', () => {
-        const isStudent = addRole.value === "2";
-        addsectorLists.innerHTML = '';
-        if (isStudent) addListBtn.classList.add('hidden');
-        else addListBtn.classList.remove('hidden');
-    });
-
-    addListBtn.addEventListener('click', () => {
-        if (!addFiliere.value) return;
-        const id = addFiliere.value;
-        const name = addFiliere.options[addFiliere.selectedIndex].text;
-        if (document.getElementById(`level_add_${id}`)) return;
-
-        const div = document.createElement('div');
-        div.id = `level_add_${id}`;
-        div.className = "flex items-center justify-between p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/50 group/item";
-        div.innerHTML = `
-            <span class="text-xs font-bold text-blue-900">${name}</span>
-            <input type="hidden" name="levelIdAdd${id}" value="${id}">
-            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-blue-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        `;
-        addsectorLists.appendChild(div);
-        addFiliere.value = '';
-    });
-
-    document.getElementById('closeModalAdd').onclick = () => toggleModal('addModal', false);
-    document.getElementById('cancelAddButton').onclick = () => toggleModal('addModal', false);
-    document.getElementById('openModalAdd').onclick = () => toggleModal('addModal', true);
-
-    // --- VIEW MODAL LOGIC ---
-    document.querySelectorAll('.openModalView').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.dataset.id;
-            try {
-                const res = await fetch(`/users/getUser/${id}`);
-                const user = await res.json();
-                
-                document.getElementById('viewInitiales').textContent = (user.first_name[0] + user.last_name[0]).toUpperCase();
-                document.getElementById('viewFullName').textContent = `${user.first_name} ${user.last_name}`;
-                document.getElementById('viewEmail').textContent = user.email;
-                document.getElementById('viewPhone').textContent = user.phone || 'Non renseigné';
-                
-                const roles = {0: 'Administrateur', 1: 'Professeur', 2: 'Étudiant'};
-                document.getElementById('viewRoleBadge').textContent = roles[user.role];
-
-                const list = document.getElementById('viewsectorLists');
-                list.innerHTML = '';
-                user.levels_users.forEach(lu => {
-                    const div = document.createElement('div');
-                    div.className = "p-3 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-700 shadow-sm";
-                    div.textContent = `${lu.level.sector.name}: ${lu.level.name}`;
-                    list.appendChild(div);
-                });
-                
-                if (user.levels_users.length === 0) {
-                    list.innerHTML = '<p class="text-xs text-gray-400 italic">Aucune filière assignée</p>';
+        // Show/hide filiere selector based on role
+        if (addRole) {
+            addRole.addEventListener('change', () => {
+                const isStudent = addRole.value === "2";
+                addsectorLists.innerHTML = '';
+                if (isStudent) {
+                    addListBtn.classList.add('hidden');
+                } else {
+                    addListBtn.classList.remove('hidden');
                 }
+            });
+        }
 
-                toggleModal('viewModal', true);
-            } catch (err) { console.error(err); }
-        };
-    });
-    document.getElementById('closeModalView').onclick = () => toggleModal('viewModal', false);
+        if (addListBtn) {
+            addListBtn.addEventListener('click', () => {
+                if (!addFiliere.value) return;
+                const id = addFiliere.value;
+                const name = addFiliere.options[addFiliere.selectedIndex].text;
+                if (document.getElementById(`level_add_${id}`)) return;
 
-    // --- EDIT MODAL LOGIC ---
-    const editRole = document.getElementById('editRole');
-    const editFiliere = document.getElementById('editFiliere');
-    const editListBtn = document.getElementById('editListBtn');
-    const editsectorLists = document.getElementById('editsectorLists');
+                const div = document.createElement('div');
+                div.id = `level_add_${id}`;
+                div.className = "flex items-center justify-between p-2.5 bg-blue-50/50 rounded-xl border border-blue-100/50 group/item";
+                div.innerHTML = `
+                    <span class="text-xs font-bold text-blue-900">${name}</span>
+                    <input type="hidden" name="levelIdAdd${id}" value="${id}">
+                    <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-blue-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                addsectorLists.appendChild(div);
+                addFiliere.value = '';
+            });
+        }
 
-    editRole.addEventListener('change', () => {
-        if (editRole.value === "2") editListBtn.classList.add('hidden');
-        else editListBtn.classList.remove('hidden');
-    });
+        document.getElementById('closeModalAdd').onclick = () => toggleModal('addModal', false);
+        document.getElementById('cancelAddButton').onclick = () => toggleModal('addModal', false);
+        document.getElementById('openModalAdd').onclick = () => toggleModal('addModal', true);
 
-    editListBtn.addEventListener('click', () => {
-        if (!editFiliere.value) return;
-        const id = editFiliere.value;
-        const name = editFiliere.options[editFiliere.selectedIndex].text;
-        if (document.getElementById(`level_edit_${id}`)) return;
-
-        const div = document.createElement('div');
-        div.id = `level_edit_${id}`;
-        div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
-        div.innerHTML = `
-            <span class="text-xs font-bold text-amber-900">${name}</span>
-            <input type="hidden" name="levelIdEdit${id}" value="${id}">
-            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        `;
-        editsectorLists.appendChild(div);
-        editFiliere.value = '';
-    });
-
-    document.querySelectorAll('.openModalEdit').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.dataset.id;
-            try {
-                const res = await fetch(`/users/getUser/${id}`);
-                const user = await res.json();
-                
-                document.getElementById('editId').value = user.id;
-                document.getElementById('editFirstName').value = user.first_name;
-                document.getElementById('editLastName').value = user.last_name;
-                document.getElementById('editEmail').value = user.email;
-                document.getElementById('editPhone').value = user.phone || '';
-                document.getElementById('editRole').value = user.role;
-                
-                if (user.role == 2) editListBtn.classList.add('hidden');
-                else editListBtn.classList.remove('hidden');
-
-                editsectorLists.innerHTML = '';
-                user.levels_users.forEach(lu => {
-                    const levelId = lu.level.id;
-                    const levelName = `${lu.level.sector.name}: ${lu.level.name}`;
+        // --- VIEW MODAL LOGIC ---
+        document.querySelectorAll('.openModalView').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                try {
+                    const res = await fetch(`/users/getUser/${id}`);
+                    const user = await res.json();
                     
-                    const div = document.createElement('div');
-                    div.id = `level_edit_${levelId}`;
-                    div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
-                    div.innerHTML = `
-                        <span class="text-xs font-bold text-amber-900">${levelName}</span>
-                        <input type="hidden" name="levelIdEdit${levelId}" value="${levelId}">
-                        <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    `;
-                    editsectorLists.appendChild(div);
-                });
-                toggleModal('editModal', true);
-            } catch (err) { console.error(err); }
-        };
-    });
-    document.getElementById('closeModalEdit').onclick = () => toggleModal('editModal', false);
-    document.getElementById('cancelEditButton').onclick = () => toggleModal('editModal', false);
+                    document.getElementById('viewInitiales').textContent = (user.first_name[0] + user.last_name[0]).toUpperCase();
+                    document.getElementById('viewFullName').textContent = `${user.first_name} ${user.last_name}`;
+                    document.getElementById('viewEmail').textContent = user.email;
+                    document.getElementById('viewPhone').textContent = user.phone || 'Non renseigné';
+                    
+                    const roles = {0: 'Administrateur', 1: 'Professeur', 2: 'Étudiant'};
+                    document.getElementById('viewRoleBadge').textContent = roles[user.role];
+
+                    const list = document.getElementById('viewsectorLists');
+                    list.innerHTML = '';
+                    user.levels_users.forEach(lu => {
+                        const div = document.createElement('div');
+                        div.className = "p-3 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-700 shadow-sm";
+                        div.textContent = `${lu.level.sector.name}: ${lu.level.name}`;
+                        list.appendChild(div);
+                    });
+                    
+                    if (user.levels_users.length === 0) {
+                        list.innerHTML = '<p class="text-xs text-gray-400 italic">Aucune filière assignée</p>';
+                    }
+
+                    toggleModal('viewModal', true);
+                } catch (err) { console.error(err); }
+            };
+        });
+        document.getElementById('closeModalView').onclick = () => toggleModal('viewModal', false);
+
+        // --- EDIT MODAL LOGIC ---
+        const editRole = document.getElementById('editRole');
+        const editFiliere = document.getElementById('editFiliere');
+        const editListBtn = document.getElementById('editListBtn');
+        const editsectorLists = document.getElementById('editsectorLists');
+
+        if (editRole) {
+            editRole.addEventListener('change', () => {
+                if (editRole.value === "2") editListBtn.classList.add('hidden');
+                else editListBtn.classList.remove('hidden');
+            });
+        }
+
+        if (editListBtn) {
+            editListBtn.addEventListener('click', () => {
+                if (!editFiliere.value) return;
+                const id = editFiliere.value;
+                const name = editFiliere.options[editFiliere.selectedIndex].text;
+                if (document.getElementById(`level_edit_${id}`)) return;
+
+                const div = document.createElement('div');
+                div.id = `level_edit_${id}`;
+                div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
+                div.innerHTML = `
+                    <span class="text-xs font-bold text-amber-900">${name}</span>
+                    <input type="hidden" name="levelIdEdit${id}" value="${id}">
+                    <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                editsectorLists.appendChild(div);
+                editFiliere.value = '';
+            });
+        }
+
+        document.querySelectorAll('.openModalEdit').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                try {
+                    const res = await fetch(`/users/getUser/${id}`);
+                    const user = await res.json();
+                    
+                    document.getElementById('editId').value = user.id;
+                    document.getElementById('editFirstName').value = user.first_name;
+                    document.getElementById('editLastName').value = user.last_name;
+                    document.getElementById('editEmail').value = user.email;
+                    document.getElementById('editPhone').value = user.phone || '';
+                    document.getElementById('editRole').value = user.role;
+                    
+                    if (user.role == 2 && editListBtn) editListBtn.classList.add('hidden');
+                    else if (editListBtn) editListBtn.classList.remove('hidden');
+
+                    editsectorLists.innerHTML = '';
+                    user.levels_users.forEach(lu => {
+                        const levelId = lu.level.id;
+                        const levelName = `${lu.level.sector.name}: ${lu.level.name}`;
+                        
+                        const div = document.createElement('div');
+                        div.id = `level_edit_${levelId}`;
+                        div.className = "flex items-center justify-between p-2.5 bg-amber-50/50 rounded-xl border border-amber-100/50 group/item";
+                        div.innerHTML = `
+                            <span class="text-xs font-bold text-amber-900">${levelName}</span>
+                            <input type="hidden" name="levelIdEdit${levelId}" value="${levelId}">
+                            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-amber-300 hover:text-red-500 transition-all opacity-0 group-hover/item:opacity-100">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        `;
+                        editsectorLists.appendChild(div);
+                    });
+                    toggleModal('editModal', true);
+                } catch (err) { console.error(err); }
+            };
+        });
+        document.getElementById('closeModalEdit').onclick = () => toggleModal('editModal', false);
+        document.getElementById('cancelEditButton').onclick = () => toggleModal('editModal', false);
+    })();
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>

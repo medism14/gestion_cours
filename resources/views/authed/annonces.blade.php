@@ -103,25 +103,25 @@
                                 </span>
                             </td>
                             <td class="px-6 py-5">
-                                <div class="flex items-center justify-end space-x-2">
+                                <div class="flex items-center justify-end gap-2">
                                     <span class="id hidden">{{ $annonce->id }}</span>
                                     
                                     @if (auth()->user()->role == 2 || (auth()->user()->role == 1 && $annonce->user_id != auth()->id()))
                                         <!-- View only for students or other teachers -->
-                                        <button title="Voir l'annonce" class="openModalView2 p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all">
+                                        <button title="Voir l'annonce" class="openModalView2 p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm">
                                             <i class="fa-solid fa-eye text-sm"></i>
                                         </button>
                                     @else
                                         <!-- Full actions for Owners/Admins -->
-                                        <button title="Détails" class="openModalView p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all">
-                                            <i class="fa-solid fa-file-lines text-sm"></i>
+                                        <button title="Voir les détails" class="openModalView p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                            <i class="fa-solid fa-eye text-sm"></i>
                                         </button>
-                                        <button title="Modifier" class="openModalEdit p-2.5 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-800 hover:text-white transition-all">
+                                        <button title="Modifier" class="openModalEdit p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-xl transition-all shadow-sm">
                                             <i class="fa-solid fa-pen-to-square text-sm"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" onsubmit="return confirm('Supprimer cette annonce ?')">
+                                        <form method="POST" action="{{ route('annonces.delete', ['id' => $annonce->id]) }}" onsubmit="return confirm('Supprimer cette annonce ?')" class="contents">
                                             @csrf @method('DELETE')
-                                            <button title="Supprimer" class="p-2.5 text-rose-600 bg-rose-50 rounded-xl hover:bg-rose-600 hover:text-white transition-all">
+                                            <button title="Supprimer" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm">
                                                 <i class="fa-solid fa-trash-can text-sm"></i>
                                             </button>
                                         </form>
@@ -381,191 +381,209 @@
 
 @section('scripts')
 <script>
-    // Tooltip logic
-    const tooltipIcon = document.getElementById('tooltipIcon');
-    const tooltipInfo = document.getElementById('tooltipInfo');
-    if (tooltipIcon) {
-        tooltipIcon.addEventListener('mouseenter', () => tooltipInfo.classList.remove('hidden'));
-        tooltipIcon.addEventListener('mouseleave', () => tooltipInfo.classList.add('hidden'));
-    }
+    (function() {
+        // Tooltip logic
+        const tooltipIcon = document.getElementById('tooltipIcon');
+        const tooltipInfo = document.getElementById('tooltipInfo');
+        if (tooltipIcon) {
+            tooltipIcon.addEventListener('mouseenter', () => tooltipInfo.classList.remove('hidden'));
+            tooltipIcon.addEventListener('mouseleave', () => tooltipInfo.classList.add('hidden'));
+        }
 
-    @if (auth()->user()->role != 2)
-    // ADD MODAL LOGIC
-    const addModal = document.getElementById('addModal');
-    const openModalAdd = document.getElementById('openModalAdd');
-    const closeModalAdd = document.getElementById('closeModalAdd');
-    const cancelAddButton = document.getElementById('cancelAddButton');
-    const filiereAdd = document.getElementById('filiereAdd');
-    const addFiliere = document.getElementById('addFiliere');
-    const listFilieres = document.getElementById('listFilieres');
-    const searchAdd = document.getElementById('searchAdd');
+        @if (auth()->user()->role != 2)
+        // ADD MODAL LOGIC
+        const addModal = document.getElementById('addModal');
+        const openModalAdd = document.getElementById('openModalAdd');
+        const closeModalAdd = document.getElementById('closeModalAdd');
+        const cancelAddButton = document.getElementById('cancelAddButton');
+        const filiereAdd = document.getElementById('filiereAdd');
+        const addFiliere = document.getElementById('addFiliere');
+        const listFilieres = document.getElementById('listFilieres');
+        const searchAdd = document.getElementById('searchAdd');
 
-    const optionsParDefaut = Array.from(document.getElementsByClassName('addFilieres'));
-    let addListStarted = false;
+        const optionsParDefaut = Array.from(document.getElementsByClassName('addFilieres'));
+        let addListStarted = false;
 
-    openModalAdd.onclick = () => addModal.classList.remove('hidden');
-    closeModalAdd.onclick = cancelAddButton.onclick = () => location.reload();
+        if (openModalAdd) openModalAdd.onclick = () => addModal.classList.remove('hidden');
+        if (closeModalAdd) closeModalAdd.onclick = cancelAddButton.onclick = () => location.reload();
 
-    function updateFiliereUI() {
-        const isAll = addFiliere.value === 'all';
-        filiereAdd.style.display = isAll ? 'none' : 'block';
-    }
-    addFiliere.onchange = updateFiliereUI;
-    updateFiliereUI();
+        function updateFiliereUI() {
+            const isAll = addFiliere.value === 'all';
+            filiereAdd.style.display = isAll ? 'none' : 'block';
+        }
+        if (addFiliere) {
+            addFiliere.onchange = updateFiliereUI;
+            updateFiliereUI();
+        }
 
-    searchAdd.oninput = (e) => {
-        const val = e.target.value.toLowerCase();
-        Array.from(addFiliere.options).forEach(opt => {
-            const match = opt.text.toLowerCase().includes(val);
-            opt.style.display = match ? 'block' : 'none';
-            opt.disabled = !match;
+        if (searchAdd) {
+            searchAdd.oninput = (e) => {
+                const val = e.target.value.toLowerCase();
+                Array.from(addFiliere.options).forEach(opt => {
+                    const match = opt.text.toLowerCase().includes(val);
+                    opt.style.display = match ? 'block' : 'none';
+                    opt.disabled = !match;
+                });
+            };
+        }
+
+        if (filiereAdd) {
+            filiereAdd.onclick = () => {
+                if (!addListStarted) { listFilieres.innerHTML = ''; addListStarted = true; }
+                const opt = addFiliere.options[addFiliere.selectedIndex];
+                if (opt.value === 'all') return;
+                
+                const badge = document.createElement('div');
+                badge.className = "flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-100 rounded-xl text-xs font-medium text-blue-700 animate-scale-in group";
+                badge.innerHTML = `
+                    <input type="hidden" name="addFilieres${opt.value}" value="${opt.value}">
+                    <span class="truncate pr-2">${opt.text}</span>
+                    <button type="button" class="cancelAdd text-rose-500 hover:text-rose-700 transition-colors"><i class="fa-solid fa-circle-xmark"></i></button>
+                `;
+                listFilieres.appendChild(badge);
+                opt.remove();
+            };
+        }
+
+        if (listFilieres) {
+            listFilieres.onclick = (e) => {
+                const btn = e.target.closest('.cancelAdd');
+                if (btn) {
+                    const div = btn.closest('div');
+                    const id = div.querySelector('input').value;
+                    const text = div.querySelector('span').innerText;
+                    addFiliere.innerHTML += `<option value="${id}" class="addFilieres">${text}</option>`;
+                    div.remove();
+                    if (listFilieres.childElementCount === 0) {
+                        listFilieres.innerHTML = '<p class="text-gray-400 text-xs italic">Aucune filière sélectionnée (Toutes par défaut)</p>';
+                        addListStarted = false;
+                    }
+                }
+            };
+        }
+
+        // EDIT MODAL LOGIC
+        const editModal = document.getElementById('editModal');
+        const closeModalEdit = document.getElementById('closeModalEdit');
+        const cancelEditButton = document.getElementById('cancelEditButton');
+        if (closeModalEdit) closeModalEdit.onclick = cancelEditButton.onclick = () => location.reload();
+
+        document.querySelectorAll('.openModalEdit').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.parentNode.querySelector('.id').innerText;
+                const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
+                const data = await res.json();
+                const ann = data.annonce;
+
+                document.getElementById('editId').value = id;
+                document.getElementById('editTitle').value = ann.title;
+                document.getElementById('editDateExpiration').value = ann.date_expiration;
+                document.getElementById('editContenu').value = ann.content;
+                document.getElementById('editPersonnes').value = ann.choix_personnes;
+
+                const listE = document.getElementById('listFilieresEdit');
+                listE.innerHTML = '';
+                if (ann.choix_filieres !== 'all') {
+                    data.filieres.forEach(f => {
+                        const badge = document.createElement('div');
+                        badge.className = "flex items-center justify-between px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-xs font-medium text-amber-700";
+                        badge.innerHTML = `
+                            <input type="hidden" name="editFilieres${f.id}" value="${f.id}">
+                            <span class="truncate pr-2">${f.sector.name}: ${f.name}</span>
+                            <button type="button" class="cancelEdit text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
+                        `;
+                        listE.appendChild(badge);
+                        // Remove from select if exists
+                        const opt = Array.from(document.getElementById('editFiliere').options).find(o => o.value == f.id);
+                        if (opt) opt.remove();
+                    });
+                }
+                editModal.classList.remove('hidden');
+            };
         });
-    };
 
-    filiereAdd.onclick = () => {
-        if (!addListStarted) { listFilieres.innerHTML = ''; addListStarted = true; }
-        const opt = addFiliere.options[addFiliere.selectedIndex];
-        if (opt.value === 'all') return;
-        
-        const badge = document.createElement('div');
-        badge.className = "flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-100 rounded-xl text-xs font-medium text-blue-700 animate-scale-in group";
-        badge.innerHTML = `
-            <input type="hidden" name="addFilieres${opt.value}" value="${opt.value}">
-            <span class="truncate pr-2">${opt.text}</span>
-            <button type="button" class="cancelAdd text-rose-500 hover:text-rose-700 transition-colors"><i class="fa-solid fa-circle-xmark"></i></button>
-        `;
-        listFilieres.appendChild(badge);
-        opt.remove();
-    };
-
-    listFilieres.onclick = (e) => {
-        const btn = e.target.closest('.cancelAdd');
-        if (btn) {
-            const div = btn.closest('div');
-            const id = div.querySelector('input').value;
-            const text = div.querySelector('span').innerText;
-            addFiliere.innerHTML += `<option value="${id}" class="addFilieres">${text}</option>`;
-            div.remove();
-            if (listFilieres.childElementCount === 0) {
-                listFilieres.innerHTML = '<p class="text-gray-400 text-xs italic">Aucune filière sélectionnée (Toutes par défaut)</p>';
-                addListStarted = false;
-            }
+        const filiereEditBtn = document.getElementById('filiereEdit');
+        if (filiereEditBtn) {
+            filiereEditBtn.onclick = () => {
+                const sel = document.getElementById('editFiliere');
+                const opt = sel.options[sel.selectedIndex];
+                if (opt.value === 'all') return;
+                const target = document.getElementById('listFilieresEdit');
+                const badge = document.createElement('div');
+                badge.className = "flex items-center justify-between px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-xs font-medium text-amber-700";
+                badge.innerHTML = `
+                    <input type="hidden" name="editFilieres${opt.value}" value="${opt.value}">
+                    <span class="truncate pr-2">${opt.text}</span>
+                    <button type="button" class="cancelEdit text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
+                `;
+                target.appendChild(badge);
+                opt.remove();
+            };
         }
-    };
 
-    // EDIT MODAL LOGIC
-    const editModal = document.getElementById('editModal');
-    const closeModalEdit = document.getElementById('closeModalEdit');
-    const cancelEditButton = document.getElementById('cancelEditButton');
-    closeModalEdit.onclick = cancelEditButton.onclick = () => location.reload();
-
-    document.querySelectorAll('.openModalEdit').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.parentNode.querySelector('.id').innerText;
-            const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
-            const data = await res.json();
-            const ann = data.annonce;
-
-            document.getElementById('editId').value = id;
-            document.getElementById('editTitle').value = ann.title;
-            document.getElementById('editDateExpiration').value = ann.date_expiration;
-            document.getElementById('editContenu').value = ann.content;
-            document.getElementById('editPersonnes').value = ann.choix_personnes;
-
-            const listE = document.getElementById('listFilieresEdit');
-            listE.innerHTML = '';
-            if (ann.choix_filieres !== 'all') {
-                data.filieres.forEach(f => {
-                    const badge = document.createElement('div');
-                    badge.className = "flex items-center justify-between px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-xs font-medium text-amber-700";
-                    badge.innerHTML = `
-                        <input type="hidden" name="editFilieres${f.id}" value="${f.id}">
-                        <span class="truncate pr-2">${f.sector.name}: ${f.name}</span>
-                        <button type="button" class="cancelEdit text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
-                    `;
-                    listE.appendChild(badge);
-                    // Remove from select if exists
-                    const opt = Array.from(document.getElementById('editFiliere').options).find(o => o.value == f.id);
-                    if (opt) opt.remove();
-                });
-            }
-            editModal.classList.remove('hidden');
-        };
-    });
-
-    document.getElementById('filiereEdit').onclick = () => {
-        const sel = document.getElementById('editFiliere');
-        const opt = sel.options[sel.selectedIndex];
-        if (opt.value === 'all') return;
-        const target = document.getElementById('listFilieresEdit');
-        const badge = document.createElement('div');
-        badge.className = "flex items-center justify-between px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-xs font-medium text-amber-700";
-        badge.innerHTML = `
-            <input type="hidden" name="editFilieres${opt.value}" value="${opt.value}">
-            <span class="truncate pr-2">${opt.text}</span>
-            <button type="button" class="cancelEdit text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
-        `;
-        target.appendChild(badge);
-        opt.remove();
-    };
-
-    document.getElementById('listFilieresEdit').onclick = (e) => {
-        const btn = e.target.closest('.cancelEdit');
-        if (btn) {
-            const div = btn.closest('div');
-            const id = div.querySelector('input').value;
-            const text = div.querySelector('span').innerText;
-            document.getElementById('editFiliere').innerHTML += `<option value="${id}" class="editFilieres">${text}</option>`;
-            div.remove();
+        const listFilieresEdit = document.getElementById('listFilieresEdit');
+        if (listFilieresEdit) {
+            listFilieresEdit.onclick = (e) => {
+                const btn = e.target.closest('.cancelEdit');
+                if (btn) {
+                    const div = btn.closest('div');
+                    const id = div.querySelector('input').value;
+                    const text = div.querySelector('span').innerText;
+                    document.getElementById('editFiliere').innerHTML += `<option value="${id}" class="editFilieres">${text}</option>`;
+                    div.remove();
+                }
+            };
         }
-    };
-    @endif
+        @endif
 
-    // VIEW LOGIC (Student/Admin)
-    document.querySelectorAll('.openModalView2').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.parentNode.querySelector('.id').innerText;
-            const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
-            const data = await res.json();
-            const ann = data.annonce;
+        // VIEW LOGIC (Student/Admin)
+        document.querySelectorAll('.openModalView2').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.parentNode.querySelector('.id').innerText;
+                const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
+                const data = await res.json();
+                const ann = data.annonce;
 
-            document.getElementById('annonceTitleViewModal2').innerText = ann.title;
-            document.getElementById('annonceUserViewModal2').innerText = (ann.user.role == 0 ? 'Responsable: ' : 'Professeur: ') + ann.user.first_name + ' ' + (ann.user.last_name || '');
-            document.getElementById('annonceContentViewModal2').innerHTML = ann.content.replace(/\n/g, '<br>');
-            document.getElementById('viewModal2').classList.remove('hidden');
-        };
-    });
+                document.getElementById('annonceTitleViewModal2').innerText = ann.title;
+                document.getElementById('annonceUserViewModal2').innerText = (ann.user.role == 0 ? 'Responsable: ' : 'Professeur: ') + ann.user.first_name + ' ' + (ann.user.last_name || '');
+                document.getElementById('annonceContentViewModal2').innerHTML = ann.content.replace(/\n/g, '<br>');
+                document.getElementById('viewModal2').classList.remove('hidden');
+            };
+        });
 
-    document.querySelectorAll('.openModalView').forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.parentNode.querySelector('.id').innerText;
-            const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
-            const data = await res.json();
-            const ann = data.annonce;
+        document.querySelectorAll('.openModalView').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.parentNode.querySelector('.id').innerText;
+                const res = await fetch(`/annonces/getAnnonceRelation/${id}`);
+                const data = await res.json();
+                const ann = data.annonce;
 
-            document.getElementById('viewTitle_H').innerText = ann.title;
-            document.getElementById('viewAnnonceur_Span').innerText = (ann.user.role == 0 ? 'Responsable: ' : 'Enseignant: ') + ann.user.first_name + ' ' + (ann.user.last_name || '');
-            document.getElementById('viewDateExpiration_Span').innerHTML = `<i class="fa-solid fa-calendar-xmark mr-1"></i> Expire le: ${ann.date_expiration}`;
-            document.getElementById('viewContenu').innerHTML = ann.content;
+                document.getElementById('viewTitle_H').innerText = ann.title;
+                document.getElementById('viewAnnonceur_Span').innerText = (ann.user.role == 0 ? 'Responsable: ' : 'Enseignant: ') + ann.user.first_name + ' ' + (ann.user.last_name || '');
+                document.getElementById('viewDateExpiration_Span').innerHTML = `<i class="fa-solid fa-calendar-xmark mr-1"></i> Expire le: ${ann.date_expiration}`;
+                document.getElementById('viewContenu').innerHTML = ann.content;
 
-            const listV = document.getElementById('listFilieresView');
-            const parentV = document.getElementById('listFilieresViewParent');
-            listV.innerHTML = '';
-            if (ann.choix_filieres !== 'all') {
-                parentV.classList.remove('hidden');
-                data.filieres.forEach(f => {
-                    listV.innerHTML += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase tracking-widest">${f.sector.name}: ${f.name}</span>`;
-                });
-            } else {
-                parentV.classList.add('hidden');
-            }
-            document.getElementById('viewModal').classList.remove('hidden');
-        };
-    });
+                const listV = document.getElementById('listFilieresView');
+                const parentV = document.getElementById('listFilieresViewParent');
+                listV.innerHTML = '';
+                if (ann.choix_filieres !== 'all') {
+                    parentV.classList.remove('hidden');
+                    data.filieres.forEach(f => {
+                        listV.innerHTML += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase tracking-widest">${f.sector.name}: ${f.name}</span>`;
+                    });
+                } else {
+                    parentV.classList.add('hidden');
+                }
+                const viewModal = document.getElementById('viewModal');
+                if (viewModal) viewModal.classList.remove('hidden');
+            };
+        });
 
-    document.getElementById('closeModalView').onclick = () => document.getElementById('viewModal').classList.add('hidden');
-    document.getElementById('closeModalView2').onclick = () => document.getElementById('viewModal2').classList.add('hidden');
-
+        const closeModalView = document.getElementById('closeModalView');
+        const closeModalView2 = document.getElementById('closeModalView2');
+        if (closeModalView) closeModalView.onclick = () => document.getElementById('viewModal').classList.add('hidden');
+        if (closeModalView2) closeModalView2.onclick = () => document.getElementById('viewModal2').classList.add('hidden');
+    })();
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>

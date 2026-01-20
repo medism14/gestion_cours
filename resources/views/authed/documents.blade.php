@@ -7,13 +7,13 @@
     <!-- Header Area -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Bibliothèques numériques</h1>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Documents numériques</h1>
             <p class="mt-1 text-gray-500">Gérez et accédez à l'ensemble des documents PDF de l'établissement.</p>
         </div>
         @if (auth()->user()->role == 0)  
             <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
                 <i class="fa-solid fa-plus mr-2 text-sm"></i>
-                Ajouter une bibliothèque
+                Ajouter un document
             </button>
         @endif
     </div>
@@ -107,7 +107,7 @@
                                         <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $document->id }}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('documents.delete', $document->id) }}" class="inline" onsubmit="return confirm('Voulez-vous vraiment supprimer cette bibliothèque ?')">
+                                        <form method="POST" action="{{ route('documents.delete', $document->id) }}" class="inline" onsubmit="return confirm('Voulez-vous vraiment supprimer ce document ?')">
                                             @csrf
                                             @method('DELETE')
                                             <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
@@ -122,7 +122,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">
-                                Aucun document trouvé dans la bibliothèque.
+                                Aucun document trouvé.
                             </td>
                         </tr>
                     @endforelse
@@ -148,7 +148,7 @@
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Ajouter une bibliothèque</h3>
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Ajouter un document</h3>
             <button class="closeModal text-gray-400 hover:text-gray-600 p-1.5 hover:bg-white rounded-lg transition-all">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
@@ -178,7 +178,7 @@
             </div>
 
             <div class="space-y-1">
-                <label for="docTitle" class="block text-sm font-semibold text-gray-700">Titre de la bibliothèque</label>
+                <label for="docTitle" class="block text-sm font-semibold text-gray-700">Titre du document</label>
                 <input name="addTitle" id="docTitle" type="text" required
                     class="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
             </div>
@@ -281,7 +281,7 @@
     const openAdd = document.getElementById('openModalAdd');
     if(openAdd) {
         openAdd.onclick = () => {
-            modalTitle.innerText = "Ajouter une bibliothèque";
+            modalTitle.innerText = "Ajouter un document";
             documentForm.action = "{{ route('documents.store') }}";
             documentForm.reset();
             fileNameDisplay.innerText = "Cliquez ou glissez un fichier (Max 50Mo)";
@@ -320,7 +320,7 @@
                 const res = await fetch(`/documents/getDocument/${id}`);
                 const data = await res.json();
                 
-                modalTitle.innerText = "Modifier la bibliothèque";
+                modalTitle.innerText = "Modifier le document";
                 documentForm.action = "{{ route('documents.edit') }}";
                 document.getElementById('docId').value = data.id;
                 document.getElementById('docTitle').value = data.title;

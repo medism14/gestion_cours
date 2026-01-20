@@ -1,4 +1,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*) public/$1 [L]
+    
+    # Redirige la racine vers public/
+    RewriteRule ^$ public/ [L]
+    
+    # Redirige tout le reste vers public/ en gardant le chemin
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
 </IfModule>

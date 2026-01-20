@@ -15,27 +15,18 @@ use App\Events\ModuleRefresh;
 class ModuleController extends Controller
 {
     public function index (Request $request) {
+        $query = Module::with(['level.sector', 'user']);
+        $search = $request->input('search');
+        $loup = $search ? 667 : null;
 
-        if ($request->input('search')) {
-
-            $search = $request->input('search');
-
-            $modules = Module::where('name', 'like', strtolower($search) . '%')
-                               ->orWhere('name', 'like', strtoupper($search) . '%')            
-                               ->orWhere('name', 'like', ucfirst($search) . '%')            
-                               ->orWhereHas('level.sector', function ($query) use ($search) {
-                                    $query->where('name', 'like', strtolower($search) . '%')
-                                    ->orWhere('name', 'like', strtoupper($search) . '%')            
-                                    ->orWhere('name', 'like', ucfirst($search) . '%');
-                               })
-            ->paginate(5);
-
-            $loup = 667;
-        } else {
-            $modules = Module::paginate(5);
-
-            $loup = null;
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', $search . '%')
+                  ->orWhereHas('level.sector', fn($ql) => $ql->where('name', 'like', $search . '%'));
+            });
         }
+
+        $modules = $query->paginate(5)->withQueryString();
 
         $sectors = Sector::with(['levels' => function ($query) {
             $query->orderBy('sector_id')->orderBy('degree', 'asc');

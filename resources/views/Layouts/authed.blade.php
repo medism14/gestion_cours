@@ -64,10 +64,11 @@
         <header class="flex">
             <!-- SideBar -->
             <section id="leftSection" class="block md:w-[20%]">
-                <nav id="sidebar" class="fixed w-none md:w-[20%] bg-gray-900 h-screen shadow-2xl z-40 transition-all duration-300">
-                    <div class="absolute m-1 right-0 flex items-center my-auto h-screen text-2xl">
-                        <button id="btn-unDisplay" class="text-gray-500 hover:text-white transition-colors" type="button"><i class="fas fa-angles-left"></i></button>
-                    </div>
+                <nav id="sidebar" class="fixed w-none md:w-[20%] bg-gray-900 h-screen shadow-2xl z-40 transition-all duration-300 overflow-hidden">
+                    <!-- Close Sidebar Button (positioned elegantly at bottom) -->
+                    <button id="btn-unDisplay" class="absolute bottom-6 right-4 h-10 w-10 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-xl flex items-center justify-center transition-all shadow-lg z-50" type="button" title="Fermer le menu">
+                        <i class="fas fa-angles-left text-sm"></i>
+                    </button>
                     
                     <!-- SideBar Title -->
                     <div class="p-8 text-center">
@@ -125,8 +126,11 @@
             <section id="rightSection" class="flex-1 md:w-[80%] min-h-screen">
                 <!-- Côté droit navbar -->
                 <nav id="navbar" class="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 flex p-3 md:w-[80%] z-30 transition-all duration-300">
-                    <div id="btn-display" class="hidden absolute fixed text-2xl top-0 left-0 mt-4 px-2">
-                        <button class="text-gray-400 hover:text-gray-900" type="button"><i class="fas fa-angles-right"></i></button>
+                    <!-- Open Sidebar Button (elegant floating button) -->
+                    <div id="btn-display" class="hidden absolute -left-0 top-1/2 -translate-y-1/2 z-40">
+                        <button class="h-10 w-10 bg-gray-900 hover:bg-gray-800 text-white rounded-r-xl flex items-center justify-center transition-all shadow-lg" type="button" title="Ouvrir le menu">
+                            <i class="fas fa-angles-right text-sm"></i>
+                        </button>
                     </div>
                     
                     <div id="divNavbar" class="flex-1 flex items-center justify-between px-4">
@@ -156,12 +160,64 @@
 
                             <div class="h-8 w-px bg-gray-200 mx-2"></div>
 
-                            <a href="{{ route('parameters') }}" id="user" class="flex items-center space-x-2 p-1.5 pr-3 rounded-full hover:bg-gray-50 transition-all cursor-pointer group">
-                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                    <i class="fas fa-user-gear"></i>
+                            <div class="relative">
+                                <a href="{{ route('parameters') }}" id="user" class="flex items-center space-x-2 p-1.5 pr-3 rounded-full hover:bg-gray-50 transition-all cursor-pointer group">
+                                    <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                        <i class="fas fa-user-gear"></i>
+                                    </div>
+                                    <span class="hidden md:block text-sm font-medium text-gray-700 capitalize">{{ auth()->user()->first_name }}</span>
+                                </a>
+
+                                <div id="userList" class="hidden z-50 absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+                                    <!-- Arrow pointer -->
+                                    <div class="absolute -top-2 right-8 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+                                    <!-- Header -->
+                                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4">
+                                        <h1 class="text-white font-bold text-base flex items-center">
+                                            <i class="fa-solid fa-user-circle mr-2"></i>
+                                            Informations Utilisateur
+                                        </h1>
+                                    </div>
+                                    <!-- Content -->
+                                    <div class="p-4 space-y-3 text-sm">
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                            <span class="text-gray-500 font-medium">Prénom</span>
+                                            <span class="text-gray-900 font-semibold">{{ auth()->user()->first_name }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                            <span class="text-gray-500 font-medium">Nom</span>
+                                            <span class="text-gray-900 font-semibold">{{ auth()->user()->last_name ?? '—' }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                            <span class="text-gray-500 font-medium">Rôle</span>
+                                            <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider 
+                                                {{ auth()->user()->role == 0 ? 'bg-rose-100 text-rose-600' : (auth()->user()->role == 1 ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600') }}">
+                                                {{ auth()->user()->role == 0 ? 'Admin' : (auth()->user()->role == 1 ? 'Professeur' : 'Étudiant') }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                            <span class="text-gray-500 font-medium">Email</span>
+                                            <span class="text-gray-900 font-semibold text-xs truncate max-w-[150px]">{{ auth()->user()->email }}</span>
+                                        </div>
+                                        @if (auth()->user()->role == 2)
+                                            @foreach (auth()->user()->levels_users as $levels_users)
+                                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                                    <span class="text-gray-500 font-medium">Filière</span>
+                                                    <span class="text-gray-900 font-semibold text-xs">{{ $levels_users->level->sector->name }} {{ $levels_users->level->name }}</span>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                        <div class="flex justify-between items-center py-2">
+                                            <span class="text-gray-500 font-medium">Téléphone</span>
+                                            <span class="text-gray-900 font-semibold">{{ auth()->user()->phone }}</span>
+                                        </div>
+                                        
+                                        <a href="{{ route('parameters') }}" class="block w-full mt-2 bg-gray-50 hover:bg-gray-100 text-center text-blue-600 font-bold py-2 rounded-lg transition-colors border border-gray-100">
+                                            Paramètres du compte
+                                        </a>
+                                    </div>
                                 </div>
-                                <span class="hidden md:block text-sm font-medium text-gray-700 capitalize">{{ auth()->user()->first_name }}</span>
-                            </a>
+                            </div>
 
                             <a id="logout" href="{{ route('logout') }}" class="p-2.5 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Déconnexion">
                                 <i class="fa-solid fa-power-off"></i>
@@ -192,29 +248,6 @@
                         <hr class="my-2">
                     </div>
 
-                    <div id="userList" class="hidden z-20 absolute flex flex-col text-xs md:text-sm p-3 bg-slate-800 border-2 border-gray-400 rounded-lg">
-                        <div class="flex w-full flex-col">
-                            <h1 class="w-full text-center font-bold mb-3 text-base md:text-lg p-2">Informations Utilisateur</h1>
-                            <div class="flex flex-col">
-                                <span class="text-center">Prenom: {{ auth()->user()->first_name }}</span>
-                                <hr class="border-gray-500">
-                                <span class="text-center">Nom: {{ auth()->user()->last_name }}</span>
-                                <hr class="border-gray-500">
-                                <span class="text-center">Role: {{ auth()->user()->role == 0 ? 'Administrateur' : (auth()->user()->role == 1 ? 'Professeur' : 'Etudiant') }}</span>
-                                <hr class="border-gray-500">
-                                <span class="text-center">Email: {{ auth()->user()->email }}</span>
-                                <hr class="border-gray-500">
-                                @if (auth()->user()->role == 2)
-                                    @foreach (auth()->user()->levels_users as $levels_users)
-                                        <span class="text-center">Filière: {{ $levels_users->level->sector->name }} {{ $levels_users->level->name }}</span>
-                                        <hr class="border-gray-500">
-                                    @endforeach
-                                @endif
-                                    <span class="text-center">Téléphone: {{ auth()->user()->phone }}</span>
-                                <hr class="border-gray-500">
-                            </div>
-                        </div>
-                    </div>
                 </nav>
 
                 <!-- Côté droit content -->
@@ -252,6 +285,8 @@
                 </section>
             </section>
         </header>
+
+        @yield('modals')
 
         <!-- Modal Voir Annonce -->
         <div id="modalVoirAnnonce" class="hidden z-50 absolute bg-gray-500 bg-opacity-75 inset-0">
@@ -589,14 +624,6 @@
     const userList = document.getElementById('userList');
     let inUserList = false;
 
-    let tailleDiv2 = user.getBoundingClientRect().width / 2;
-    let taille = user.getBoundingClientRect().width;
-    let positionDroite = (window.innerWidth - user.getBoundingClientRect().right);
-
-    let positionHaute = user.getBoundingClientRect().top + taille + 5;
-
-    userList.style.right = `${positionDroite}px`;
-    userList.style.top = `${positionHaute}px`;
 
     //L'activation de la barre d'utilisateur
         if (mediaQuery.matches) {

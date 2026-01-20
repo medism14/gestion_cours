@@ -79,19 +79,19 @@
                                     {{ $sector->levels->count() }} Niveaux
                                 </span>
                             </td>
-                            <td class="px-8 py-5 text-right">
-                                <div class="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-all">
-                                    <button title="Voir les détails" class="openModalView p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                            <td class="px-8 py-5">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button title="Voir les détails" class="openModalView p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                        <i class="fa-solid fa-eye text-sm"></i>
                                     </button>
-                                    <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
-                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    <button title="Modifier" class="openModalEdit p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                        <i class="fa-solid fa-pen-to-square text-sm"></i>
                                     </button>
-                                    <form method="POST" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="inline" onsubmit="return confirm('Attention: Supprimer cette filière supprimera également tous les niveaux associés. Continuer ?')">
+                                    <form method="POST" action="{{ route('sectors.delete', ['id' => $sector->id]) }}" class="contents" onsubmit="return confirm('Attention: Supprimer cette filière supprimera également tous les niveaux associés. Continuer ?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                            <i class="fa-solid fa-trash-can"></i>
+                                        <button title="Supprimer" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                            <i class="fa-solid fa-trash-can text-sm"></i>
                                         </button>
                                     </form>
                                     <span class="id hidden">{{ $sector->id }}</span>
@@ -269,169 +269,137 @@
 
 @section('scripts')
 <script>
-    // Constants & Global state for dynamic level inputs
-    let currentAddDegree = 0;
-    let currentEditDegree = 0;
+    (function() {
+        let currentAddDegree = 0;
+        let currentEditDegree = 0;
 
-    // Toggle Modal
-    function toggleModal(modalId, show = true) {
-        const modal = document.getElementById(modalId);
-        if (show) modal.classList.remove('hidden');
-        else modal.classList.add('hidden');
-    }
+        function toggleModal(id, show = true) {
+            const m = document.getElementById(id);
+            if (show) m.classList.remove('hidden');
+            else m.classList.add('hidden');
+        }
 
-    // Level Management Factory
-    function createLevelRow(containerId, index, name, prefix) {
-        const container = document.getElementById(containerId);
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm group animate-in slide-in-from-right-2 duration-200';
-        div.innerHTML = `
-            <div class="flex items-center gap-3">
-                <span class="level-index h-6 w-6 bg-gray-100 text-gray-500 rounded text-[10px] flex items-center justify-center font-bold">${index}</span>
-                <input type="hidden" name="${prefix}Degree${index}" value="${index}">
-                <input type="text" name="${prefix}Name${index}" value="${name}" readonly 
-                    class="bg-transparent border-none p-0 text-sm font-semibold text-gray-700 focus:ring-0">
-            </div>
-            <button type="button" class="remove-level p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-        `;
-        container.appendChild(div);
+        function reindexLevels(containerId, mode) {
+            const container = document.getElementById(containerId);
+            const rows = container.querySelectorAll('.level-row');
+            const namePrefix = mode === 'add' ? 'addName' : 'editName';
+            const degreePrefix = mode === 'add' ? 'addDegree' : 'editDegree';
+            
+            rows.forEach((row, index) => {
+                const degree = index + 1;
+                row.querySelector('.level-index-label').textContent = `N°${degree}`;
+                row.querySelector('input[type="hidden"]').name = `${degreePrefix}${degree}`;
+                row.querySelector('input[type="hidden"]').value = degree;
+                row.querySelector('input[type="text"]').name = `${namePrefix}${degree}`;
+            });
 
-        div.querySelector('.remove-level').addEventListener('click', () => {
-            div.remove();
-            reorderLevels(containerId, prefix);
-        });
-    }
-
-    function reorderLevels(containerId, prefix) {
-        const container = document.getElementById(containerId);
-        const rows = container.children;
-        const maxInput = document.getElementById(`${prefix}MaxDegree`);
-        
-        Array.from(rows).forEach((row, idx) => {
-            const newIdx = idx + 1;
-            row.querySelector('.level-index').textContent = newIdx;
-            row.querySelector(`input[name*="Degree"]`).name = `${prefix}Degree${newIdx}`;
-            row.querySelector(`input[name*="Degree"]`).value = newIdx;
-            row.querySelector(`input[name*="Name"]`).name = `${prefix}Name${newIdx}`;
-        });
-        
-        maxInput.value = rows.length;
-        if(prefix === 'add') currentAddDegree = rows.length;
-        else currentEditDegree = rows.length;
-    }
-
-    // Add Sector Handlers
-    document.getElementById('openModalAdd').addEventListener('click', () => toggleModal('addModal'));
-    document.getElementById('addLevelBtn').addEventListener('click', () => {
-        const input = document.getElementById('addLevel');
-        if (!input.value.trim()) return;
-        currentAddDegree++;
-        createLevelRow('levelList', currentAddDegree, input.value.trim(), 'add');
-        document.getElementById('addMaxDegree').value = currentAddDegree;
-        input.value = '';
-    });
-
-    // View Sector Handlers
-    document.querySelectorAll('.openModalView').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.closest('tr').querySelector('.id').textContent;
-            try {
-                const res = await fetch(`/sectors/getSector/${id}`);
-                const data = await res.json();
-                document.getElementById('viewName').textContent = data.name;
-                const container = document.getElementById('levelListView');
-                container.innerHTML = '';
-                data.levels.forEach(l => {
-                    const d = document.createElement('div');
-                    d.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-xl';
-                    d.innerHTML = `<span class="text-xs font-bold text-gray-400">ID ${l.id}</span><span class="text-sm font-bold text-gray-700">${l.name}</span>`;
-                    container.appendChild(d);
-                });
-                toggleModal('viewModal');
-            } catch(e) { console.error(e); }
-        });
-    });
-
-    // Edit Sector Handlers
-    document.querySelectorAll('.openModalEdit').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.closest('tr').querySelector('.id').textContent;
-            try {
-                const res = await fetch(`/sectors/getSector/${id}`);
-                const data = await res.json();
-                document.getElementById('editId').value = data.id;
-                document.getElementById('editName').value = data.name;
-                const container = document.getElementById('levelListEdit');
-                container.innerHTML = '';
-                currentEditDegree = 0;
-                data.levels.forEach(l => {
-                    currentEditDegree++;
-                    createLevelRow('levelListEdit', currentEditDegree, l.name, 'edit');
-                });
+            if (mode === 'add') {
+                currentAddDegree = rows.length;
+                document.getElementById('addMaxDegree').value = currentAddDegree;
+            } else {
+                currentEditDegree = rows.length;
                 document.getElementById('editMaxDegree').value = currentEditDegree;
-                toggleModal('editModal');
-            } catch(e) { console.error(e); }
+            }
+        }
+
+        function createLevelRow(containerId, value = '', mode = 'add') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = "level-row flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border border-gray-100 mb-2";
+            
+            // Temporary IDs, they will be re-indexed immediately
+            div.innerHTML = `
+                <span class="level-index-label text-xs font-bold text-gray-400 w-8"></span>
+                <input type="hidden" value="">
+                <input type="text" value="${value}" class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-semibold" readonly>
+                <button type="button" class="text-red-400 hover:text-red-600 p-1 remove-level"><i class="fa-solid fa-circle-xmark"></i></button>
+            `;
+
+            div.querySelector('.remove-level').onclick = () => {
+                div.remove();
+                reindexLevels(containerId, mode);
+            };
+
+            container.appendChild(div);
+            reindexLevels(containerId, mode);
+        }
+
+        document.getElementById('openModalAdd').addEventListener('click', () => toggleModal('addModal'));
+
+        document.getElementById('addLevelBtn').addEventListener('click', () => {
+            const input = document.getElementById('addLevel');
+            if (!input.value.trim()) return;
+            createLevelRow('levelList', input.value.trim(), 'add');
+            input.value = '';
         });
-    });
 
-    document.getElementById('editLevelBtn').addEventListener('click', () => {
-        const input = document.getElementById('editLevel');
-        if (!input.value.trim()) return;
-        currentEditDegree++;
-        createLevelRow('levelListEdit', currentEditDegree, input.value.trim(), 'edit');
-        document.getElementById('editMaxDegree').value = currentEditDegree;
-        input.value = '';
-    });
-
-    // Close buttons logic
-    ['addModal', 'viewModal', 'editModal'].forEach(id => {
-        document.querySelectorAll(`#${id} [id*="closeModal"], #${id} [id*="cancel"]`).forEach(b => {
-            b.addEventListener('click', () => {
-                toggleModal(id, false);
-                if(id === 'addModal') {
-                    document.getElementById('levelList').innerHTML = '';
-                    currentAddDegree = 0;
-                }
+        // View Sector Handlers
+        document.querySelectorAll('.openModalView').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.closest('tr').querySelector('.id').textContent;
+                try {
+                    const res = await fetch(`/sectors/getSector/${id}`);
+                    const data = await res.json();
+                    document.getElementById('viewName').textContent = data.name;
+                    const container = document.getElementById('levelListView');
+                    container.innerHTML = '';
+                    data.levels.forEach(l => {
+                        const d = document.createElement('div');
+                        d.className = "p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold border border-blue-100";
+                        d.textContent = l.name;
+                        container.appendChild(d);
+                    });
+                    toggleModal('viewModal');
+                } catch(e) { console.error(e); }
             });
         });
-    });
 
-    // Tooltip logic
-    const tIcon = document.getElementById('tooltipIcon');
-    const tInfo = document.getElementById('tooltipInfo');
-    tIcon?.addEventListener('mouseenter', () => tInfo.classList.remove('hidden'));
-    tIcon?.addEventListener('mouseleave', () => tInfo.classList.add('hidden'));
+        // Edit Sector Handlers
+        document.querySelectorAll('.openModalEdit').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.closest('tr').querySelector('.id').textContent;
+                try {
+                    const res = await fetch(`/sectors/getSector/${id}`);
+                    const data = await res.json();
+                    document.getElementById('editId').value = data.id;
+                    document.getElementById('editName').value = data.name;
+                    const container = document.getElementById('levelListEdit');
+                    container.innerHTML = '';
+                    currentEditDegree = 0;
+                    data.levels.forEach(l => {
+                        createLevelRow('levelListEdit', l.name, 'edit');
+                    });
+                    toggleModal('editModal');
+                } catch(e) { console.error(e); }
+            });
+        });
 
-    // Prevent double submission
-    let formIsSubmitting = false;
-    function submitFunction() {
-        if (formIsSubmitting) return false;
-        formIsSubmitting = true;
-        return true;
-    }
+        document.getElementById('editLevelBtn').addEventListener('click', () => {
+            const input = document.getElementById('editLevel');
+            if (!input.value.trim()) return;
+            createLevelRow('levelListEdit', input.value.trim(), 'edit');
+            input.value = '';
+        });
+
+        // Close buttons logic
+        ['addModal', 'viewModal', 'editModal'].forEach(id => {
+            document.querySelectorAll(`#${id} [id*="closeModal"], #${id} [id*="cancel"]`).forEach(b => {
+                b.addEventListener('click', () => {
+                    toggleModal(id, false);
+                    if(id === 'addModal') {
+                        document.getElementById('levelList').innerHTML = '';
+                        currentAddDegree = 0;
+                    }
+                });
+            });
+        });
+
+        // Tooltip logic
+        const tIcon = document.getElementById('tooltipIcon');
+        const tInfo = document.getElementById('tooltipInfo');
+        tIcon?.addEventListener('mouseenter', () => tInfo.classList.remove('hidden'));
+        tIcon?.addEventListener('mouseleave', () => tInfo.classList.add('hidden'));
+    })();
 </script>
 @endsection
-        }
-    });
-
-
-    //////////////////////////
-    //Afficher les niveaux
-    //////////////////////////
-</script>
-
-<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-<script>
-    var pusher = new Pusher('6979301f0eee4d497b90', {
-        cluster: 'eu'
-    });
-
-    var channel = pusher.subscribe('sector-channel');
-
-    channel.bind('sector-refresh', async function (data) {
-        location.reload();
-    });
-</script>
-@endsection
+```

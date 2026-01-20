@@ -105,22 +105,17 @@
 
 @section('scripts')
 <script>
-    const mdp = document.getElementById('mdp');
-    const mdp_confirmation = document.getElementById('mdp_confirmation');
+    (function() {
+        const mdp = document.getElementById('mdp');
+        const mdp_confirmation = document.getElementById('mdp_confirmation');
 
-    function password_check() {
-        if (mdp.value && mdp.value !== mdp_confirmation.value) {
-            alert("Les mots de passe ne correspondent pas");
-            return false;
-        }
-        return submitFunction();
-    }
-
-    let formIsSubmitting = false;
-    function submitFunction() {
-        if (formIsSubmitting) return false;
-        formIsSubmitting = true;
-        return true;
-    }
+        window.password_check = function() {
+            if (mdp.value && mdp.value !== mdp_confirmation.value) {
+                alert("Les mots de passe ne correspondent pas");
+                return false;
+            }
+            return typeof submitFunction === 'function' ? submitFunction() : true;
+        };
+    })();
 </script>
 @endsection

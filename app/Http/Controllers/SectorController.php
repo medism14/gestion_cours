@@ -139,45 +139,25 @@ class SectorController extends Controller
         $sector->name = $sectorName;
         $sector->save();
 
-        $toDelete = [];
-        
-        //Pour ajouter
-        foreach ($names as $key => $value) {
-            $i = 0;
-            $trouver = false;
+        // Efficient Level Synchronization
+        $currentLevels = $sector->levels;
+        $currentNames = $currentLevels->pluck('name', 'id')->toArray();
+        $newNames = array_values($names);
 
-            foreach ($sector->levels as $l) {
-                if ($l->name == $value) {
-                    $trouver = true;
-                }
-            }
+        // Deletions
+        $toDelete = array_diff($currentNames, $newNames);
+        if (!empty($toDelete)) {
+            Level::whereIn('id', array_keys($toDelete))->delete();
+        }
 
-            if (!$trouver) {
+        // Additions
+        foreach ($names as $key => $name) {
+            if (!in_array($name, $currentNames)) {
                 Level::create([
-                    'name' => $names[$key],
+                    'name' => $name,
                     'degree' => $degrees[$key],
                     'sector_id' => $sector->id,
                 ]);
-            }
-        }
-
-        //Pour retirer
-        foreach ($sector->levels as $l) {
-            $uneFois = false;
-            if ($l->name == $value) {
-                $trouver = true;
-            }
-
-            foreach ($names as $key => $value) {
-                if (!$uneFois) {
-                    if ($l->name == $value) {
-                        $uneFois = true;
-                    }
-                }
-            }
-
-            if (!$uneFois) {
-                Level::where('id', $l->id)->delete();
             }
         }
 

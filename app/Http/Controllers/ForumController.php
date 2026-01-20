@@ -98,10 +98,12 @@ class ForumController extends Controller
         }
 
         $forums = Forum::where('level_id', $level_id)->orderBy('created_at', 'asc')->get();
+        $levels = Level::all();
 
         return view('authed.forums.forum', [
             'forums' => $forums,
-            'level_id' => $level_id
+            'level_id' => $level_id,
+            'levels' => $levels
         ]);
     }
 

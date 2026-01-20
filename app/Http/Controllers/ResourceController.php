@@ -20,173 +20,68 @@ use App\Events\NotifRefresh;
 class ResourceController extends Controller
 {
     public function index (Request $request) {
-
-        $user_id = auth()->user()->id;
-
-        function manip($type, $string) {
-            if ($type == "maj") {
-                return strtoupper($string);
-            } elseif ($type == "min") {
-                return strtolower($string);
-            } else {
-                return ucfirst($string);
-            }
-        }
+        $user = auth()->user();
+        $user_id = $user->id;
+        $query = Resource::with(['module.level.sector', 'file']);
 
         if ($request->input('moduleList')) {
-            $id = $request->input('moduleList');
-
-            $resources = Resource::where('module_id', $id)->orderBy('id', 'desc')->paginate(5);
-
+            $query->where('module_id', $request->input('moduleList'));
             $loup = 667;
-        }
-
-        if ($request->input('nouvelleRessource')) {
-            $resources = Resource::where('updated_at', '>', auth()->user()->notif_viewed)->paginate(5);
-
+        } else if ($request->input('nouvelleRessource')) {
+            $query->where('updated_at', '>', $user->notif_viewed);
             $loup = 667;
-        }   
-
-        if ($request->input('searchNotif')) {
-            $id = $request->input('searchNotif');
-
-            $resources = Resource::where('id', $id)->orderBy('id', 'desc')->paginate(5);
+        } else if ($request->input('searchNotif')) {
+            $query->where('id', $request->input('searchNotif'));
             $loup = 667;
-        }
-
-        if ($request->input('search')) {
+        } else if ($request->input('search')) {
             $search = $request->input('search');
-            //Si c'est un professeur qui fait la recherche
-            if (auth()->user()->role == 1) {
-            $modules = Module::where('user_id', auth()->user()->id)->get();
+            $query->where(function($q) use ($search) {
+                $q->where('section', 'like', $search . '%')
+                  ->orWhereHas('file', function($sub) use ($search) {
+                      $sub->where('filename', 'like', $search . '%');
+                  })
+                  ->orWhereHas('module', function($sub) use ($search) {
+                      $sub->where('name', 'like', $search . '%')
+                          ->orWhereHas('level.sector', function($ss) use ($search) {
+                              $ss->where('name', 'like', $search . '%');
+                          });
+                  });
+            });
 
-            $resources = Resource::where(function ($query) use ($search, $user_id) {
-                                $query->whereHas('module', function ($query) use ($user_id) {
-                                    $query->where('user_id', $user_id);
-                                });
-                        
-                                $query->where(function ($query) use ($search) {
-                                    $query->where('section', 'like', manip("maj", $search) . '%')
-                                        ->orWhere('section', 'like', manip("min", $search) . '%')
-                                        ->orWhere('section', 'like', manip("cap", $search) . '%')
-                                        ->orWhereHas('file', function ($query) use ($search) {
-                                            $query->where('filename', 'like', manip("maj", $search) . '%')
-                                                ->orWhere('filename', 'like', manip("min", $search) . '%')
-                                                ->orWhere('filename', 'like', manip("cap", $search) . '%');
-                                        })
-                                        ->orWhereHas('module', function ($query) use ($search) {
-                                            $query->where('name', 'like', manip("maj", $search) . '%')
-                                                ->orWhere('name', 'like', manip("min", $search) . '%')
-                                                ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                        })
-                                        ->orWhereHas('module.level.sector', function ($query) use ($search) {
-                                            $query->where('name', 'like', manip("maj", $search) . '%')
-                                                ->orWhere('name', 'like', manip("min", $search) . '%')
-                                                ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                        });
-                                });
-                            })
-                            ->orderBy('id', 'desc')->paginate(5);
-            //Si c'est un etudiant qui fait la recherche
-            } else if (auth()->user()->role == 2) {
-
-                $resources = Resource::where(function ($query) use ($user_id, $search) {
-                                    $query->whereHas('module.level.levels_users.user', function($query) use ($user_id){
-                                        $query->where('id', $user_id)->where('role', 2);
-                                    });
-
-                                    $query->where(function($query) use ($search) {
-                                        $query->where('section', 'like', manip("maj", $search) . '%')
-                                        ->orWhere('section', 'like', manip("min", $search) . '%')
-                                        ->orWhere('section', 'like', manip("cap", $search) . '%')
-                                        ->orWhereHas('file', function($query) use ($search) {
-                                             $query->where('filename', 'like', manip("maj", $search) . '%')
-                                             ->orWhere('filename', 'like', manip("min", $search) . '%')
-                                             ->orWhere('filename', 'like', manip("cap", $search) . '%');
-                                        })
-                                        ->orWhereHas('module', function($query) use ($search) {
-                                             $query->where('name', 'like', manip("maj", $search) . '%')
-                                             ->orWhere('name', 'like', manip("min", $search) . '%')
-                                             ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                         });
-                                    });
-                                })->orderBy('id', 'desc')->paginate(5);
-            //Si c'est un admin qui fait la recherche
-            } else {
-                $modules = Module::all();
-                $resources = Resource::where('section', 'like', manip("maj", $search) . '%')
-                                   ->orWhere('section', 'like', manip("min", $search) . '%')
-                                   ->orWhere('section', 'like', manip("cap", $search) . '%')
-                                   ->orWhereHas('file', function($query) use ($search) {
-                                        $query->where('filename', 'like', manip("maj", $search) . '%')
-                                        ->orWhere('filename', 'like', manip("min", $search) . '%')
-                                        ->orWhere('filename', 'like', manip("cap", $search) . '%');
-                                   })
-                                   ->orWhereHas('module', function($query) use ($search) {
-                                        $query->where('name', 'like', manip("maj", $search) . '%')
-                                        ->orWhere('name', 'like', manip("min", $search) . '%')
-                                        ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                    })
-                                    ->orWhereHas('module.level.sector', function($query) use ($search) {
-                                        $query->where('name', 'like', manip("maj", $search) . '%')
-                                        ->orWhere('name', 'like', manip("min", $search) . '%')
-                                        ->orWhere('name', 'like', manip("cap", $search) . '%');
-                                    })
-                                    ->orderBy('id', 'desc')->paginate(5);
+            if ($user->role == 1) {
+                $query->whereHas('module', fn($q) => $q->where('user_id', $user_id));
+            } else if ($user->role == 2) {
+                $query->whereHas('module.level.levels_users', fn($q) => $q->where('user_id', $user_id));
             }
-
             $loup = 667;
-        } 
-        
-        if (!$request->input('searchNotif') && !$request->input('search') && !$request->input('moduleList') && !$request->input('nouvelleRessource')) {
-            $loup = null;
-
-            if (auth()->user()->role == 1) {
-                $modules = Module::where('user_id', auth()->user()->id)->get();
-                $resources = Resource::whereHas('module', function($query) use ($user_id){
-                    $query->where('user_id', $user_id);
-                })->orderBy('id', 'desc')->paginate(5);
-            } else if (auth()->user()->role == 2) {
-                $resources = Resource::whereHas('module.level.levels_users.user', function($query) use ($user_id){
-                    $query->where('id', $user_id)->where('role', 2);
-                })->orderBy('id', 'desc')->paginate(5);
-            } else {
-                $modules = Module::all();
-                $resources = Resource::orderBy('id', 'desc')->paginate(5);
-            }
-
-        }
-
-        auth()->user()->notifs = 0;
-        auth()->user()->notif_viewed = now();
-        auth()->user()->save();
-
-        if (auth()->user()->role == 2) {
-
-                $level= Level::whereHas('levels_users', function($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
-                })->first();
-
-
-                $modulesSearch = Module::where('level_id', $level->id)->get();
-
-                return view('authed.resources', [
-                'resources' => $resources,
-                'modulesSearch' => $modulesSearch,
-                'loup' => $loup
-            ]);
         } else {
-            return view('authed.resources', [
-                'resources' => $resources,
-                'modules' => $modules,
-                'loup' => $loup
-            ]);
+            $loup = null;
+            if ($user->role == 1) {
+                $query->whereHas('module', fn($q) => $q->where('user_id', $user_id));
+            } else if ($user->role == 2) {
+                $query->whereHas('module.level.levels_users', fn($q) => $q->where('user_id', $user_id));
+            }
         }
 
+        $resources = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
+
+        // Avoid redundant saves
+        if ($user->notifs != 0) {
+            $user->update(['notifs' => 0, 'notif_viewed' => now()]);
+        }
+
+        if ($user->role == 2) {
+            $level = Level::whereHas('levels_users', fn($q) => $q->where('user_id', $user_id))->first();
+            $modulesSearch = $level ? Module::where('level_id', $level->id)->get() : collect();
+
+            return view('authed.resources', compact('resources', 'modulesSearch', 'loup'));
+        } else {
+            $modules = ($user->role == 1) ? Module::where('user_id', $user_id)->get() : Module::all();
+            return view('authed.resources', compact('resources', 'modules', 'loup'));
+        }
     }
 
     public function store (Request $request) {
-
         $validator = Validator::make($request->all(), [
             'addDescription' => 'required',
             'addSection' => 'required',
@@ -198,75 +93,53 @@ class ResourceController extends Controller
         ]);
         
         if ($validator->fails()) {
-
-            $errors = json_decode($validator->errors(), true);
-
-            return redirect()->back()->with([
-                'error' => $errors,
-            ]);
+            return redirect()->back()->with(['error' => json_decode($validator->errors(), true)]);
         }
 
         if (!$request->file('addFile')) {
-            return redirect()->back()->with([
-                'error' => 'Veuillez remplir le fichier'
-            ]);
+            return redirect()->back()->with(['error' => 'Veuillez remplir le fichier']);
         }
         
-        //Partie Resource infos
-        $description = $request->input('addDescription');
-        $section = $request->input('addSection');
-        $addModule = $request->input('addModule');
-        
-        $resource = Resource::Create([
-            'description' => $description,
-            'section' => $section,
-            'module_id' => (int)$addModule
+        $resource = Resource::create([
+            'description' => $request->input('addDescription'),
+            'section' => $request->input('addSection'),
+            'module_id' => (int)$request->input('addModule')
         ]);
 
-        //Partie notifs
-        $module = Module::find($addModule);
+        // Optimized Batch Notifications
+        $level_id = Module::find($request->input('addModule'))->level_id;
+        $studentIds = User::where('role', 2)
+            ->whereHas('levels_users', fn($q) => $q->where('level_id', $level_id))
+            ->pluck('id');
 
-        $level_id = $module->level->id;
-
-        $usersOnLevel = User::whereHas('levels_users', function($query) use ($level_id) {
-            $query->where('level_id', $level_id);   
-        })->get();
-
-        foreach ($usersOnLevel as $user) {
-            if ($user->role == 2) {
-                $user->notifs++;
-                $user->save();
-
-                Notif::Create([
-                    'resource_id' => $resource->id,
-                    'user_id' => $user->id,
-                ]);
-            }
+        if ($studentIds->isNotEmpty()) {
+            User::whereIn('id', $studentIds)->increment('notifs');
+            $notifs = $studentIds->map(fn($uid) => [
+                'resource_id' => $resource->id,
+                'user_id' => $uid,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->toArray();
+            Notif::insert($notifs);
         }
 
-        //Partie fichier
+        // Handle File
         $addFile = $request->file('addFile');
         $fileName = $resource->id . '_' . $addFile->getClientOriginalName();
         $filePath = $addFile->storeAs('resources_files', $fileName, 'public');
-        $fileType = $addFile->getClientOriginalExtension();
 
-        // Stocker le fichier dans le dossier storage/app/public/resources_files
-        $file = File::Create([
+        File::create([
             'filename' => $addFile->getClientOriginalName(),
             'path' => $filePath,
-            'filetype' => $fileType,
+            'filetype' => $addFile->getClientOriginalExtension(),
             'resource_id' => $resource->id 
         ]);
 
-        $resource = Resource::where('id', $resource->id)->with('module.level')->first();
-
+        $resource->load('module.level');
         event(new ResourceRefresh($resource));
         event(new NotifRefresh($resource, 'add'));
 
-        return redirect()->back()->with([
-            'success' => 'La resource a bien été ajouté'
-        ]);
-
+        return redirect()->back()->with(['success' => 'La resource a bien été ajouté']);
     }
 
     public function getResource (Request $request, $id) {
@@ -279,145 +152,114 @@ class ResourceController extends Controller
         return response()->json($resource, 200);
     }
 
-    public function edit (Request $request) {
-        $id = $request->input('id');
-        $resource = Resource::find($id);
+    public function edit(Request $request)
+    {
+        $resource = Resource::with(['module.level', 'file'])->find($request->input('id'));
+        if (!$resource) return redirect()->back()->with(['error' => 'Ressource non trouvée']);
 
         $validator = Validator::make($request->all(), [
-            'editDescription' => 'required',
-            'editSection' => 'required',
-            'editModule' => 'required', 
+            'addDescription' => 'required',
+            'addSection' => 'required',
+            'addModule' => 'required',
         ], [
-            'editDescription.required' => 'Le prenom est requis.',
-            'editSection.required' => "La section est requise.",
-            'editModule.required' => "Le module est requis"
+            'addDescription.required' => 'La description est requise.',
+            'addSection.required' => "La section est requise.",
+            'addModule.required' => "Le module est requis"
         ]);
-        
+
         if ($validator->fails()) {
-
-            $errors = json_decode($validator->errors(), true);
-
-            return redirect()->back()->with([
-                'error' => $errors,
-            ]);
+            return redirect()->back()->with(['error' => json_decode($validator->errors(), true)]);
         }
 
-        $description = $request->input('editDescription');
-        $section = $request->input('editSection');
-        $editModule = $request->input('editModule');
+        $description = $request->input('addDescription');
+        $section = $request->input('addSection');
+        $newModuleId = (int)$request->input('addModule');
 
-        //GERER LA PARTIE NOTIFS AVEC LES RESOURCES ICI
+        $oldModule = $resource->module;
+        $newModule = Module::with('level')->find($newModuleId);
 
-        //Partie notifs
-        $moduleNouveau = Module::find($editModule);
-        $moduleAncien = Module::find($resource->module->id);
+        if ($oldModule->id != $newModule->id) {
+            // Module changed: update notifications for students of both old and new modules
+            $oldLevelId = $oldModule->level_id;
+            $newLevelId = $newModule->level_id;
 
-        //S'il a changé de module
-        if ($moduleAncien->id != $moduleNouveau->id) {
-            $level_id_ancien = $moduleAncien->level->id;
-            $level_id_nouveau = $moduleNouveau->level->id;
-
-            $usersAncienModule = User::whereHas('levels_users', function($query) use ($level_id_ancien) {
-                $query->where('level_id', $level_id_ancien);   
-            })->get();
-
-            $usersNouveauModule = User::whereHas('levels_users', function($query) use ($level_id_nouveau) {
-                $query->where('level_id', $level_id_nouveau);   
-            })->get();
-
-            foreach ($usersAncienModule as $user) {
-                if ($user->notifs != 0) {
-                    $user->notifs--;
-                }
-                $user->save();
-
-                $notif = Notif::where('user_id', $user->id)->where('resource_id', $resource->id)->first();
-                if ($notif) {
-                    $notif->delete();
-                }
+            // Decrement old module students (if they haven't viewed yet)
+            $oldModuleStudents = User::where('role', 2)
+                ->whereHas('levels_users', fn($q) => $q->where('level_id', $oldLevelId))
+                ->get();
+            
+            foreach ($oldModuleStudents as $student) {
+                if ($student->notifs > 0) $student->decrement('notifs');
             }
+            Notif::where('resource_id', $resource->id)->delete();
 
-            foreach ($usersNouveauModule as $user) {
-                if ($user->notifs != 0) {
-                    $user->notifs++;
-                }
-                $user->save();
-
-                Notif::Create([
-                    'user_id' => $user->id,
+            // Increment new module students
+            $newModuleStudents = User::where('role', 2)
+                ->whereHas('levels_users', fn($q) => $q->where('level_id', $newLevelId))
+                ->pluck('id');
+            
+            if ($newModuleStudents->isNotEmpty()) {
+                User::whereIn('id', $newModuleStudents)->increment('notifs');
+                $newNotifs = $newModuleStudents->map(fn($uid) => [
+                    'user_id' => $uid,
                     'resource_id' => $resource->id,
-                ]);
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->toArray();
+                Notif::insert($newNotifs);
             }
-        //S'il n'a pas changé de module mais qu'on verifie tout de même
         } else {
-            //Recuperer le level_id
-            $level_id = $resource->module->level_id;
+            // Module didn't change, but we refresh notifications
+            $level_id = $newModule->level_id;
+            $studentIds = User::where('role', 2)
+                ->whereHas('levels_users', fn($q) => $q->where('level_id', $level_id))
+                ->pluck('id');
 
-            //Users qui auront la notifs
-            $usersNotifs = User::where('role', 2)->whereHas('levels_users', function($query) use ($level_id) {
-                $query->where('level_id', $level_id);
-            })->get();
-
-            //Reduire les notifs de l'utilisateur
-            foreach ($usersNotifs as $user) {
-                if ($resource->updated_at > $user->notif_viewed && $user->notifs != 0) {
-                    $user->notifs = $user->notifs--;
-                    $user->save();
-                }
-            }
-
-            //Supprimer toutes les notifs
-            $notifsToDelete = Notif::where('resource_id', $resource->id)->delete();
-
-            //Ajouter des nouvelles notifs
-            foreach ($usersNotifs as $user) {
-                Notif::Create([
-                    'user_id' => $user->id,
+            // Reset for students who haven't viewed
+            Notif::where('resource_id', $resource->id)->delete();
+            if ($studentIds->isNotEmpty()) {
+                $newNotifs = $studentIds->map(fn($uid) => [
+                    'user_id' => $uid,
                     'resource_id' => $resource->id,
-                ]);
-
-                $user->notifs = $user->notifs++;
-                $user->save();
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->toArray();
+                Notif::insert($newNotifs);
             }
         }
 
-        $resource->description = $description;
-        $resource->section = $section;
-        $resource->module_id = $editModule;
-        $resource->save();
+        $resource->update([
+            'description' => $description,
+            'section' => $section,
+            'module_id' => $newModuleId,
+        ]);
 
-        if ($request->file('editFile')) {
+        // Handle File Update
+        if ($request->hasFile('addFile')) {
+            $oldFile = $resource->file;
+            if ($oldFile) {
+                $oldPath = storage_path("app/public/{$oldFile->path}");
+                if (file_exists($oldPath)) unlink($oldPath);
+                $oldFile->delete();
+            }
 
-            $file = $resource->file;
+            $uploadedFile = $request->file('addFile');
+            $fileName = $resource->id . '_' . $uploadedFile->getClientOriginalName();
+            $filePath = $uploadedFile->storeAs('resources_files', $fileName, 'public');
 
-            $filePath = storage_path("app/public/{$file->path}");
-
-            unlink($filePath);
-
-            $file->delete();
-
-            $editFile = $request->file('editFile');
-            $fileName = $resource->id . '_' . $editFile->getClientOriginalName();
-            $filePath = $editFile->storeAs('resources_files', $fileName, 'public');
-            $fileType = $editFile->getClientOriginalExtension();
-
-            $file = File::Create([
-                'filename' => $editFile->getClientOriginalName(),
+            File::create([
+                'filename' => $uploadedFile->getClientOriginalName(),
                 'path' => $filePath,
-                'filetype' => $fileType,
+                'filetype' => $uploadedFile->getClientOriginalExtension(),
                 'resource_id' => $resource->id 
             ]);
         }
 
-        $resource = Resource::where('id', $resource->id)->with('module.level')->first();
-
+        $resource->load('module.level');
         event(new ResourceRefresh($resource));
         event(new NotifRefresh($resource, 'edit'));
 
-
-        return redirect()->back()->with([
-            'success' => 'La resource a bien été modifié'
-        ]);
+        return redirect()->back()->with(['success' => 'La ressource a bien été modifiée']);
     }
 
     public function download (Request $request, $id) {

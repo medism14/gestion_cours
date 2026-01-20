@@ -28,21 +28,22 @@ class UserController extends Controller
 
     public function dashboard () {
 
-        //Suppression des annonces au cas où
-        $annonces = Annonce::all();
-        $date = now()->toDateString();
+        // Efficiently clear expired announcements
+        $expiredAnnonces = Annonce::where('date_expiration', '<', now()->toDateString())
+            ->with('annonces_relations.user')
+            ->get();
 
-        foreach ($annonces as $annonce) {
-            if ($annonce->date_expiration < $date) {
+        if ($expiredAnnonces->isNotEmpty()) {
+            foreach ($expiredAnnonces as $annonce) {
                 foreach ($annonce->annonces_relations as $relation) {
-                    if ($relation->user->annonce_viewed < $relation->updated_at && $relation->user->annonce_viewed > 0) {
-                        $relation->user->annonces--;
-                        $relation->user->save();
+                    $user = $relation->user;
+                    if ($user->annonce_viewed < $relation->updated_at && $user->annonce_viewed > 0) {
+                        $user->decrement('annonces');
                     }
                 }
                 $annonce->delete();
-                return redirect()->route('dashboard');
             }
+            return redirect()->route('dashboard');
         }
 
         if (auth()->user()->role == 0) {
@@ -129,91 +130,53 @@ class UserController extends Controller
 
     public function index (Request $request) {
 
+        $query = User::with(['levels_users.level.sector']);
+
         if ($request->input('search')) {
-
             $search = $request->input('search');
+            $searchRole = null;
+            if (preg_match("/^(administrateur)$/i", $search)) $searchRole = 0;
+            else if (preg_match("/^(professeur)$/i", $search)) $searchRole = 1;
+            else if (preg_match("/^(etudiant)$/i", $search)) $searchRole = 2;
 
-            if (preg_match("/^(administrateur)$/i", $search)){
-                $search = 0;
-            } else if (preg_match("/^(professeur)$/i", $search)) {
-                $search = 1;
-            } else if (preg_match("/^(etudiant)$/i", $search)) {
-                $search = 2;
-            }
+            $query->where(function($q) use ($search, $searchRole) {
+                $q->where('first_name', 'like', $search . '%')
+                  ->orWhere('last_name', 'like', $search . '%')
+                  ->orWhere('email', 'like', $search . '%')
+                  ->orWhere('phone', 'like', $search . '%')
+                  ->orWhere('sexe', 'like', $search . '%');
+                
+                if ($searchRole !== null) {
+                    $q->orWhere('role', $searchRole);
+                }
 
-            $users = User::with(['levels_users.level.sector'])
-                           ->where('first_name', 'like', strtolower($search) . '%')
-                           ->orWhere('first_name', 'like', strtoupper($search) . '%')
-                           ->orWhere('first_name', 'like', ucfirst($search) . '%')
-                           ->orWhere('last_name', 'like', strtolower($search) . '%')
-                           ->orWhere('last_name', 'like', strtoupper($search) . '%')
-                           ->orWhere('last_name', 'like', ucfirst($search) . '%')
-                           ->orWhere('sexe', 'like', strtolower($search) . '%')
-                           ->orWhere('sexe', 'like', strtoupper($search) . '%')
-                           ->orWhere('sexe', 'like', ucfirst($search) . '%')
-                           ->orWhere('email', 'like', $search . '%')
-                           ->orWhere('phone', 'like', $search . '%')
-                           ->orWhere('role', 'like', $search . '%')
-                           ->orWhereHas('levels_users.level.sector', function ($query) use ($search) {
-                                $query->where('name', 'like', strtolower($search) . '%')
-                                      ->orWhere('name', 'like', ucfirst($search) . '%')
-                                      ->orWhere('name', 'like', strtoupper($search) . '%');
-                           })->paginate(5);
-
-                           $allUsers = User::with(['levels_users.level.sector'])
-                           ->where('first_name', 'like', strtolower($search) . '%')
-                           ->orWhere('first_name', 'like', strtoupper($search) . '%')
-                           ->orWhere('first_name', 'like', ucfirst($search) . '%')
-                           ->orWhere('last_name', 'like', strtolower($search) . '%')
-                           ->orWhere('last_name', 'like', strtoupper($search) . '%')
-                           ->orWhere('last_name', 'like', ucfirst($search) . '%')
-                           ->orWhere('sexe', 'like', strtolower($search) . '%')
-                           ->orWhere('sexe', 'like', strtoupper($search) . '%')
-                           ->orWhere('sexe', 'like', ucfirst($search) . '%')
-                           ->orWhere('email', 'like', $search . '%')
-                           ->orWhere('phone', 'like', $search . '%')
-                           ->orWhere('role', 'like', $search . '%')
-                           ->orWhereHas('levels_users.level.sector', function ($query) use ($search) {
-                                $query->where('name', 'like', strtolower($search) . '%')
-                                      ->orWhere('name', 'like', ucfirst($search) . '%')
-                                      ->orWhere('name', 'like', strtoupper($search) . '%');
-                           })->get();
-                        $loup = 667;
+                $q->orWhereHas('levels_users.level.sector', function ($sub) use ($search) {
+                    $sub->where('name', 'like', $search . '%');
+                });
+            });
+            $loup = 667;
         } else if ($request->input('searchFiliere')) {
             $search = $request->input('searchFiliere');
-            
-            if ($search == 'all') {
-                $users = User::whereHas('levels_users')->with('levels_users.level.sector')->paginate(5);
-
-                $allUsers = User::whereHas('levels_users')->with('levels_users.level.sector')->get();
-
+            if ($search !== 'all') {
+                $query->whereHas('levels_users.level', function ($q) use ($search) {
+                    $q->where('id', $search);
+                });
             } else {
-                $users = User::whereHas('levels_users.level', function ($query) use ($search) {
-                    $query->where('id', $search);
-                })->with('levels_users.level.sector')->paginate(5);
-
-                $allUsers = User::whereHas('levels_users.level', function ($query) use ($search) {
-                    $query->where('id', $search);
-                })->with('levels_users.level.sector')->get();
+                $query->whereHas('levels_users');
             }
-
             $loup = 667;
-        }else {
-            if ($request->input('nombreProfesseurs')) {
-                $users = User::where('role', 1)->with(['levels_users.level.sector'])->paginate(5);
-                $allUsers = User::where('role', 1)->with(['levels_users.level.sector'])->get();
-                $loup = 667;
-            } else if ($request->input('nombreEtudiants')) {
-                $users = User::where('role', 2)->with(['levels_users.level.sector'])->paginate(5);
-                $allUsers = User::where('role', 2)->with(['levels_users.level.sector'])->get();
-                $loup = 667;
-            } else {
-                $users = User::with(['levels_users.level.sector'])->paginate(5);
-                $allUsers = User::with(['levels_users.level.sector'])->get();
-                $loup = null;
-            }
-
+        } else if ($request->input('nombreProfesseurs')) {
+            $query->where('role', 1);
+            $loup = 667;
+        } else if ($request->input('nombreEtudiants')) {
+            $query->where('role', 2);
+            $loup = 667;
+        } else {
+            $loup = null;
         }
+
+        $allUsers = $query->get();
+        $users = $query->paginate(5)->withQueryString();
 
         $sectors = Sector::with(['levels' => function ($query) {
             $query->orderBy('sector_id')->orderBy('degree', 'asc');
@@ -325,7 +288,7 @@ class UserController extends Controller
                 }
             }
         } else if ($role == 2){
-            $id = $request->input('filiereSolo');
+            $id = $request->input('addFiliere');
 
             LevelsUser::Create([
                 'level_id' => $id,
@@ -517,7 +480,7 @@ class UserController extends Controller
             }
         //Si c'est un étudiant
         } else {
-            $id = $request->input('filiereSolo');
+            $id = $request->input('editFiliere');
 
             LevelsUser::Create([
                 'level_id' => $id,

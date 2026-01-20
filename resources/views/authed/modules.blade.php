@@ -3,100 +3,132 @@
 @section('title', 'Modules')
 
 @section('content')
-    @endif
+<div class="section-animate space-y-8 p-4 md:p-8">
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Gestion des Modules</h1>
+            <p class="mt-1 text-gray-500">Administrez les modules de cours et leurs professeurs référents.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="openModalAdd" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus mr-2 text-sm"></i>
+                Ajouter un module
+            </button>
+        </div>
+    </div>
 
-    <!-- Pagination -->
-    <div class="w-full max-w-full mt-5 md:w-[90%] mx-auto flex my-3 justify-center text-sm lg:text-base md:text-sm">
-        <div class="pagination">
-        @if ($modules->hasPages())
-            <nav>
-                @if ($modules->onFirstPage())
-                    <span class="p-2 bg-gray-300 m-2 rounded shadow-md">
-                        Precedent
-                    </span>
-                @else
-                    <a href="{{ $modules->previousPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Precedent
-                    </a>
-                @endif
+    <!-- Search & Filters Container -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50">
+            <form action="{{ route('modules.index') }}" method="GET" class="space-y-4">
+                @csrf
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1 group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input id="search" name="search" type="text" value="{{ request('search') }}"
+                            class="block w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50"
+                            placeholder="Rechercher un module, une filière...">
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all shadow-sm">
+                        Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
 
-                @if ($modules->hasMorePages())
-                    <a href="{{ $modules->nextPageUrl() }}" class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </a>
-                @else
-                    <span class="p-2 bg-gray-300 m-1 rounded shadow-md">
-                        Suivant
-                    </span>
-                @endif
-            </nav>
+        @if ($loup)
+            <div class="px-6 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-700">Résultats filtrés</span>
+                <a href="{{ route('modules.index') }}" class="text-xs font-bold text-amber-600 hover:underline">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Réinitialiser
+                </a>
+            </div>
         @endif
+
+        <!-- Desktop Table -->
+        <div class="overflow-x-auto">
+            <table id="tableModule" class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100">
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Module</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Filière</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Professeur</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @foreach ($modules as $module)
+                        <tr class="hover:bg-gray-50/30 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-xs">
+                                        <i class="fa-solid fa-book-open"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-bold text-gray-900">{{ $module->name }}</div>
+                                        <div class="text-[10px] text-gray-400 font-medium">ID: #{{ str_pad($module->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600">
+                                    {{ $module->level->sector->name }}: {{ $module->level->name }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 hidden lg:table-cell">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-7 w-7 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center text-[10px] font-bold">
+                                        {{ strtoupper(substr($module->user->first_name, 0, 1) . substr($module->user->last_name, 0, 1)) }}
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">{{ $module->user->first_name }} {{ $module->user->last_name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button title="Voir les détails" class="openModalView p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                        <i class="fa-solid fa-eye text-sm"></i>
+                                    </button>
+                                    <button title="Modifier" class="openModalEdit p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                        <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                    </button>
+                                    <form method="POST" action="{{ route('modules.delete', ['id' => $module->id]) }}" class="contents" onsubmit="return confirm('Supprimer ce module ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button title="Supprimer" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm">
+                                            <i class="fa-solid fa-trash-can text-sm"></i>
+                                        </button>
+                                    </form>
+                                    <span class="id hidden">{{ $module->id }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    @if ($modules->isEmpty())
+                        <tr>
+                            <td colspan="4" class="px-6 py-20 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fa-solid fa-book text-4xl text-gray-200 mb-4"></i>
+                                    <p class="text-gray-400 font-medium">Aucun module trouvé.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
         </div>
+
+        <!-- Pagination -->
+        @if ($modules->hasPages())
+            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                {{ $modules->links() }}
+            </div>
+        @endif
     </div>
+</div>
 
-    <!-- MODALS -->
-    <!-- MODALS -->
-    <!-- MODALS -->
-
-    <!-- ADD MODALS -->
-    <div id="addModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
-        <div id="subAddModal" class="absolute flex flex-col fixed w-full md:w-[60%] border-2 border-gray-300 bg-white rounded-lg my-[2rem]">
-        <form method="POST" action="{{ route('modules.store') }}" class="m-0 p-0" onsubmit="return validProf()">    
-            @csrf
-            <!-- Close -->
-            <div id="closeModalAdd" class="cursor-pointer absolute right-0 text-2xl p-2"><i class="fas fa-times"></i></div>
-            <!-- Titre -->
-            <div class="p-4 flex justify-center rounded-lg text-xl font-bold border-b-2">Ajout d'un module</div>
-                
-            <!-- Corps -->
-            <div style="background-color: #e0d5b4;" class="flex-1 rounded-lg p-5">
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2 justify-center">
-                    <div class="w-full md:w-1/2 p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addName">Nom: </label>
-                        <input id="addName" name="addName" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                    </div>
-                </div>
-                
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <input type="text" id="searchAdd" placeholder="Recherchez ici..." class="w-[75%] rounded focus:ring-2 outline-none px-2 py-1">
-                        <label for="addFiliere">Filière: </label>
-                        <select id="addFiliere" name="addFiliere" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            @foreach ($sectors as $sector)
-                                @foreach ($sector->levels as $level)
-                                    <option value="{{ $level->id }}">{{$sector->name}}: {{ $level->name }}</option>
-                                @endforeach
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row -->
-                <div class="md:flex w-full md:space-x-2">
-                    <div class="w-full md:w-1/2 mx-auto p-2 flex justify-center flex-col items-center overflow-hidden">
-                        <label for="addProf">Professeur: </label>
-                        <select id="addProf" name="addProf" type="text" class="m-2 shadow-md w-full border-none rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:border-transparent">
-                            
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <!-- Footer -->
-            <div class="w-full p-5 py-3 flex justify-around items-center">
-                <button type="submit" id="saveAddButton" class="p-2 bg-green-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-green-700">Enregistrer</button>
-                <button type="button" id="cancelAddButton" class="p-2 bg-red-600 text-white rounded-lg transition-all duration-300 ease-in-out hover:bg-red-700">Annuler</button>
-            </div>
-            </form>    
-            </div>
-        </div>
-    </div>
-
-    <!-- VIEW MODALS -->
-    <div id="viewModal" class="hidden fixed z-10 inset-0 bg-gray-300 bg-opacity-75 flex justify-center overflow-y-auto">
-        <!-- Modal -->
     <!-- MODALS -->
     <!-- Add Modal -->
     <div id="addModal" class="hidden fixed inset-0 z-[60] overflow-y-auto">
@@ -108,7 +140,7 @@
                     @csrf
                     <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                         <h3 class="text-xl font-black text-gray-900">Nouveau Module</h3>
-                        <button type="button" id="closeModalAddTop" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                        <button type="button" id="closeModalAdd" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
@@ -228,7 +260,7 @@
                     <input type="hidden" name="id" id="editId">
                     <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                         <h3 class="text-xl font-black text-gray-900">Modifier le Module</h3>
-                        <button type="button" id="closeModalEditTop" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
+                        <button type="button" id="closeModalEdit" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white transition-all">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
@@ -246,7 +278,7 @@
                                 class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold">
                                 @foreach ($sectors as $sector)
                                     @foreach ($sector->levels as $level)
-                                        <option value="{{ $level->id }}" class="editOptions">{{$sector->name}} - {{ $level->name }}</option>
+                                        <option value="{{ $level->id }}">{{$sector->name}} - {{ $level->name }}</option>
                                     @endforeach
                                 @endforeach
                             </select>
@@ -263,7 +295,7 @@
                             </div>
                             <select id="editProf" name="editProf" size="5" required
                                 class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold custom-scrollbar">
-                                <!-- Dynamic dynamic -->
+                                <!-- Dynamic options -->
                             </select>
                         </div>
                     </div>
@@ -282,121 +314,119 @@
 
 @section('scripts')
 <script>
-    // Global functions for modal management
-    function toggleModal(modalId, show = true) {
-        const modal = document.getElementById(modalId);
-        if (show) modal.classList.remove('hidden');
-        else modal.classList.add('hidden');
-    }
+    (function() {
+        // Global functions for modal management
+        function toggleModal(modalId, show = true) {
+            const modal = document.getElementById(modalId);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
 
-    // Dynamic Professor Loading
-    async function fetchProfessors(filiereId, selectId, currentProfId = null) {
-        const select = document.getElementById(selectId);
-        try {
-            const res = await fetch(`/modules/getProfFiliere/${filiereId}`);
-            const data = await res.json();
-            select.innerHTML = '';
-            data.forEach(user => {
-                const opt = document.createElement('option');
-                opt.value = user.id;
-                opt.textContent = `${user.first_name} ${user.last_name}`;
-                if (currentProfId && user.id == currentProfId) opt.selected = true;
-                opt.className = 'py-2 px-1 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer';
-                select.appendChild(opt);
-            });
-        } catch(e) { console.error(e); }
-    }
-
-    // Add Modal Handlers
-    document.getElementById('openModalAdd').addEventListener('click', () => {
-        toggleModal('addModal');
-        fetchProfessors(document.getElementById('addFiliere').value, 'addProf');
-    });
-
-    document.getElementById('addFiliere').addEventListener('change', (e) => {
-        fetchProfessors(e.target.value, 'addProf');
-    });
-
-    // Edit Modal Handlers
-    document.querySelectorAll('.openModalEdit').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.closest('tr').querySelector('.id').textContent;
+        // Dynamic Professor Loading
+        async function fetchProfessors(filiereId, selectId, currentProfId = null) {
+            const select = document.getElementById(selectId);
             try {
-                const res = await fetch(`/modules/getModule/${id}`);
+                const res = await fetch(`/modules/getProfFiliere/${filiereId}`);
                 const data = await res.json();
-                document.getElementById('editId').value = data.id;
-                document.getElementById('editName').value = data.name;
-                document.getElementById('editFiliere').value = data.level.id;
-                await fetchProfessors(data.level.id, 'editProf', data.user.id);
-                toggleModal('editModal');
+                select.innerHTML = '';
+                data.forEach(user => {
+                    const opt = document.createElement('option');
+                    opt.value = user.id;
+                    opt.textContent = `${user.first_name} ${user.last_name}`;
+                    if (currentProfId && user.id == currentProfId) opt.selected = true;
+                    opt.className = 'py-2 px-1 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer';
+                    select.appendChild(opt);
+                });
             } catch(e) { console.error(e); }
+        }
+
+        // Add Modal Handlers
+        document.getElementById('openModalAdd').addEventListener('click', () => {
+            toggleModal('addModal');
+            fetchProfessors(document.getElementById('addFiliere').value, 'addProf');
         });
-    });
 
-    document.getElementById('editFiliere').addEventListener('change', (e) => {
-        fetchProfessors(e.target.value, 'editProf');
-    });
-
-    // View Modal Handlers
-    document.querySelectorAll('.openModalView').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.closest('tr').querySelector('.id').textContent;
-            try {
-                const res = await fetch(`/modules/getModule/${id}`);
-                const data = await res.json();
-                document.getElementById('viewNameLabel').textContent = data.name;
-                document.getElementById('viewFiliere').textContent = `${data.level.sector.name} - ${data.level.name}`;
-                document.getElementById('viewProf').textContent = `${data.user.first_name} ${data.user.last_name}`;
-                document.getElementById('profAvatar').textContent = data.user.first_name[0] + data.user.last_name[0];
-                toggleModal('viewModal');
-            } catch(e) { console.error(e); }
+        document.getElementById('addFiliere').addEventListener('change', (e) => {
+            fetchProfessors(e.target.value, 'addProf');
         });
-    });
 
-    // Search/Filter logic for selects
-    function setupFilter(inputId, selectId) {
-        document.getElementById(inputId).addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const opts = document.getElementById(selectId).options;
-            Array.from(opts).forEach(opt => {
-                const text = opt.textContent.toLowerCase();
-                opt.style.display = text.includes(val) ? '' : 'none';
+        // Close handlers for Add Modal
+        document.getElementById('closeModalAdd').addEventListener('click', () => toggleModal('addModal', false));
+        document.getElementById('cancelAddButton').addEventListener('click', () => toggleModal('addModal', false));
+
+        // Edit Modal Handlers
+        document.querySelectorAll('.openModalEdit').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.closest('tr').querySelector('.id').textContent;
+                try {
+                    const res = await fetch(`/modules/getModule/${id}`);
+                    const data = await res.json();
+                    document.getElementById('editId').value = data.id;
+                    document.getElementById('editName').value = data.name;
+                    document.getElementById('editFiliere').value = data.level.id;
+                    await fetchProfessors(data.level.id, 'editProf', data.user.id);
+                    toggleModal('editModal');
+                } catch(e) { console.error(e); }
             });
         });
-    }
-    setupFilter('searchAdd', 'addProf');
-    setupFilter('searchEdit', 'editProf');
 
-    // Utility close buttons
-    ['addModal', 'viewModal', 'editModal'].forEach(id => {
-        document.querySelectorAll(`#${id} [id*="closeModal"], #${id} [id*="cancel"]`).forEach(b => {
-            b.addEventListener('click', () => toggleModal(id, false));
+        document.getElementById('editFiliere').addEventListener('change', (e) => {
+            fetchProfessors(e.target.value, 'editProf');
         });
-    });
 
-    // Form validation
-    function validProf() {
-        if (!document.getElementById('addProf').value) {
-            alert('Veuillez sélectionner un professeur.');
-            return false;
+        // Close handlers for Edit Modal
+        document.getElementById('closeModalEdit').addEventListener('click', () => toggleModal('editModal', false));
+        document.getElementById('cancelEditButton').addEventListener('click', () => toggleModal('editModal', false));
+
+        // View Modal Handlers
+        document.querySelectorAll('.openModalView').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.closest('tr').querySelector('.id').textContent;
+                try {
+                    const res = await fetch(`/modules/getModule/${id}`);
+                    const data = await res.json();
+                    document.getElementById('viewNameLabel').textContent = data.name;
+                    document.getElementById('viewFiliere').textContent = `${data.level.sector.name} - ${data.level.name}`;
+                    document.getElementById('viewProf').textContent = `${data.user.first_name} ${data.user.last_name}`;
+                    document.getElementById('profAvatar').textContent = data.user.first_name[0] + data.user.last_name[0];
+                    toggleModal('viewModal');
+                } catch(e) { console.error(e); }
+            });
+        });
+
+        document.getElementById('closeModalView').addEventListener('click', () => toggleModal('viewModal', false));
+
+        // Search/Filter logic for selects
+        function setupFilter(inputId, selectId) {
+            document.getElementById(inputId).addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                const opts = document.getElementById(selectId).options;
+                Array.from(opts).forEach(opt => {
+                    const text = opt.textContent.toLowerCase();
+                    opt.style.display = text.includes(val) ? '' : 'none';
+                });
+            });
         }
-        return submitFunction();
-    }
+        setupFilter('searchAdd', 'addProf');
+        setupFilter('searchEdit', 'editProf');
 
-    function validProfEdit() {
-        if (!document.getElementById('editProf').value) {
-            alert('Veuillez sélectionner un professeur.');
-            return false;
-        }
-        return submitFunction();
-    }
+        // Form validation
+        window.validProf = function() {
+            if (!document.getElementById('addProf').value) {
+                alert('Veuillez sélectionner un professeur.');
+                return false;
+            }
+            return true;
+        };
 
-    let formIsSubmitting = false;
-    function submitFunction() {
-        if (formIsSubmitting) return false;
-        formIsSubmitting = true;
-        return true;
-    }
+        window.validProfEdit = function() {
+            if (!document.getElementById('editProf').value) {
+                alert('Veuillez sélectionner un professeur.');
+                return false;
+            }
+            return true;
+        };
+    })();
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
