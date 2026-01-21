@@ -92,26 +92,26 @@
                             <td class="px-6 py-4 hidden xl:table-cell text-sm text-gray-500">
                                 {{ $document->created_at->format('d/m/Y') }}
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <div class="flex items-center justify-end space-x-1">
-                                    <form method="post" action="{{ route('documents.download', $document->id) }}" class="inline">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end flex-nowrap">
+                                    <form method="post" action="{{ route('documents.download', $document->id) }}" class="inline-flex">
                                         @csrf
-                                        <button title="Télécharger" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                                            <i class="fa-solid fa-download"></i>
+                                        <button type="submit" title="Télécharger" class="w-8 h-8 inline-flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                            <i class="fa-solid fa-download text-sm"></i>
                                         </button>
                                     </form>
-                                    <button title="Voir" class="openModalView p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-id="{{ $document->id }}">
-                                        <i class="fa-solid fa-eye"></i>
+                                    <button title="Voir" class="openModalView w-8 h-8 inline-flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-id="{{ $document->id }}">
+                                        <i class="fa-solid fa-eye text-sm"></i>
                                     </button>
                                     @if (auth()->user()->role == 0)  
-                                        <button title="Modifier" class="openModalEdit p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $document->id }}">
-                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        <button title="Modifier" class="openModalEdit w-8 h-8 inline-flex items-center justify-center text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" data-id="{{ $document->id }}">
+                                            <i class="fa-solid fa-pen-to-square text-sm"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('documents.delete', $document->id) }}" class="inline" onsubmit="return confirm('Voulez-vous vraiment supprimer ce document ?')">
+                                        <form method="POST" action="{{ route('documents.delete', $document->id) }}" class="inline-flex" onsubmit="return confirm('Voulez-vous vraiment supprimer ce document ?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button title="Supprimer" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                                <i class="fa-solid fa-trash-can"></i>
+                                            <button type="submit" title="Supprimer" class="w-8 h-8 inline-flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                                <i class="fa-solid fa-trash-can text-sm"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -161,13 +161,11 @@
             
             <div class="space-y-1">
                 <label for="docFile" class="block text-sm font-semibold text-gray-700">Fichier PDF <span id="fileRequired" class="text-red-500">*</span></label>
-                <div class="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 transition-colors bg-gray-50 group cursor-pointer relative">
-                    <input id="docFile" name="addFile" type="file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer">
-                    <div class="text-center group-hover:scale-105 transition-transform duration-200">
-                        <i class="fa-solid fa-file-arrow-up text-3xl text-gray-400 group-hover:text-blue-500 mb-2"></i>
-                        <p id="fileNameDisplay" class="text-xs text-gray-500 font-medium italic truncate max-w-[200px]">Cliquez ou glissez un fichier (Max 50Mo)</p>
-                    </div>
-                </div>
+                <label for="docFile" class="mt-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 transition-colors bg-gray-50 cursor-pointer">
+                    <input id="docFile" name="addFile" type="file" accept=".pdf" class="sr-only">
+                    <i class="fa-solid fa-file-arrow-up text-3xl text-gray-400 mb-2"></i>
+                    <p id="fileNameDisplay" class="text-xs text-gray-500 font-medium italic truncate max-w-[200px]">Cliquez pour sélectionner un fichier (Max 50Mo)</p>
+                </label>
                 <!-- Progress Area -->
                 <div id="uploadProgress" class="hidden mt-4 space-y-2">
                     <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">

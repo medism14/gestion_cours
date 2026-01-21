@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Resource;
 use App\Models\Sector;
 use App\Models\Module;
@@ -263,14 +264,18 @@ class ResourceController extends Controller
     }
 
     public function download (Request $request, $id) {
-        $resource = Resource::find($id);
+        $resource = Resource::with('file')->find($id);
 
-        if ($resource) {
-            $filePath = 'storage/' . $resource->file->path;
+        if ($resource && $resource->file) {
+            $path = $resource->file->path;
 
-            $filePath = public_path($filePath);
+            if (!Storage::disk('public')->exists($path)) {
+                return redirect()->back()->with([
+                    'error' => 'Le fichier physique est introuvable sur le serveur.'
+                ]);
+            }
 
-            return response()->download($filePath, $resource->file->filename);
+            return Storage::disk('public')->download($path, $resource->file->filename);
         } else {
             return redirect()->back()->with([
                 'error' => 'Cet enregistrement n existe pas'

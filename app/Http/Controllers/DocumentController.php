@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Document;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
@@ -68,6 +68,13 @@ class DocumentController extends Controller
         $file = $request->file('addFile');
         $originalName = $file->getClientOriginalName();
         $fileName = time() . '_' . $originalName;
+        
+        // Créer le dossier documents s'il n'existe pas
+        $documentsPath = storage_path('app/public/documents');
+        if (!file_exists($documentsPath)) {
+            mkdir($documentsPath, 0755, true);
+        }
+        
         $filePath = $file->storeAs('documents', $fileName, 'public');
         $fileSize = $file->getSize();
         $fileType = $file->getClientOriginalExtension();
@@ -231,13 +238,11 @@ class DocumentController extends Controller
             return redirect()->back()->with(['error' => 'Accès non autorisé']);
         }
 
-        $filePath = storage_path("app/public/{$document->path}");
-
-        if (!file_exists($filePath)) {
+        if (!Storage::disk('public')->exists($document->path)) {
             return redirect()->back()->with(['error' => 'Fichier introuvable sur le serveur']);
         }
 
-        return response()->download($filePath, $document->filename);
+        return Storage::disk('public')->download($document->path, $document->filename);
     }
 
     /**

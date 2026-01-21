@@ -1,9 +1,124 @@
+# ================================================
+# .htaccess - Laravel sur Hostinger (campus-ismd.com)
+# ================================================
+
+# Définir le charset par défaut
+AddDefaultCharset UTF-8
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
+
+    # ----------------------------------------
+    # 1. Forcer HTTPS (production uniquement)
+    # ----------------------------------------
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # ----------------------------------------
+    # 2. Rediriger www vers non-www (optionnel, à adapter)
+    # ----------------------------------------
+    # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    # RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+    # ----------------------------------------
+    # 3. Redirection vers le dossier public/
+    # ----------------------------------------
+    # Ne pas rediriger si on accède déjà à public/
+    RewriteCond %{REQUEST_URI} !^/public/
     
-    # Redirige la racine vers public/
+    # IMPORTANT: Toujours rediriger vers public/ SAUF pour les vrais assets dans public/
+    # Les dossiers Laravel (resources, storage, vendor, etc.) ne doivent PAS être accessibles
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Racine vide -> public/
     RewriteRule ^$ public/ [L]
+</IfModule>
+
+# ================================================
+# SÉCURITÉ
+# ================================================
+
+# Désactiver la signature du serveur
+ServerSignature Off
+
+# Empêcher le listage des répertoires
+Options -Indexes
+
+# Protéger les fichiers sensibles
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json|artisan)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ================================================
+# HEADERS DE SÉCURITÉ
+# ================================================
+<IfModule mod_headers.c>
+    # Protection XSS
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
     
-    # Redirige tout le reste vers public/ en gardant le chemin
-    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+    # Supprimer les headers révélateurs
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>
+
+# ================================================
+# COMPRESSION GZIP
+# ================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css
+    AddOutputFilterByType DEFLATE text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml text/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE font/woff font/woff2
+</IfModule>
+
+# ================================================
+# CACHE NAVIGATEUR
+# ================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Images
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # Fonts
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # CSS/JS (versionné par Vite, donc cache long)
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    
+    # HTML (pas de cache pour les pages dynamiques)
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ================================================
+# LIMITES PHP (si autorisé par l'hébergeur)
+# ================================================
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value max_input_time 300
 </IfModule>
