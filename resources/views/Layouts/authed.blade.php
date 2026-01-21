@@ -2,7 +2,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
         
-        <title>@yield('title') - ENE ISMD</title>
+        <title>@yield('title') - Institut Supérieur de Management De Djibouti</title>
 
         <!-- Fonts & Icons -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -74,7 +74,7 @@
                     <div class="p-8 text-center">
                         <a href="{{ route('dashboard') }}" class="group inline-block">
                             <h2 class="text-white text-lg font-bold tracking-wider uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent group-hover:from-white group-hover:to-white transition-all duration-300">
-                                ENE ISMD
+                                Institut Supérieur de Management De Djibouti
                             </h2>
                             <div class="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300 mx-auto mt-1"></div>
                         </a>
@@ -116,7 +116,7 @@
 
                         <a href="{{ route('documents.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 {{ request()->routeIs('documents.*') ? 'bg-white/10 text-white' : '' }}">
                             <i class="fa-solid fa-book-bookmark w-5 text-center"></i>
-                            <span class="font-medium">Bibliothèques</span>
+                            <span class="font-medium">Bibliothèque</span>
                         </a>
                     </div>
                 </nav>

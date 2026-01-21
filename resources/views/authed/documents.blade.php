@@ -1,6 +1,6 @@
 @extends('Layouts.authed')
 
-@section('title', 'Bibliothèques')
+@section('title', 'Bibliothèque')
 
 @section('content')
 <div class="section-animate space-y-8 p-4 md:p-8">

@@ -407,6 +407,17 @@
                             </div>
                         </div>
 
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nouveau mot de passe <span class="text-gray-400 font-normal">(laisser vide pour ne pas changer)</span></label>
+                            <div class="relative">
+                                <input id="editPassword" name="editPassword" type="password" placeholder="••••••••" autocomplete="new-password"
+                                    class="block w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-semibold pr-12">
+                                <button type="button" onclick="togglePasswordVisibility('editPassword', this)" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
                         <div id="divSelectFiliereEdit" class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Filières & Niveaux</label>
@@ -613,6 +624,21 @@
         document.getElementById('closeModalEdit').onclick = () => toggleModal('editModal', false);
         document.getElementById('cancelEditButton').onclick = () => toggleModal('editModal', false);
     })();
+
+    // Toggle password visibility
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
 </script>
 
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
